@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function AlchemyArtPiece({
   slug,
@@ -13,6 +14,19 @@ export default function AlchemyArtPiece({
   palette,
 }) {
   const router = useRouter();
+  const [isClicked, setIsClicked] = useState(false);
+
+  const handleClick = () => {
+    setIsClicked(true);
+    router.push(`/alchemy/${slug}`);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      setIsClicked(true);
+      router.push(`/alchemy/${slug}`);
+    }
+  };
 
   // Create a background gradient from the palette
   let bgGradient = undefined;
@@ -29,17 +43,20 @@ export default function AlchemyArtPiece({
       className="relative flex flex-col items-center w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl cursor-pointer outline-none group"
       whileHover="hover"
       whileFocus="hover"
+      whileTap={{ scale: 0.95 }}
       tabIndex={0}
-      onClick={() => router.push(`/alchemy/${slug}`)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") router.push(`/alchemy/${slug}`);
-      }}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       aria-label={title}
       style={{ minHeight: 320 }}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      animate={{
+        opacity: isClicked ? 0.5 : 1,
+        scale: isClicked ? 0.95 : 1,
+      }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
     >
       {/* Epic animated glow background */}
       {palette && palette.length > 0 && (

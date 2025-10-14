@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import SessionWrapper from "../context/SessionWrapper";
 import MenuShell from "./components/MenuShell";
+import ConditionalFooter from "./components/ConditionalFooter";
 
 const houseMinimalist = localFont({
   src: "./fonts/House Minimalist.otf",
@@ -36,6 +37,7 @@ export default function RootLayout({ children }) {
       >
         <MenuShell />
         <SessionWrapper>{children}</SessionWrapper>
+        <ConditionalFooter />
       </body>
     </html>
   );

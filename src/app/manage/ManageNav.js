@@ -9,7 +9,7 @@ export default function ManageNav({ sections }) {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 bg-white border-b border-zinc-200 shadow-sm z-40"
+      className="fixed top-0 left-0 right-0 bg-white border-b border-zinc-200 shadow-sm z-[60]"
       style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,7 +18,7 @@ export default function ManageNav({ sections }) {
             <Settings className="w-5 h-5 text-zinc-600" />
             <h1 className="text-lg font-bold text-zinc-900">Manage</h1>
           </div>
-          
+
           <div className="flex items-center gap-1 overflow-x-auto">
             {/* Content Tab */}
             <Link
@@ -32,7 +32,7 @@ export default function ManageNav({ sections }) {
               <FileText className="w-4 h-4 inline mr-1" />
               Content
             </Link>
-            
+
             {/* Section Tabs */}
             {sections.map((section) => (
               <Link
@@ -53,5 +53,3 @@ export default function ManageNav({ sections }) {
     </nav>
   );
 }
-
-

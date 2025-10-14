@@ -35,12 +35,13 @@ export default function Menu({ menuOpen, onMenuToggle }) {
               <ul className="list-none p-0 m-0 w-full flex flex-col items-center gap-[clamp(2px,0.5vw,8px)]">
                 {[
                   { label: "Alchemical Art Pieces", href: "/alchemy" },
-                  { label: "Altar Artwork", href: "#" },
-                  { label: "Murals", href: "#" },
-                  { label: "Exhibitions", href: "#" },
-                  { label: "Oracles & Projects", href: "#" },
-                  { label: "What I Offer", href: "#" },
-                  { label: "Contact Me", href: "#" },
+                  { label: "Altar Artwork", href: "/altar" },
+                  { label: "Murals", href: "/murals" },
+                  { label: "Exhibitions", href: "/exhibitions" },
+                  { label: "Oracles & Projects", href: "/oracles-projects" },
+                  { label: "What I Offer", href: "/what-i-offer" },
+                  { label: "About", href: "/about" },
+                  { label: "Contact Me", href: "/contact" },
                 ].map((item, index) => (
                   <motion.li
                     key={item.label}
