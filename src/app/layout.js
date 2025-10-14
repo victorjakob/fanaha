@@ -1,14 +1,26 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Playfair_Display, Nunito } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import SessionWrapper from "../context/SessionWrapper";
+import MenuShell from "./components/MenuShell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const houseMinimalist = localFont({
+  src: "./fonts/House Minimalist.otf",
+  variable: "--font-house-minimalist",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "700"],
 });
 
 export const metadata = {
@@ -20,9 +32,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${nunito.variable} ${playfair.variable} ${houseMinimalist.variable} antialiased`}
       >
-        {children}
+        <MenuShell />
+        <SessionWrapper>{children}</SessionWrapper>
       </body>
     </html>
   );

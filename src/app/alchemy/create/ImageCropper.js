@@ -1,0 +1,95 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import Cropper from "react-easy-crop";
+import { Slider } from "./Slider";
+
+export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+  const onCropChange = (crop) => {
+    setCrop(crop);
+  };
+
+  const onZoomChange = (zoom) => {
+    setZoom(zoom);
+  };
+
+  const onCropCompleteCallback = useCallback(
+    (croppedArea, croppedAreaPixels) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleComplete = () => {
+    onCropComplete(croppedAreaPixels);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
+      {/* Header */}
+      <div className="p-4 bg-black/50 flex justify-between items-center">
+        <h3 className="text-white text-lg font-semibold">
+          Adjust Image Position
+        </h3>
+        <button
+          onClick={onCancel}
+          className="text-white hover:text-red-400 text-2xl px-2"
+          type="button"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Cropper Area */}
+      <div className="flex-1 relative">
+        <Cropper
+          image={imageSrc}
+          crop={crop}
+          zoom={zoom}
+          aspect={1}
+          cropShape="round"
+          showGrid={false}
+          onCropChange={onCropChange}
+          onCropComplete={onCropCompleteCallback}
+          onZoomChange={onZoomChange}
+        />
+      </div>
+
+      {/* Controls */}
+      <div className="p-6 bg-black/50 space-y-4">
+        {/* Zoom Slider */}
+        <div className="space-y-2">
+          <label className="text-white text-sm font-medium block">Zoom</label>
+          <Slider value={zoom} min={1} max={5} step={0.01} onChange={setZoom} />
+        </div>
+
+        {/* Instructions */}
+        <p className="text-zinc-400 text-sm text-center">
+          Drag to reposition • Pinch or use slider to zoom
+        </p>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 py-3 px-6 rounded-full bg-zinc-700 hover:bg-zinc-600 text-white font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleComplete}
+            className="flex-1 py-3 px-6 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-medium transition-colors"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
