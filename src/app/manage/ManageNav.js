@@ -1,13 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Settings, FileText, Image, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Settings, FileText, Image, Menu, X, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function ManageNav({ sections }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [loadingItem, setLoadingItem] = useState(null);
+  const [targetPath, setTargetPath] = useState(null);
+
+  // Clear loading state when we reach the target path
+  useEffect(() => {
+    if (loadingItem && targetPath && pathname === targetPath) {
+      const timer = setTimeout(() => {
+        setLoadingItem(null);
+        setTargetPath(null);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, loadingItem, targetPath]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -15,6 +29,23 @@ export default function ManageNav({ sections }) {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleNavigation = async (href, itemLabel) => {
+    if (loadingItem) return; // Prevent multiple clicks
+
+    setLoadingItem(itemLabel);
+    setTargetPath(href);
+    setIsMobileMenuOpen(false); // Close mobile menu on navigation
+
+    try {
+      await router.push(href);
+      // Loading state will be cleared by useEffect when pathname matches targetPath
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setLoadingItem(null); // Clear on error
+      setTargetPath(null);
+    }
   };
 
   const navItems = [
@@ -43,7 +74,7 @@ export default function ManageNav({ sections }) {
 
   const getItemClasses = (item) => {
     const baseClasses =
-      "px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2";
+      "px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 relative overflow-hidden";
     const colorClasses = {
       blue: item.isActive
         ? "bg-blue-600 text-white"
@@ -55,7 +86,9 @@ export default function ManageNav({ sections }) {
         ? "bg-green-600 text-white"
         : "text-zinc-600 hover:bg-zinc-100",
     };
-    return `${baseClasses} ${colorClasses[item.color]}`;
+    const loadingClasses =
+      loadingItem === item.label ? "opacity-70 cursor-wait" : "";
+    return `${baseClasses} ${colorClasses[item.color]} ${loadingClasses}`;
   };
 
   return (
@@ -74,14 +107,27 @@ export default function ManageNav({ sections }) {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1 overflow-x-auto">
               {navItems.map((item) => (
-                <Link
+                <button
                   key={item.href}
-                  href={item.href}
+                  onClick={() => handleNavigation(item.href, item.label)}
                   className={getItemClasses(item)}
+                  disabled={loadingItem === item.label}
                 >
-                  {item.icon && <item.icon className="w-4 h-4" />}
-                  {item.label}
-                </Link>
+                  {/* Shimmer effect for loading */}
+                  {loadingItem === item.label && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                  )}
+
+                  {/* Content */}
+                  <div className="flex items-center gap-2 relative z-10">
+                    {loadingItem === item.label ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      item.icon && <item.icon className="w-4 h-4" />
+                    )}
+                    {item.label}
+                  </div>
+                </button>
               ))}
             </div>
 
@@ -129,15 +175,27 @@ export default function ManageNav({ sections }) {
 
         <div className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-80px)]">
           {navItems.map((item) => (
-            <Link
+            <button
               key={item.href}
-              href={item.href}
-              onClick={closeMobileMenu}
+              onClick={() => handleNavigation(item.href, item.label)}
               className={getItemClasses(item)}
+              disabled={loadingItem === item.label}
             >
-              {item.icon && <item.icon className="w-4 h-4" />}
-              {item.label}
-            </Link>
+              {/* Shimmer effect for loading */}
+              {loadingItem === item.label && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+              )}
+
+              {/* Content */}
+              <div className="flex items-center gap-2 relative z-10">
+                {loadingItem === item.label ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  item.icon && <item.icon className="w-4 h-4" />
+                )}
+                {item.label}
+              </div>
+            </button>
           ))}
         </div>
       </div>
