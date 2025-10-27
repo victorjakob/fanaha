@@ -4,10 +4,10 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { cldUrl } from "@/lib/cloudinary";
 
-const DURATION = 6000; // visible time per slide
-const FADE = 900; // crossfade duration
+const DURATION = 5000; // visible time per slide
+const FADE = 2500; // crossfade duration
 const RESIZE_DEBOUNCE = 150; // resize debounce
-const FAILSAFE_TIMEOUT = 8000; // first paint fallback
+const FAILSAFE_TIMEOUT = 10000; // first paint fallback
 
 export default function BackgroundSlideshow({
   desktopSlides = [],
@@ -24,6 +24,7 @@ export default function BackgroundSlideshow({
   const [currentImageError, setCurrentImageError] = useState(false);
 
   const firstRevealDoneRef = useRef(false); // <-- avoid re-running first-paint on wrap
+  const randomIndexAppliedRef = useRef(false); // Track if we've applied random index
   const advanceTimeoutRef = useRef(null);
   const resizeTimerRef = useRef(null);
   const failsafeTimerRef = useRef(null);
@@ -32,6 +33,15 @@ export default function BackgroundSlideshow({
     () => (isMobile ? mobileSlides : desktopSlides),
     [isMobile, mobileSlides, desktopSlides]
   );
+
+  // Randomize initial index on client-side mount
+  useEffect(() => {
+    if (!randomIndexAppliedRef.current && slides && slides.length > 0) {
+      const randomIdx = Math.floor(Math.random() * slides.length);
+      setCurrentIndex(randomIdx);
+      randomIndexAppliedRef.current = true;
+    }
+  }, [slides]);
 
   // ---------- helpers ----------
   const clearAdvanceTimer = () => {
@@ -63,23 +73,27 @@ export default function BackgroundSlideshow({
 
   const advanceSlide = useCallback(() => {
     if (!slides || slides.length <= 1) return;
-    const nextIndex = (currentIndex + 1) % slides.length;
 
-    // pair fade: prev → out, current → in
-    setPrevIndex(currentIndex);
-    setCurrentIndex(nextIndex);
-    setIsTransitioning(true);
+    setCurrentIndex((prevIndex) => {
+      const nextIndex = (prevIndex + 1) % slides.length;
 
-    setTimeout(
-      () => {
-        setPrevIndex(null);
-        setIsTransitioning(false);
-        scheduleNextAdvance();
-        if (!reducedMotion) preloadIndex(nextIndex + 1);
-      },
-      reducedMotion ? 0 : FADE
-    );
-  }, [slides, currentIndex, scheduleNextAdvance, preloadIndex, reducedMotion]);
+      // pair fade: prev → out, current → in
+      setPrevIndex(prevIndex);
+      setIsTransitioning(true);
+
+      setTimeout(
+        () => {
+          setPrevIndex(null);
+          setIsTransitioning(false);
+          scheduleNextAdvance();
+          if (!reducedMotion) preloadIndex(nextIndex + 1);
+        },
+        reducedMotion ? 0 : FADE
+      );
+
+      return nextIndex;
+    });
+  }, [slides, scheduleNextAdvance, preloadIndex, reducedMotion]);
 
   // ---------- effects ----------
   // Decide mobile/desktop on mount + debounced resize
@@ -91,10 +105,15 @@ export default function BackgroundSlideshow({
           const newSlides = m ? mobileSlides : desktopSlides;
           const len = newSlides?.length || 0;
           if (len > 0) {
-            setCurrentIndex((i) => i % len);
+            const normalizedIndex = currentIndex % len;
+            setCurrentIndex(normalizedIndex);
             setPrevIndex(null);
             setIsTransitioning(false);
-            // do NOT touch firstRevealDoneRef here
+            // Reschedule after breakpoint switch
+            if (firstRevealDoneRef.current) {
+              scheduleNextAdvance();
+              if (!reducedMotion) preloadIndex(normalizedIndex + 1);
+            }
           }
         }
         return m;
@@ -148,7 +167,7 @@ export default function BackgroundSlideshow({
       setFirstImageLoaded(true);
       firstRevealDoneRef.current = true;
       scheduleNextAdvance();
-      if (!reducedMotion) preloadIndex(1);
+      if (!reducedMotion) preloadIndex(currentIndex + 1);
     }, FAILSAFE_TIMEOUT);
 
     return () => {
@@ -181,9 +200,9 @@ export default function BackgroundSlideshow({
     if (!firstRevealDoneRef.current) {
       firstRevealDoneRef.current = true;
       scheduleNextAdvance();
-      if (!reducedMotion) preloadIndex(1);
+      if (!reducedMotion) preloadIndex(currentIndex + 1);
     }
-  }, [scheduleNextAdvance, preloadIndex, reducedMotion]);
+  }, [scheduleNextAdvance, preloadIndex, reducedMotion, currentIndex]);
 
   const onCurrentError = useCallback(() => {
     const id = slides?.[currentIndex]?.public_id;
@@ -247,6 +266,7 @@ export default function BackgroundSlideshow({
       {/* Current layer (always rendered) */}
       {current && !currentImageError && (
         <Layer
+          key={currentIndex} // Key to force remount on index change
           publicId={current.public_id}
           alt={current.alt || ""}
           isMobile={isMobile}
@@ -272,7 +292,23 @@ function Layer({
   onLoad,
   onError,
 }) {
-  const initialOpacity = fadeInMs > 0 ? 0 : 1;
+  const [opacity, setOpacity] = useState(() => (fadeInMs > 0 ? 0 : 1));
+
+  useEffect(() => {
+    // Reset and animate based on fade props
+    if (fadeInMs > 0) {
+      setOpacity(0);
+      const timer = setTimeout(() => setOpacity(1), 10);
+      return () => clearTimeout(timer);
+    }
+    if (fadeOutMs > 0) {
+      setOpacity(0);
+    }
+    // When there's no fade, set to 1 immediately
+    if (fadeInMs === 0 && fadeOutMs === 0) {
+      setOpacity(1);
+    }
+  }, [fadeInMs, fadeOutMs]);
 
   return (
     <div
@@ -280,23 +316,15 @@ function Layer({
         position: "absolute",
         inset: 0,
         zIndex,
-        opacity: initialOpacity,
+        opacity,
         willChange: fadeInMs || fadeOutMs ? "opacity" : "auto",
         transition:
           fadeInMs || fadeOutMs
             ? `opacity ${Math.max(
                 fadeInMs,
                 fadeOutMs
-              )}ms cubic-bezier(0.4,0,0.2,1)`
+              )}ms cubic-bezier(0.25, 0.1, 0.25, 1)`
             : undefined,
-      }}
-      ref={(el) => {
-        if (!el) return;
-        requestAnimationFrame(() => {
-          if (!el) return;
-          if (fadeInMs > 0) el.style.opacity = "1";
-          if (fadeOutMs > 0) el.style.opacity = "0";
-        });
       }}
     >
       <Image

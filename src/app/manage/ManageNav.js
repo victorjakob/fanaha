@@ -61,8 +61,8 @@ export default function ManageNav({ sections }) {
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 bg-white border-b border-zinc-200 shadow-sm z-[60]"
-        style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
+        className="fixed top-0 left-0 right-0 bg-transparent z-[60]"
+        style={{ fontFamily: "Nunito, sans-serif", fontWeight: 100 }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -114,6 +114,7 @@ export default function ManageNav({ sections }) {
         className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-[80] transform transition-transform duration-300 ease-in-out md:hidden ${
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{ fontFamily: "Nunito, sans-serif", fontWeight: 100 }}
       >
         <div className="flex items-center justify-between p-4 border-b border-zinc-200">
           <h2 className="text-lg font-bold text-zinc-900">Navigation</h2>
@@ -126,7 +127,7 @@ export default function ManageNav({ sections }) {
           </button>
         </div>
 
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-80px)]">
           {navItems.map((item) => (
             <Link
               key={item.href}

@@ -17,8 +17,8 @@ export default function Menu({ menuOpen, onMenuToggle }) {
           aria-modal="true"
           role="dialog"
         >
-          {/* Centered content wrapper */}
-          <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+          {/* Centered content wrapper - Grid layout for equal distribution */}
+          <div className="flex h-svh flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -32,7 +32,10 @@ export default function Menu({ menuOpen, onMenuToggle }) {
               className="bg-none rounded-3xl px-[clamp(20px,8vw,64px)] py-[clamp(10px,4vw,32px)] w-[clamp(220px,80vw,420px)] max-w-[96vw] text-white text-center flex flex-col items-center justify-center box-border"
               onClick={(e) => e.stopPropagation()}
             >
-              <ul className="list-none p-0 m-0 w-full flex flex-col items-center gap-[clamp(2px,0.5vw,8px)]">
+              <ul
+                className="list-none p-0 m-0 w-full grid grid-rows-8"
+                style={{ height: "100%" }}
+              >
                 {[
                   { label: "Alchemical Art Pieces", href: "/alchemy" },
                   { label: "Altar Artwork", href: "/altar" },
@@ -45,7 +48,7 @@ export default function Menu({ menuOpen, onMenuToggle }) {
                 ].map((item, index) => (
                   <motion.li
                     key={item.label}
-                    className="m-0 w-full flex justify-center"
+                    className="m-0 w-full flex justify-center items-center"
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
