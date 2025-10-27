@@ -265,6 +265,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                           fill
                           className="object-cover"
                           sizes="128px"
+                          unoptimized={true}
                         />
                       </div>
                     )}
@@ -377,6 +378,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                       fill
                       className="object-cover"
                       sizes="192px"
+                      unoptimized={true}
                     />
                     <button
                       onClick={() => setImageUrl("")}

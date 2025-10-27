@@ -1,26 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import BackgroundSlideshow from "../BackgroundSlideshow";
+import BackgroundSlideshow from "./BackgroundSlideshow";
 import Menu from "./Menu";
 import Logo from "./Logo";
 import { FaInstagram, FaFacebookF, FaEnvelope } from "react-icons/fa";
+import { trackWebVitals } from "@/lib/webVitals";
 
-const desktopImages = [
-  "https://res.cloudinary.com/dy8q4hf0k/image/upload/v1747320931/_DSF6023_icbayl.jpg",
-  "https://res.cloudinary.com/dy8q4hf0k/image/upload/v1747320930/DSC_7319_nrc7sk.jpg",
-  "https://res.cloudinary.com/dy8q4hf0k/image/upload/v1747320921/DSC_6423_-_Copie_vjlfne.jpg",
-];
-
-const mobileImages = [
-  "https://res.cloudinary.com/dy8q4hf0k/image/upload/v1747320938/_DSF6014_p8wuil.jpg",
-  "https://res.cloudinary.com/dy8q4hf0k/image/upload/v1747320938/_DSF5490_b0pbme.jpg",
-  "https://res.cloudinary.com/dy8q4hf0k/image/upload/v1747320936/_DSF5960_rmhckm.jpg",
-];
-
-export default function HomeClient() {
+export default function HomeClient({ desktopSlides, mobileSlides }) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Track Web Vitals for homepage
+  useEffect(() => {
+    trackWebVitals();
+  }, []);
 
   return (
     <div
@@ -33,9 +27,10 @@ export default function HomeClient() {
       }}
     >
       <BackgroundSlideshow
-        desktopImages={desktopImages}
-        mobileImages={mobileImages}
+        desktopSlides={desktopSlides}
+        mobileSlides={mobileSlides}
       />
+
       {/* Light overlay above images, behind logo */}
       <div
         style={{

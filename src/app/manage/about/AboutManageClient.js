@@ -404,3 +404,4 @@ export default function AboutManageClient({ content: initialContent }) {
     </div>
   );
 }
+

@@ -70,6 +70,7 @@ export default function OfferingsSection({ offerings }) {
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
+                  unoptimized={true}
                 />
               </motion.div>
             )}

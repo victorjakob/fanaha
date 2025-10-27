@@ -2,13 +2,20 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function AltarGallery({ artworks }) {
+  const [imageErrors, setImageErrors] = useState(new Set());
+
   if (!artworks || artworks.length === 0) {
     return (
       <div className="text-zinc-400 text-center py-12">No artworks yet</div>
     );
   }
+
+  const handleImageError = (artworkId) => {
+    setImageErrors(prev => new Set(prev).add(artworkId));
+  };
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 py-8">
@@ -22,13 +29,21 @@ export default function AltarGallery({ artworks }) {
             transition={{ duration: 0.4, delay: index * 0.05 }}
             className="relative aspect-square rounded-full overflow-hidden shadow-lg"
           >
-            <Image
-              src={artwork.image_url}
-              alt={`Altar artwork ${index + 1}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-            />
+            {imageErrors.has(artwork.id) ? (
+              <div className="w-full h-full bg-zinc-200 flex items-center justify-center text-zinc-500 text-sm">
+                Image unavailable
+              </div>
+            ) : (
+              <Image
+                src={artwork.image_url}
+                alt={`Altar artwork ${index + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                onError={() => handleImageError(artwork.id)}
+                unoptimized={true}
+              />
+            )}
           </motion.div>
         ))}
       </div>
