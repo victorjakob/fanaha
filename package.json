@@ -15,7 +15,7 @@
     "color-thief-browser": "^2.0.2",
     "framer-motion": "^12.11.4",
     "lucide-react": "^0.511.0",
-    "next": "15.3.2",
+    "next": "15.3.8",
     "next-auth": "^4.24.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
