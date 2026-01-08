@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
 import { Plus, Trash2, Upload, X, Edit2 } from "lucide-react";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 
 export default function OraclesProjectsManageClient({ initialItems, section }) {
@@ -47,7 +47,8 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
     setDate(item.date);
     setPublisher(item.publisher || "");
     setAbout(item.about || "");
-    setUploadedImages(item.images || []);
+    // Use public_ids if available, otherwise fall back to images (URLs)
+    setUploadedImages(item.images_public_ids || item.images || []);
     setShowModal(true);
   };
 
@@ -57,24 +58,18 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
 
     setUploading(true);
     try {
-      const imageUrls = [];
+      // Upload to Cloudinary in parallel
+      const { uploadMultipleToCloudinary } = await import("@/lib/cloudinary-upload");
+      
+      const publicIds = await uploadMultipleToCloudinary(
+        files,
+        "fanaha/oracles-projects",
+        (progress) => console.log(`Upload progress: ${Math.round(progress * 100)}%`),
+        { alwaysCompress: true }
+      );
 
-      for (const file of files) {
-        const fileName = `oracles-projects/${Date.now()}-${file.name}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("alchemy-images")
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage
-          .from("alchemy-images")
-          .getPublicUrl(fileName);
-
-        imageUrls.push(urlData.publicUrl);
-      }
-
-      setUploadedImages([...uploadedImages, ...imageUrls]);
+      // Store public_ids
+      setUploadedImages([...uploadedImages, ...publicIds]);
     } catch (err) {
       console.error("Upload error:", err);
       setToast({ message: "Failed to upload images", type: "error" });
@@ -141,16 +136,33 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
 
     setUploading(true);
     try {
+      // Generate URLs for backward compatibility
+      const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+      const imageUrls = uploadedImages.map((img) => {
+        // If it's already a URL (Supabase), use it; otherwise generate Cloudinary URL
+        if (img.includes("http") || img.includes("supabase.co")) {
+          return img;
+        }
+        return cldUrlEnhanced({
+          publicId: img,
+          width: 800,
+          height: 800,
+          quality: "auto:good",
+          crop: "fill",
+        });
+      });
+
       if (editingItem) {
         // Update existing item
         const { data, error } = await supabase
-          .from("oracles_projects")
+          .from("fanaha_oracles_projects")
           .update({
             name,
             date,
             publisher,
             about,
-            images: uploadedImages,
+            images_public_ids: uploadedImages, // Store Cloudinary public_ids
+            images: imageUrls, // Store URLs for backward compatibility
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingItem.id)
@@ -164,14 +176,15 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
       } else {
         // Create new item
         const { data, error } = await supabase
-          .from("oracles_projects")
+          .from("fanaha_oracles_projects")
           .insert([
             {
               name,
               date,
               publisher,
               about,
-              images: uploadedImages,
+              images_public_ids: uploadedImages, // Store Cloudinary public_ids
+              images: imageUrls, // Store URLs for backward compatibility
             },
           ])
           .select()
@@ -204,7 +217,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
 
     try {
       const { error } = await supabase
-        .from("oracles_projects")
+        .from("fanaha_oracles_projects")
         .delete()
         .eq("id", item.id);
 
@@ -302,20 +315,26 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
               {/* Images Grid */}
               {item.images && item.images.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {item.images.map((imageUrl, index) => (
-                    <div
-                      key={index}
-                      className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={`${item.name} image ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="200px"
-                      />
-                    </div>
-                  ))}
+                  {item.images.map((imageUrl, index) => {
+                    // Use public_id if available, otherwise use image URL
+                    const imageSource = item.images_public_ids?.[index] || imageUrl;
+                    return (
+                      <div
+                        key={index}
+                        className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
+                      >
+                        <OptimizedImage
+                          publicId={imageSource}
+                          alt={`${item.name} image ${index + 1}`}
+                          width={200}
+                          height={200}
+                          className="object-cover w-full h-full"
+                          sizes="200px"
+                          crop="fill"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -438,12 +457,14 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
                               : ""
                           }`}
                         >
-                          <Image
-                            src={imageUrl}
+                          <OptimizedImage
+                            publicId={imageUrl}
                             alt={`Upload ${index + 1}`}
-                            fill
-                            className="object-cover rounded-lg pointer-events-none"
+                            width={150}
+                            height={150}
+                            className="object-cover rounded-lg pointer-events-none w-full h-full"
                             sizes="150px"
+                            crop="fill"
                           />
                           {/* Image number badge */}
                           <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded pointer-events-none">

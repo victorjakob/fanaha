@@ -6,14 +6,14 @@ export default async function MuralsManagePage() {
 
   // Get the section
   const { data: section } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("*")
     .eq("slug", "murals")
     .single();
 
   // Fetch murals
   const { data: murals, error } = await supabase
-    .from("murals")
+    .from("fanaha_murals")
     .select("*")
     .order("year", { ascending: false })
     .order("display_order", { ascending: true });

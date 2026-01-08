@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 export default function AlchemyArtPiece({
@@ -12,6 +13,7 @@ export default function AlchemyArtPiece({
   status,
   dimensions,
   palette,
+  index,
 }) {
   const router = useRouter();
   const [isClicked, setIsClicked] = useState(false);
@@ -161,14 +163,17 @@ export default function AlchemyArtPiece({
               : "drop-shadow(0 0 30px rgba(0,0,0,0.5)) drop-shadow(0 0 60px rgba(0,0,0,0.3)) drop-shadow(0 0 90px rgba(0,0,0,0.2))",
         }}
       >
-        <Image
-          src={mainImage}
+        <OptimizedImage
+          publicId={mainImage}
           alt={title}
-          width={480}
-          height={480}
+          width={800}
+          height={800}
+          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 800px"
           className="object-cover w-full h-full select-none transition-transform duration-300 group-hover:scale-105 rounded-full"
-          draggable={false}
-          priority
+          priority={index !== undefined && index < 3}
+          aspectRatio="1:1"
+          crop="fill"
+          quality="auto:best"
         />
         {/* Black overlay on hover */}
         <motion.div
@@ -201,6 +206,23 @@ export default function AlchemyArtPiece({
             </span>
           )}
         </motion.div>
+        
+        {/* Loading overlay when clicked */}
+        {isClicked && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center rounded-full bg-black/80 z-50 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+              <span className="text-white text-sm font-light tracking-wide">
+                Loading...
+              </span>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Mobile Info Display - shown below image on small screens */}

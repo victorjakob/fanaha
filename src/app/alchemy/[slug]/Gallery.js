@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useTransform,
 } from "framer-motion";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 export default function AlchemyArtPieceGallery({ images, name }) {
   // Hooks must be called before any early returns
@@ -93,13 +93,16 @@ export default function AlchemyArtPieceGallery({ images, name }) {
             tabIndex={0}
             aria-label={`View image ${i + 1}`}
           >
-            <Image
-              src={img}
+            <OptimizedImage
+              publicId={img}
               alt={`${name} detail ${i + 1}`}
-              width={160}
-              height={160}
+              width={280}
+              height={280}
+              sizes="(max-width: 640px) 38vw, 280px"
               className="object-cover rounded-xl"
               style={{ width: "100%", height: "100%" }}
+              crop="fill"
+              quality="auto:best"
             />
           </motion.button>
         ))}
@@ -164,11 +167,12 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                   }}
                   className="absolute flex items-center justify-center w-full h-full"
                 >
-                  <Image
-                    src={galleryImages[lightboxIdx]}
+                  <OptimizedImage
+                    publicId={galleryImages[lightboxIdx]}
                     alt={`${name} detail ${lightboxIdx + 1}`}
-                    width={800}
-                    height={800}
+                    width={1600}
+                    height={1600}
+                    sizes="90vw"
                     className="rounded-xl shadow-2xl"
                     style={{
                       maxWidth: "90vw",
@@ -176,6 +180,8 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                       objectFit: "contain",
                       backgroundColor: "transparent",
                     }}
+                    quality="auto:best"
+                    crop="fill"
                   />
                 </motion.div>
               </AnimatePresence>

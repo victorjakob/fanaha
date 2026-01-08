@@ -1,7 +1,6 @@
 import { Playfair_Display, Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import SessionWrapper from "../context/SessionWrapper";
 import MenuShell from "./components/MenuShell";
 import ConditionalFooter from "./components/ConditionalFooter";
 
@@ -40,7 +39,7 @@ export default function RootLayout({ children }) {
         className={`${nunito.variable} ${playfair.variable} ${houseMinimalist.variable} antialiased`}
       >
         <MenuShell />
-        <SessionWrapper>{children}</SessionWrapper>
+        {children}
         <ConditionalFooter />
       </body>
     </html>

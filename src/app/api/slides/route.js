@@ -5,7 +5,7 @@ export async function GET() {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from("homepage_slides")
+    .from("fanaha_homepage_slides")
     .select("*")
     .order("sort", { ascending: true });
 
@@ -24,7 +24,7 @@ export async function POST(req) {
   const body = await req.json();
 
   const { data, error } = await supabase
-    .from("homepage_slides")
+    .from("fanaha_homepage_slides")
     .insert(body)
     .select("*")
     .single();

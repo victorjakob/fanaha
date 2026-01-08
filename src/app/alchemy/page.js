@@ -8,14 +8,14 @@ export default async function AlchemyPage() {
 
   // Fetch section content
   const { data: sectionContent } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("title, description")
     .eq("slug", "alchemical-art-pieces")
     .single();
 
   // Fetch art pieces
   const { data: artPieces, error } = await supabase
-    .from("alchemy_pieces")
+    .from("fanaha_alchemy_pieces")
     .select(
       "id, slug, name, images, created_at, dimensions, palette, price, status"
     )

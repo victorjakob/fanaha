@@ -6,6 +6,8 @@ import { supabase } from "../../../util/supabase/supabaseClient";
 import ColorThief from "color-thief-browser";
 import ImageCropper from "./ImageCropper";
 import { getCroppedImg } from "./cropImage";
+import { uploadToCloudinary, uploadMultipleToCloudinary } from "@/lib/cloudinary-upload";
+import { cldUrlEnhanced } from "@/lib/cloudinary";
 
 function slugify(str) {
   return str
@@ -17,6 +19,35 @@ function slugify(str) {
     .replace(/þ/g, "th") // Icelandic thorn
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+// Generate a unique slug by checking for duplicates and appending random string if needed
+async function generateUniqueSlug(baseSlug, supabase) {
+  let slug = baseSlug;
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  while (attempts < maxAttempts) {
+    // Check if slug exists
+    const { data: existing } = await supabase
+      .from("fanaha_alchemy_pieces")
+      .select("id")
+      .eq("slug", slug)
+      .single();
+
+    // If slug doesn't exist, it's unique!
+    if (!existing) {
+      return slug;
+    }
+
+    // Slug exists, append random string
+    const randomStr = Math.random().toString(36).substring(2, 8); // 6 char random string
+    slug = `${baseSlug}-${randomStr}`;
+    attempts++;
+  }
+
+  // Fallback: use timestamp if we've tried too many times
+  return `${baseSlug}-${Date.now().toString(36)}`;
 }
 
 function sanitizeFilename(filename) {
@@ -127,6 +158,7 @@ export default function CreateAlchemyArtPieceForm() {
     setGalleryPreviews((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  // Legacy Supabase upload (kept for backward compatibility if needed)
   async function uploadImage(file, path) {
     const { data, error } = await supabase.storage
       .from("alchemy-images")
@@ -174,28 +206,76 @@ export default function CreateAlchemyArtPieceForm() {
     setLoading(true);
     try {
       if (!form.mainImage) throw new Error("Main image is required");
+      
+      // Ensure slug is unique
+      const uniqueSlug = await generateUniqueSlug(form.slug, supabase);
+      if (uniqueSlug !== form.slug) {
+        // Update form with unique slug
+        setForm((f) => ({ ...f, slug: uniqueSlug }));
+        console.log(`Slug updated to: ${uniqueSlug} (original was taken)`);
+      }
+      
       // Extract palette from main image
       const paletteArr = await extractPalette(form.mainImage);
       setPalette(paletteArr);
-      // Upload main image
-      const mainImagePath = `main/${form.slug}-${sanitizeFilename(
-        form.mainImage.name
-      )}`;
-      const mainImageUrl = await uploadImage(form.mainImage, mainImagePath);
-      // Upload additional images
-      let imageUrls = [];
-      for (let i = 0; i < form.images.length; i++) {
-        const img = form.images[i];
-        const imgPath = `gallery/${form.slug}-${i + 1}-${sanitizeFilename(
-          img.name
-        )}`;
-        const url = await uploadImage(img, imgPath);
-        imageUrls.push(url);
-      }
-      // Insert into DB
-      const { error: dbError } = await supabase.from("alchemy_pieces").insert([
+      
+      // Use the unique slug for uploads
+      const finalSlug = uniqueSlug;
+      
+      // Upload main image to Cloudinary
+      const mainImagePublicId = await uploadToCloudinary(
+        form.mainImage,
+        `fanaha/alchemy/${finalSlug}`,
+        { alwaysCompress: true }
+      );
+      
+      // Upload gallery images in parallel (much faster!)
+      const galleryPublicIds = form.images.length > 0
+        ? await uploadMultipleToCloudinary(
+            form.images,
+            `fanaha/alchemy/${finalSlug}/gallery`,
+            (progress) => {
+              // Optional: Update progress indicator
+              console.log(`Upload progress: ${Math.round(progress * 100)}%`);
+            },
+            { alwaysCompress: true }
+          )
+        : [];
+      
+      // Combine main image with gallery images
+      const allPublicIds = [mainImagePublicId, ...galleryPublicIds];
+      
+      // Generate full URLs for backward compatibility (existing code expects URLs)
+      const mainImageUrl = cldUrlEnhanced({
+        publicId: mainImagePublicId,
+        width: 800,
+        height: 800,
+        quality: "auto:good",
+        crop: "fill",
+        aspectRatio: "1:1",
+      });
+      
+      const imageUrls = allPublicIds.map((publicId) =>
+        cldUrlEnhanced({
+          publicId,
+          width: 800,
+          height: 800,
+          quality: "auto:good",
+          crop: "fill",
+        })
+      );
+      
+      // Get section_id for alchemical-art-pieces section
+      const { data: section } = await supabase
+        .from("fanaha_sections")
+        .select("id")
+        .eq("slug", "alchemical-art-pieces")
+        .single();
+
+      // Insert into DB with both public_ids (new) and URLs (backward compatibility)
+      const { error: dbError } = await supabase.from("fanaha_alchemy_pieces").insert([
         {
-          slug: form.slug,
+          slug: finalSlug,
           name: form.title,
           description: form.description,
           dimensions: form.dimension,
@@ -203,16 +283,23 @@ export default function CreateAlchemyArtPieceForm() {
           year: form.year ? parseInt(form.year) : null,
           status: form.status,
           video_url: form.videoUrl || null,
+          section_id: section?.id || null, // Link to section for manage page
+          // New: Store Cloudinary public_ids
+          main_image_public_id: mainImagePublicId,
+          images_public_ids: allPublicIds,
+          // Backward compatibility: Also store full URLs (existing code uses these)
           main_image: mainImageUrl,
-          images: [mainImageUrl, ...imageUrls],
+          images: imageUrls,
           palette: paletteArr,
         },
       ]);
+      
       if (dbError) throw dbError;
       setSuccess(true);
       setLoading(false);
-      router.push(`/alchemy/${form.slug}`);
+      router.push(`/manage/alchemical-art-pieces`);
     } catch (err) {
+      console.error("Upload error:", err);
       setError(err.message || "An error occurred");
       setLoading(false);
     }

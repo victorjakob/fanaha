@@ -6,7 +6,7 @@ export default async function AlchemyArtPieceDetail({ params }) {
   const { slug } = await params;
   // Fetch by slug
   const { data: piece, error } = await supabase
-    .from("alchemy_pieces")
+    .from("fanaha_alchemy_pieces")
     .select("*")
     .eq("slug", slug)
     .single();

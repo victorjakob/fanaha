@@ -6,14 +6,14 @@ export default async function AltarManagePage() {
 
   // Get the section
   const { data: section } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("*")
     .eq("slug", "altar-artwork")
     .single();
 
   // Fetch altar artworks
   const { data: artworks, error } = await supabase
-    .from("altar_artworks")
+    .from("fanaha_altar_artworks")
     .select("*")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });

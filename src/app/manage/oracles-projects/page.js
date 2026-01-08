@@ -6,14 +6,14 @@ export default async function OraclesProjectsManagePage() {
 
   // Get the section
   const { data: section } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("*")
     .eq("slug", "oracles-projects")
     .single();
 
   // Fetch items
   const { data: items, error } = await supabase
-    .from("oracles_projects")
+    .from("fanaha_oracles_projects")
     .select("*")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });

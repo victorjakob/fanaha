@@ -6,7 +6,7 @@ export default async function AboutManagePage() {
 
   // Fetch the about content (there should only be one row)
   const { data: content, error } = await supabase
-    .from("about_content")
+    .from("fanaha_about_content")
     .select("*")
     .single();
 

@@ -12,7 +12,7 @@ export default function ConditionalFooter() {
   useEffect(() => {
     async function fetchFooterContent() {
       const { data } = await supabase
-        .from("sections")
+        .from("fanaha_sections")
         .select("title, description")
         .eq("slug", "footer-cta")
         .eq("is_active", true)

@@ -15,7 +15,7 @@ export default function DeleteConfirmModal({ piece, onClose, onSuccess }) {
 
     try {
       const { error: deleteError } = await supabase
-        .from("alchemy_pieces")
+        .from("fanaha_alchemy_pieces")
         .delete()
         .eq("id", piece.id);
 

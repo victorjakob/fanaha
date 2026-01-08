@@ -33,7 +33,7 @@ export default function AboutManageClient({ content: initialContent }) {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from("about_content")
+        .from("fanaha_about_content")
         .update({
           title,
           subtitle,

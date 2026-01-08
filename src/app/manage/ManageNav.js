@@ -63,13 +63,15 @@ export default function ManageNav({ sections }) {
       isActive: pathname === "/manage/homepage-slides",
       color: "purple",
     },
-    ...sections.map((section) => ({
-      href: `/manage/${section.slug}`,
-      label: section.name,
-      icon: null,
-      isActive: pathname === `/manage/${section.slug}`,
-      color: "green",
-    })),
+    ...sections
+      .filter((section) => section.slug !== "footer-cta")
+      .map((section) => ({
+        href: `/manage/${section.slug}`,
+        label: section.name,
+        icon: null,
+        isActive: pathname === `/manage/${section.slug}`,
+        color: "green",
+      })),
   ];
 
   const getItemClasses = (item) => {
@@ -94,7 +96,7 @@ export default function ManageNav({ sections }) {
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 bg-transparent z-[60]"
+        className="fixed top-0 left-0 right-0 bg-transparent md:bg-white md:shadow-sm z-[60]"
         style={{ fontFamily: "Nunito, sans-serif", fontWeight: 100 }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
 import { Plus, Trash2, Upload } from "lucide-react";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 import ImageCropper from "@/app/alchemy/create/ImageCropper";
 import { getCroppedImg } from "@/app/alchemy/create/cropImage";
@@ -47,23 +47,32 @@ export default function AltarManageClient({ initialArtworks, section }) {
         tempFileName
       );
 
-      // Upload to storage
-      const fileName = `altar-${Date.now()}-${croppedFile.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("alchemy-images")
-        .upload(`altar/${fileName}`, croppedFile);
+      // Upload to Cloudinary
+      const { uploadToCloudinary } = await import("@/lib/cloudinary-upload");
+      const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+      
+      const publicId = await uploadToCloudinary(
+        croppedFile,
+        "fanaha/altar",
+        { alwaysCompress: true }
+      );
 
-      if (uploadError) throw uploadError;
+      // Generate optimized URL for backward compatibility
+      const imageUrl = cldUrlEnhanced({
+        publicId,
+        width: 800,
+        height: 800,
+        quality: "auto:good",
+        crop: "fill",
+      });
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("alchemy-images")
-        .getPublicUrl(`altar/${fileName}`);
-
-      // Insert into database
+      // Insert into database with both public_id and URL
       const { data: newArtwork, error: dbError } = await supabase
-        .from("altar_artworks")
-        .insert([{ image_url: urlData.publicUrl }])
+        .from("fanaha_altar_artworks")
+        .insert([{ 
+          image_public_id: publicId,
+          image_url: imageUrl // backward compatibility
+        }])
         .select()
         .single();
 
@@ -114,7 +123,7 @@ export default function AltarManageClient({ initialArtworks, section }) {
 
     try {
       const { error } = await supabase
-        .from("altar_artworks")
+        .from("fanaha_altar_artworks")
         .delete()
         .eq("id", artworkToDelete.id);
 
@@ -199,13 +208,16 @@ export default function AltarManageClient({ initialArtworks, section }) {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {artworks.map((artwork) => (
               <div key={artwork.id} className="relative">
-                <div className="aspect-square rounded-full overflow-hidden shadow-lg">
-                  <Image
-                    src={artwork.image_url}
+                <div className="aspect-square rounded-full overflow-hidden">
+                  <OptimizedImage
+                    publicId={artwork.image_public_id || artwork.image_url}
                     alt="Altar artwork"
-                    fill
-                    className="object-cover"
+                    width={300}
+                    height={300}
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                    className="object-cover w-full h-full"
+                    aspectRatio="1:1"
+                    crop="fill"
                   />
                 </div>
                 {/* Delete button - always visible */}

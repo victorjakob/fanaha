@@ -7,14 +7,14 @@ export default async function MuralsPage() {
 
   // Fetch section content
   const { data: sectionContent } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("title, description")
     .eq("slug", "murals")
     .single();
 
   // Fetch murals
   const { data: murals, error } = await supabase
-    .from("murals")
+    .from("fanaha_murals")
     .select("*")
     .order("year", { ascending: false })
     .order("display_order", { ascending: true });

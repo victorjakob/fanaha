@@ -14,7 +14,7 @@ export default function ManagePage() {
   useEffect(() => {
     async function fetchSections() {
       const { data } = await supabase
-        .from("sections")
+        .from("fanaha_sections")
         .select("*")
         .order("display_order", { ascending: true });
       setSections(data || []);
@@ -36,10 +36,12 @@ export default function ManagePage() {
   ];
 
   const sectionItems =
-    sections?.map((section) => ({
-      href: `/manage/${section.slug}`,
-      label: section.name,
-    })) || [];
+    sections
+      ?.filter((section) => section.slug !== "footer-cta")
+      .map((section) => ({
+        href: `/manage/${section.slug}`,
+        label: section.name,
+      })) || [];
 
   const handleClick = (href, e) => {
     e.preventDefault();

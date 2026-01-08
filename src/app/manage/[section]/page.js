@@ -6,9 +6,14 @@ export default async function SectionManagePage({ params }) {
   const { section: sectionSlug } = await params;
   const supabase = createServerSupabase();
   
+  // Block access to footer-cta
+  if (sectionSlug === "footer-cta") {
+    return notFound();
+  }
+  
   // Get the section
   const { data: section } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("*")
     .eq("slug", sectionSlug)
     .single();
@@ -19,7 +24,7 @@ export default async function SectionManagePage({ params }) {
 
   // Fetch art pieces for this section
   const { data: artPieces, error } = await supabase
-    .from("alchemy_pieces")
+    .from("fanaha_alchemy_pieces")
     .select("*")
     .eq("section_id", section.id)
     .order("created_at", { ascending: false });

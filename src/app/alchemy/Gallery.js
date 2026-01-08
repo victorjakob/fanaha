@@ -56,6 +56,7 @@ export default function AlchemyGallery({ artPieces }) {
                   dimensions={piece.dimensions}
                   palette={piece.palette}
                   price={piece.price}
+                  index={idx}
                 />
               </div>
             ))}
@@ -98,6 +99,7 @@ export default function AlchemyGallery({ artPieces }) {
                   dimensions={piece.dimensions}
                   palette={piece.palette}
                   price={piece.price}
+                  index={undefined}
                 />
               </div>
             ))}
@@ -140,6 +142,7 @@ export default function AlchemyGallery({ artPieces }) {
                   dimensions={piece.dimensions}
                   palette={piece.palette}
                   price={piece.price}
+                  index={undefined}
                 />
               </div>
             ))}

@@ -11,7 +11,7 @@ export default async function AboutPage() {
 
   // Fetch the about content
   const { data: content } = await supabase
-    .from("about_content")
+    .from("fanaha_about_content")
     .select("*")
     .single();
 

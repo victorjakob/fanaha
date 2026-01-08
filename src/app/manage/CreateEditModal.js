@@ -82,7 +82,7 @@ export default function CreateEditModal({ piece, onClose, onSuccess }) {
       if (isEditing) {
         // Update existing piece
         const { error: updateError } = await supabase
-          .from("alchemy_pieces")
+          .from("fanaha_alchemy_pieces")
           .update(dataToSave)
           .eq("id", piece.id);
 
@@ -90,7 +90,7 @@ export default function CreateEditModal({ piece, onClose, onSuccess }) {
       } else {
         // Create new piece
         const { error: insertError } = await supabase
-          .from("alchemy_pieces")
+          .from("fanaha_alchemy_pieces")
           .insert([dataToSave]);
 
         if (insertError) throw insertError;

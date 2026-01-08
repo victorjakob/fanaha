@@ -6,6 +6,8 @@ import { supabase } from "../../../../util/supabase/supabaseClient";
 import ImageCropper from "../../create/ImageCropper";
 import { getCroppedImg } from "../../create/cropImage";
 import ColorThief from "color-thief-browser";
+import { uploadToCloudinary, uploadMultipleToCloudinary } from "@/lib/cloudinary-upload";
+import { cldUrlEnhanced, isCloudinaryId } from "@/lib/cloudinary";
 
 export default function EditForm({ piece }) {
   const [form, setForm] = useState({
@@ -20,14 +22,40 @@ export default function EditForm({ piece }) {
     status: piece.status || "available",
     videoUrl: piece.video_url || "",
     mainImage: null,
-    images: piece.images ? piece.images.slice(1) : [], // exclude main image
+    // Use public_ids if available, otherwise fall back to images URLs
+    images: piece.images_public_ids 
+      ? piece.images_public_ids.slice(1) 
+      : (piece.images ? piece.images.slice(1) : []), // exclude main image
   });
   const [mainImagePreview, setMainImagePreview] = useState(
-    piece.main_image || (piece.images && piece.images[0]) || null
+    // Use public_id to generate URL if available, otherwise use existing URL
+    piece.main_image_public_id 
+      ? cldUrlEnhanced({
+          publicId: piece.main_image_public_id,
+          width: 400,
+          height: 400,
+          quality: "auto:good",
+          crop: "fill",
+          aspectRatio: "1:1",
+        })
+      : (piece.main_image || (piece.images && piece.images[0]) || null)
   );
-  const [galleryPreviews, setGalleryPreviews] = useState(
-    piece.images ? piece.images.slice(1) : []
-  );
+  const [galleryPreviews, setGalleryPreviews] = useState(() => {
+    // Generate preview URLs from public_ids if available
+    if (piece.images_public_ids && piece.images_public_ids.length > 1) {
+      return piece.images_public_ids.slice(1).map((publicId) =>
+        cldUrlEnhanced({
+          publicId,
+          width: 200,
+          height: 200,
+          quality: "auto:good",
+          crop: "fill",
+        })
+      );
+    }
+    // Fall back to existing images URLs
+    return piece.images ? piece.images.slice(1) : [];
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -146,44 +174,101 @@ export default function EditForm({ piece }) {
     setSuccess(false);
     setLoading(true);
     try {
+      // Start with existing values
+      let mainImagePublicId = piece.main_image_public_id || null;
       let mainImageUrl = piece.main_image;
+      let imagesPublicIds = piece.images_public_ids || [];
+      let imageUrls = piece.images || [];
       let paletteArr = palette;
 
-      // If main image changed, upload new one and extract palette
+      // If main image changed, upload new one to Cloudinary and extract palette
       if (form.mainImage) {
         paletteArr = await extractPalette(form.mainImage);
         setPalette(paletteArr);
-        const mainImagePath = `main/${form.slug}-${form.mainImage.name}`;
-        mainImageUrl = await uploadImage(form.mainImage, mainImagePath);
+        
+        // Upload to Cloudinary
+        mainImagePublicId = await uploadToCloudinary(
+          form.mainImage,
+          `fanaha/alchemy/${form.slug}`,
+          { alwaysCompress: true }
+        );
+        
+        // Generate optimized URL
+        mainImageUrl = cldUrlEnhanced({
+          publicId: mainImagePublicId,
+          width: 800,
+          height: 800,
+          quality: "auto:good",
+          crop: "fill",
+          aspectRatio: "1:1",
+        });
       }
 
-      // Upload new gallery images (if any are File objects)
-      let imageUrls = [];
-      for (let img of form.images) {
-        if (typeof img === "string") {
-          imageUrls.push(img); // already a URL
-        } else {
-          const imgPath = `gallery/${form.slug}-${Date.now()}-${img.name}`;
-          const url = await uploadImage(img, imgPath);
-          imageUrls.push(url);
-        }
+      // Handle gallery images
+      const newGalleryFiles = form.images.filter((img) => img instanceof File);
+      const existingImageIds = form.images.filter((img) => typeof img === "string");
+      
+      // Upload new gallery images in parallel
+      if (newGalleryFiles.length > 0) {
+        const newPublicIds = await uploadMultipleToCloudinary(
+          newGalleryFiles,
+          `fanaha/alchemy/${form.slug}/gallery`,
+          null,
+          { alwaysCompress: true }
+        );
+        
+        // Combine existing public_ids with new ones
+        imagesPublicIds = [...existingImageIds, ...newPublicIds];
+        
+        // Generate URLs for all images (existing + new)
+        imageUrls = imagesPublicIds.map((publicId) =>
+          cldUrlEnhanced({
+            publicId,
+            width: 800,
+            height: 800,
+            quality: "auto:good",
+            crop: "fill",
+          })
+        );
+      } else {
+        // No new images, but ensure existing ones are converted to URLs if they're public_ids
+        imagesPublicIds = existingImageIds;
+        imageUrls = existingImageIds.map((imgId) => {
+          // If it's already a URL (contains http), use it; otherwise generate URL from public_id
+          if (imgId.includes("http") || imgId.includes("supabase.co")) {
+            return imgId;
+          }
+          return cldUrlEnhanced({
+            publicId: imgId,
+            width: 800,
+            height: 800,
+            quality: "auto:good",
+            crop: "fill",
+          });
+        });
       }
 
-      // Update DB
+      // Update DB with both public_ids (new) and URLs (backward compatibility)
+      const updateData = {
+        name: form.title,
+        description: form.description,
+        dimensions: form.dimension,
+        price: form.price ? parseFloat(form.price) : null,
+        year: form.year ? parseInt(form.year) : null,
+        status: form.status,
+        video_url: form.videoUrl || null,
+        // New: Store Cloudinary public_ids
+        main_image_public_id: mainImagePublicId,
+        images_public_ids: imagesPublicIds.length > 0 ? imagesPublicIds : null,
+        // Backward compatibility: Also store full URLs
+        main_image: mainImageUrl,
+        images: [mainImageUrl, ...imageUrls],
+        palette: paletteArr,
+      };
+
       const { error: dbError } = await supabase
-        .from("alchemy_pieces")
-        .update({
-          name: form.title,
-          description: form.description,
-          dimensions: form.dimension,
-          price: form.price ? parseFloat(form.price) : null,
-          year: form.year ? parseInt(form.year) : null,
-          status: form.status,
-          video_url: form.videoUrl || null,
-          main_image: mainImageUrl,
-          images: [mainImageUrl, ...imageUrls],
-          palette: paletteArr,
-        })
+        .from("fanaha_alchemy_pieces")
+        .update(updateData)
         .eq("slug", piece.slug);
       if (dbError) throw dbError;
       setSuccess(true);

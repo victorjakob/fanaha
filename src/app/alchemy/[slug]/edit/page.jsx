@@ -6,7 +6,7 @@ export default async function EditAlchemyArtPiecePage({ params }) {
   const { slug } = await params;
   const supabase = createServerSupabase();
   const { data: piece, error } = await supabase
-    .from("alchemy_pieces")
+    .from("fanaha_alchemy_pieces")
     .select("*")
     .eq("slug", slug)
     .single();

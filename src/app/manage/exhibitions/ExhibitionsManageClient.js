@@ -49,7 +49,8 @@ export default function ExhibitionsManageClient({
     setCity(exhibition.city);
     setCountry(exhibition.country);
     setAbout(exhibition.about || "");
-    setUploadedImages(exhibition.images || []);
+    // Use public_ids if available, otherwise fall back to images (URLs)
+    setUploadedImages(exhibition.images_public_ids || exhibition.images || []);
     setShowModal(true);
   };
 
@@ -59,24 +60,18 @@ export default function ExhibitionsManageClient({
 
     setUploading(true);
     try {
-      const imageUrls = [];
+      // Upload to Cloudinary in parallel
+      const { uploadMultipleToCloudinary } = await import("@/lib/cloudinary-upload");
+      
+      const publicIds = await uploadMultipleToCloudinary(
+        files,
+        "fanaha/exhibitions",
+        (progress) => console.log(`Upload progress: ${Math.round(progress * 100)}%`),
+        { alwaysCompress: true }
+      );
 
-      for (const file of files) {
-        const fileName = `exhibitions/${Date.now()}-${file.name}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("alchemy-images")
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage
-          .from("alchemy-images")
-          .getPublicUrl(fileName);
-
-        imageUrls.push(urlData.publicUrl);
-      }
-
-      setUploadedImages([...uploadedImages, ...imageUrls]);
+      // Store public_ids
+      setUploadedImages([...uploadedImages, ...publicIds]);
     } catch (err) {
       console.error("Upload error:", err);
       setToast({ message: "Failed to upload images", type: "error" });
@@ -165,16 +160,33 @@ export default function ExhibitionsManageClient({
     setUploading(true);
     try {
       if (editingExhibition) {
+        // Generate URLs for backward compatibility
+        const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+        const imageUrls = uploadedImages.map((img) => {
+          // If it's already a URL (Supabase), use it; otherwise generate Cloudinary URL
+          if (img.includes("http") || img.includes("supabase.co")) {
+            return img;
+          }
+          return cldUrlEnhanced({
+            publicId: img,
+            width: 800,
+            height: 800,
+            quality: "auto:good",
+            crop: "fill",
+          });
+        });
+
         // Update existing exhibition
         const { data, error } = await supabase
-          .from("exhibitions")
+          .from("fanaha_exhibitions")
           .update({
             gallery,
             year,
             city,
             country,
             about,
-            images: uploadedImages,
+            images_public_ids: uploadedImages, // Store Cloudinary public_ids
+            images: imageUrls, // Store URLs for backward compatibility
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingExhibition.id)
@@ -191,9 +203,25 @@ export default function ExhibitionsManageClient({
           type: "success",
         });
       } else {
+        // Generate URLs for backward compatibility
+        const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+        const imageUrls = uploadedImages.map((img) => {
+          // If it's already a URL (Supabase), use it; otherwise generate Cloudinary URL
+          if (img.includes("http") || img.includes("supabase.co")) {
+            return img;
+          }
+          return cldUrlEnhanced({
+            publicId: img,
+            width: 800,
+            height: 800,
+            quality: "auto:good",
+            crop: "fill",
+          });
+        });
+
         // Create new exhibition
         const { data, error } = await supabase
-          .from("exhibitions")
+          .from("fanaha_exhibitions")
           .insert([
             {
               gallery,
@@ -201,7 +229,8 @@ export default function ExhibitionsManageClient({
               city,
               country,
               about,
-              images: uploadedImages,
+              images_public_ids: uploadedImages, // Store Cloudinary public_ids
+              images: imageUrls, // Store URLs for backward compatibility
             },
           ])
           .select()
@@ -250,7 +279,7 @@ export default function ExhibitionsManageClient({
 
     try {
       const { error } = await supabase
-        .from("exhibitions")
+        .from("fanaha_exhibitions")
         .delete()
         .eq("id", exhibition.id);
 

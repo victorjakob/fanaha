@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import Link from "next/link";
 
 // Map offering titles to their corresponding pages
@@ -48,13 +48,17 @@ export default function OfferingsSection({ offerings }) {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className={`grid grid-cols-1 ${
-              offering.image_url ? "lg:grid-cols-2" : "lg:grid-cols-1"
+              offering.image_public_id || offering.image_url
+                ? "lg:grid-cols-2"
+                : "lg:grid-cols-1"
             } gap-8 lg:gap-12 items-center ${
-              !isEven && offering.image_url ? "lg:grid-flow-dense" : ""
+              !isEven && (offering.image_public_id || offering.image_url)
+                ? "lg:grid-flow-dense"
+                : ""
             }`}
           >
             {/* Image */}
-            {offering.image_url && (
+            {(offering.image_public_id || offering.image_url) && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -64,13 +68,15 @@ export default function OfferingsSection({ offerings }) {
                   !isEven ? "lg:col-start-2" : ""
                 }`}
               >
-                <Image
-                  src={offering.image_url}
+                <OptimizedImage
+                  publicId={offering.image_public_id || offering.image_url}
                   alt={offering.title}
-                  fill
-                  className="object-cover"
+                  width={800}
+                  height={800}
                   sizes="(max-width: 1024px) 100vw, 50vw"
-                  unoptimized={true}
+                  className="object-cover w-full h-full"
+                  aspectRatio="1:1"
+                  crop="fill"
                 />
               </motion.div>
             )}
@@ -82,7 +88,9 @@ export default function OfferingsSection({ offerings }) {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className={`space-y-4 ${
-                offering.image_url ? "" : "text-center max-w-4xl mx-auto"
+                offering.image_public_id || offering.image_url
+                  ? ""
+                  : "text-center max-w-4xl mx-auto"
               }`}
             >
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-wider">
@@ -103,7 +111,13 @@ export default function OfferingsSection({ offerings }) {
               )}
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-4 mt-6">
+              <div
+                className={`flex flex-wrap gap-4 mt-6 ${
+                  offering.image_public_id || offering.image_url
+                    ? ""
+                    : "justify-center"
+                }`}
+              >
                 <Link
                   href={links.seeMore}
                   className="inline-flex items-center gap-2 px-6 py-3 border-2 border-zinc-400 text-zinc-800 rounded-full font-semibold tracking-wide hover:border-zinc-500 hover:text-zinc-900 transition-colors"

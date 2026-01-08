@@ -8,7 +8,7 @@ import { cldThumbnail } from "@/lib/cloudinary";
 export default function SlidesManageClient() {
   const [slides, setSlides] = useState([]);
   const [files, setFiles] = useState([]);
-  const [target, setTarget] = useState("desktop");
+  const [target, setTarget] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all"); // all, desktop, mobile
   const [slideToDelete, setSlideToDelete] = useState(null);
@@ -92,6 +92,10 @@ export default function SlidesManageClient() {
 
   async function uploadAll() {
     if (files.length === 0) return;
+    if (!target) {
+      alert("Please select a target device (Desktop or Mobile) before uploading");
+      return;
+    }
     setLoading(true);
     setUploadProgress({ current: 0, total: files.length, currentFile: "" });
 
@@ -148,25 +152,26 @@ export default function SlidesManageClient() {
           }
         }
 
-        // 1) sign - all images go to fanaha/bg folder
-        const folder = "fanaha/bg";
-        const signRes = await fetch("/api/cloudinary/sign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ folder }),
-        });
-        const sign = await signRes.json();
+        // Upload using unsigned preset (same as rest of app)
+        const uploadPreset =
+          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+          process.env.CLOUDINARY_UPLOAD_PRESET;
+
+        if (!uploadPreset) {
+          throw new Error("Cloudinary upload preset not configured");
+        }
+
+        const cloudName =
+          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
 
         const form = new FormData();
         form.append("file", fileToUpload);
-        form.append("api_key", sign.apiKey);
-        form.append("timestamp", String(sign.timestamp));
-        form.append("folder", sign.folder);
-        form.append("signature", sign.signature);
+        form.append("upload_preset", uploadPreset);
+        form.append("folder", "fanaha/bg");
 
-        // 2) upload directly to Cloudinary
+        // Upload directly to Cloudinary
         const cloudRes = await fetch(
-          `https://api.cloudinary.com/v1_1/${sign.cloudName}/image/upload`,
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           {
             method: "POST",
             body: form,
@@ -213,7 +218,7 @@ export default function SlidesManageClient() {
       }
 
       setFiles([]);
-      setTarget("desktop");
+      setTarget(null);
       await load();
     } catch (error) {
       alert(`Upload failed: ${error.message}`);
@@ -270,80 +275,143 @@ export default function SlidesManageClient() {
       </div>
 
       {/* Upload Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-zinc-200 p-4 sm:p-8">
-        <div className="text-center mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 mb-2">
+      <div className="bg-gradient-to-br from-white to-zinc-50 rounded-2xl shadow-lg border border-zinc-200/50 p-6 sm:p-8 lg:p-10">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-zinc-900 to-zinc-700 mb-4 shadow-lg">
+            <Upload className="w-7 h-7 text-white" />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 mb-2 tracking-tight">
             Upload Images
           </h2>
-          <p className="text-zinc-600 text-xs sm:text-sm">
-            Select multiple images and choose target device
+          <p className="text-zinc-600 text-sm sm:text-base">
+            Select your images and choose the target device
           </p>
         </div>
 
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-6 sm:space-y-8 max-w-2xl mx-auto">
           {/* File Input */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-zinc-800 mb-2 flex items-center gap-2">
-              <Upload className="w-4 h-4" />
-              Image{files.length !== 1 ? "s" : ""}
+            <label className="block text-sm font-semibold text-zinc-900 mb-3">
+              Select Images
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => setFiles(Array.from(e.target.files || []))}
-              className="block w-full text-xs sm:text-sm text-zinc-500 file:mr-2 file:py-2 sm:file:py-3 file:px-4 sm:file:px-6 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
-            />
+            <label className="group relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 hover:border-zinc-400 hover:bg-zinc-50/50 bg-white/50">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4">
+                <Upload className="w-10 h-10 mb-3 text-zinc-400 group-hover:text-zinc-600 transition-colors" />
+                <p className="mb-2 text-sm text-zinc-600 font-medium">
+                  <span className="font-semibold text-zinc-900">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-zinc-500">
+                  PNG, JPG, WEBP up to 10MB each
+                </p>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                className="hidden"
+              />
+            </label>
             {files.length > 0 && (
-              <p className="text-xs sm:text-sm text-zinc-600 mt-2">
-                {files.length} file{files.length !== 1 ? "s" : ""} selected
-              </p>
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm font-medium text-blue-900 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                  {files.length} file{files.length !== 1 ? "s" : ""} selected
+                </p>
+              </div>
             )}
           </div>
 
           {/* Target Selection */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-zinc-800 mb-2">
-              Target Device
+            <label className="block text-sm font-semibold text-zinc-900 mb-3">
+              Target Device <span className="text-red-500">*</span>
             </label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setTarget("desktop")}
-                className={`flex-1 py-2 px-3 rounded-lg border flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors ${
+                className={`group relative py-4 px-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center gap-3 ${
                   target === "desktop"
-                    ? "bg-zinc-900 text-white border-zinc-900"
-                    : "bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50"
+                    ? "bg-gradient-to-br from-zinc-900 to-zinc-800 text-white border-zinc-900 shadow-lg scale-105"
+                    : "bg-white text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:shadow-md"
                 }`}
               >
-                <Monitor className="w-4 h-4" />
-                <span>Desktop</span>
+                <div className={`p-3 rounded-lg ${
+                  target === "desktop" ? "bg-white/10" : "bg-zinc-100"
+                }`}>
+                  <Monitor className={`w-6 h-6 ${
+                    target === "desktop" ? "text-white" : "text-zinc-600"
+                  }`} />
+                </div>
+                <span className="font-semibold text-sm">Desktop</span>
+                {target === "desktop" && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
               </button>
               <button
                 onClick={() => setTarget("mobile")}
-                className={`flex-1 py-2 px-3 rounded-lg border flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors ${
+                className={`group relative py-4 px-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center gap-3 ${
                   target === "mobile"
-                    ? "bg-zinc-900 text-white border-zinc-900"
-                    : "bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50"
+                    ? "bg-gradient-to-br from-zinc-900 to-zinc-800 text-white border-zinc-900 shadow-lg scale-105"
+                    : "bg-white text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:shadow-md"
                 }`}
               >
-                <Smartphone className="w-4 h-4" />
-                <span>Mobile</span>
+                <div className={`p-3 rounded-lg ${
+                  target === "mobile" ? "bg-white/10" : "bg-zinc-100"
+                }`}>
+                  <Smartphone className={`w-6 h-6 ${
+                    target === "mobile" ? "text-white" : "text-zinc-600"
+                  }`} />
+                </div>
+                <span className="font-semibold text-sm">Mobile</span>
+                {target === "mobile" && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
               </button>
             </div>
+            {!target && (
+              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="text-sm text-amber-800 font-medium">
+                  Please select a target device before uploading
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Upload Button */}
           <button
             onClick={uploadAll}
-            disabled={loading || files.length === 0}
-            className="w-full bg-zinc-900 text-white rounded-lg px-4 sm:px-6 py-3 sm:py-3.5 hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-semibold flex items-center justify-center gap-2 shadow-md"
+            disabled={loading || files.length === 0 || !target}
+            className={`w-full rounded-xl px-6 py-4 font-bold text-base sm:text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-lg ${
+              loading || files.length === 0 || !target
+                ? "bg-zinc-300 text-zinc-500 cursor-not-allowed shadow-none"
+                : "bg-gradient-to-r from-zinc-900 to-zinc-800 text-white hover:from-zinc-800 hover:to-zinc-700 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+            }`}
           >
-            <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
-            {loading
-              ? `Uploading ${files.length} image${
-                  files.length !== 1 ? "s" : ""
-                }...`
-              : `Upload ${files.length} Image${files.length !== 1 ? "s" : ""}`}
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Uploading {files.length} image{files.length !== 1 ? "s" : ""}...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5" />
+                <span>
+                  Upload {files.length} Image{files.length !== 1 ? "s" : ""}
+                </span>
+              </>
+            )}
           </button>
         </div>
       </div>

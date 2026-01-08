@@ -6,14 +6,14 @@ export default async function ExhibitionsManagePage() {
 
   // Get the section
   const { data: section } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("*")
     .eq("slug", "exhibitions")
     .single();
 
   // Fetch exhibitions
   const { data: exhibitions, error } = await supabase
-    .from("exhibitions")
+    .from("fanaha_exhibitions")
     .select("*")
     .order("year", { ascending: false })
     .order("created_at", { ascending: false });

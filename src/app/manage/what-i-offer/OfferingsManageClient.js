@@ -13,7 +13,7 @@ import {
   EyeOff,
   GripVertical,
 } from "lucide-react";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 
 export default function OfferingsManageClient({ initialOfferings, section }) {
@@ -46,7 +46,8 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
     setEditingOffering(offering);
     setTitle(offering.title);
     setDescription(offering.description || "");
-    setImageUrl(offering.image_url || "");
+    // Use public_id if available, otherwise fall back to image_url
+    setImageUrl(offering.image_public_id || offering.image_url || "");
     setShowModal(true);
   };
 
@@ -56,18 +57,27 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
 
     setUploading(true);
     try {
-      const fileName = `offerings/${Date.now()}-${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("alchemy-images")
-        .upload(fileName, file);
+      // Upload to Cloudinary
+      const { uploadToCloudinary } = await import("@/lib/cloudinary-upload");
+      const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+      
+      const publicId = await uploadToCloudinary(
+        file,
+        "fanaha/offerings",
+        { alwaysCompress: true }
+      );
 
-      if (uploadError) throw uploadError;
+      // Generate optimized URL for backward compatibility
+      const imageUrl = cldUrlEnhanced({
+        publicId,
+        width: 800,
+        height: 800,
+        quality: "auto:good",
+        crop: "fill",
+      });
 
-      const { data: urlData } = supabase.storage
-        .from("alchemy-images")
-        .getPublicUrl(fileName);
-
-      setImageUrl(urlData.publicUrl);
+      // Store public_id (can be used directly or as URL)
+      setImageUrl(publicId);
       setToast({ message: "Image uploaded successfully!", type: "success" });
     } catch (err) {
       console.error("Upload error:", err);
@@ -85,14 +95,30 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
 
     setUploading(true);
     try {
+      // Generate URL for backward compatibility if we have a public_id
+      const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+      let finalImageUrl = imageUrl;
+      
+      // If imageUrl is a public_id (not a full URL), generate the URL
+      if (imageUrl && !imageUrl.includes("http") && !imageUrl.includes("supabase.co")) {
+        finalImageUrl = cldUrlEnhanced({
+          publicId: imageUrl,
+          width: 800,
+          height: 800,
+          quality: "auto:good",
+          crop: "fill",
+        });
+      }
+
       if (editingOffering) {
         // Update existing offering
         const { data, error } = await supabase
-          .from("offerings")
+          .from("fanaha_offerings")
           .update({
             title,
             description,
-            image_url: imageUrl || null,
+            image_public_id: imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
+            image_url: finalImageUrl || null, // Store URL for backward compatibility
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingOffering.id)
@@ -111,12 +137,13 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       } else {
         // Create new offering
         const { data, error } = await supabase
-          .from("offerings")
+          .from("fanaha_offerings")
           .insert([
             {
               title,
               description,
-              image_url: imageUrl || null,
+              image_public_id: imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
+              image_url: finalImageUrl || null, // Store URL for backward compatibility
             },
           ])
           .select()
@@ -152,7 +179,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
 
     try {
       const { error } = await supabase
-        .from("offerings")
+        .from("fanaha_offerings")
         .delete()
         .eq("id", offering.id);
 
@@ -173,7 +200,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
     try {
       const newStatus = !offering.is_active;
       const { error } = await supabase
-        .from("offerings")
+        .from("fanaha_offerings")
         .update({ is_active: newStatus })
         .eq("id", offering.id);
 
@@ -257,15 +284,16 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                         {offering.description}
                       </p>
                     )}
-                    {offering.image_url && (
+                    {(offering.image_public_id || offering.image_url) && (
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden">
-                        <Image
-                          src={offering.image_url}
+                        <OptimizedImage
+                          publicId={offering.image_public_id || offering.image_url}
                           alt={offering.title}
-                          fill
-                          className="object-cover"
+                          width={128}
+                          height={128}
+                          className="object-cover w-full h-full"
                           sizes="128px"
-                          unoptimized={true}
+                          crop="fill"
                         />
                       </div>
                     )}
@@ -372,17 +400,18 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
 
                 {imageUrl && (
                   <div className="relative w-48 h-48 rounded-lg overflow-hidden mb-4">
-                    <Image
-                      src={imageUrl}
+                    <OptimizedImage
+                      publicId={imageUrl}
                       alt="Preview"
-                      fill
-                      className="object-cover"
+                      width={192}
+                      height={192}
+                      className="object-cover w-full h-full"
                       sizes="192px"
-                      unoptimized={true}
+                      crop="fill"
                     />
                     <button
                       onClick={() => setImageUrl("")}
-                      className="absolute -top-2 -right-2 bg-red-600 text-white p-1 rounded-full shadow-lg"
+                      className="absolute -top-2 -right-2 bg-red-600 text-white p-1 rounded-full shadow-lg hover:bg-red-700 transition-colors z-10"
                     >
                       <X className="w-4 h-4" />
                     </button>

@@ -11,6 +11,7 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  Eye,
 } from "lucide-react";
 import Image from "next/image";
 import DeleteConfirmModal from "./DeleteConfirmModal";
@@ -64,6 +65,11 @@ export default function ManageClient({ initialPieces, section }) {
 
   const handleEdit = (piece) => {
     router.push(`/alchemy/${piece.slug}/edit`);
+  };
+
+  const handlePreview = (piece) => {
+    // Open in new tab
+    window.open(`/alchemy/${piece.slug}`, "_blank");
   };
 
   const handleDelete = (piece) => {
@@ -283,20 +289,30 @@ export default function ManageClient({ initialPieces, section }) {
                       {new Date(piece.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleEdit(piece)}
-                        className="text-blue-600 hover:text-blue-900 mr-4 inline-flex items-center"
-                      >
-                        <Pencil className="w-4 h-4 mr-1" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(piece)}
-                        className="text-red-600 hover:text-red-900 inline-flex items-center"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
-                      </button>
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          onClick={() => handlePreview(piece)}
+                          className="text-purple-600 hover:text-purple-900 inline-flex items-center"
+                          title="Preview in new tab"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => handleEdit(piece)}
+                          className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+                        >
+                          <Pencil className="w-4 h-4 mr-1" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(piece)}
+                          className="text-red-600 hover:text-red-900 inline-flex items-center"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -376,6 +392,14 @@ export default function ManageClient({ initialPieces, section }) {
 
                     {/* Actions */}
                     <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => handlePreview(piece)}
+                        className="flex-1 text-xs text-purple-600 hover:text-purple-900 font-medium py-2 px-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors flex items-center justify-center gap-1"
+                        title="Preview in new tab"
+                      >
+                        <Eye className="w-3 h-3" />
+                        Preview
+                      </button>
                       <button
                         onClick={() => handleEdit(piece)}
                         className="flex-1 text-xs text-blue-600 hover:text-blue-900 font-medium py-2 px-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-1"

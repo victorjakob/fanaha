@@ -7,7 +7,7 @@ import { cldUrl } from "@/lib/cloudinary";
 const DURATION = 5000; // visible time per slide
 const FADE = 2500; // crossfade duration
 const RESIZE_DEBOUNCE = 150; // resize debounce
-const FAILSAFE_TIMEOUT = 10000; // first paint fallback
+const FAILSAFE_TIMEOUT = 5000; // first paint fallback (reduced from 10s)
 
 export default function BackgroundSlideshow({
   desktopSlides = [],
@@ -334,9 +334,11 @@ function Layer({
         sizes="100vw"
         priority={priority}
         fetchPriority={priority ? "high" : "auto"}
+        quality={priority ? 90 : 85}
         style={{ objectFit: "cover", objectPosition: "50% 50%" }}
         onLoad={onLoad}
         onError={onError}
+        loading={priority ? "eager" : "lazy"}
       />
     </div>
   );

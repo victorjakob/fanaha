@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
 import { Plus, Trash2, Upload, X, Edit2 } from "lucide-react";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 
 export default function MuralsManageClient({ initialMurals, section }) {
@@ -37,7 +37,8 @@ export default function MuralsManageClient({ initialMurals, section }) {
     setEditingMural(mural);
     setLocation(mural.location);
     setYear(mural.year);
-    setUploadedImages(mural.images || []);
+    // Use public_ids if available, otherwise fall back to images (URLs)
+    setUploadedImages(mural.images_public_ids || mural.images || []);
     setShowModal(true);
   };
 
@@ -47,24 +48,30 @@ export default function MuralsManageClient({ initialMurals, section }) {
 
     setUploading(true);
     try {
-      const imageUrls = [];
+      // Upload to Cloudinary in parallel
+      const { uploadMultipleToCloudinary } = await import("@/lib/cloudinary-upload");
+      const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+      
+      const publicIds = await uploadMultipleToCloudinary(
+        files,
+        "fanaha/murals",
+        (progress) => console.log(`Upload progress: ${Math.round(progress * 100)}%`),
+        { alwaysCompress: true }
+      );
 
-      for (const file of files) {
-        const fileName = `murals/${Date.now()}-${file.name}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("alchemy-images")
-          .upload(fileName, file);
+      // Generate URLs for backward compatibility
+      const imageUrls = publicIds.map((publicId) =>
+        cldUrlEnhanced({
+          publicId,
+          width: 800,
+          height: 800,
+          quality: "auto:good",
+          crop: "fill",
+        })
+      );
 
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage
-          .from("alchemy-images")
-          .getPublicUrl(fileName);
-
-        imageUrls.push(urlData.publicUrl);
-      }
-
-      setUploadedImages([...uploadedImages, ...imageUrls]);
+      // Store public_ids (these can be used as URLs too since OptimizedImage handles both)
+      setUploadedImages([...uploadedImages, ...publicIds]);
     } catch (err) {
       console.error("Upload error:", err);
       setToast({ message: "Failed to upload images", type: "error" });
@@ -142,14 +149,31 @@ export default function MuralsManageClient({ initialMurals, section }) {
 
     setUploading(true);
     try {
+      // Generate URLs for backward compatibility
+      const { cldUrlEnhanced } = await import("@/lib/cloudinary");
+      const imageUrls = uploadedImages.map((img) => {
+        // If it's already a URL (Supabase), use it; otherwise generate Cloudinary URL
+        if (img.includes("http") || img.includes("supabase.co")) {
+          return img;
+        }
+        return cldUrlEnhanced({
+          publicId: img,
+          width: 800,
+          height: 800,
+          quality: "auto:good",
+          crop: "fill",
+        });
+      });
+
       if (editingMural) {
         // Update existing mural
         const { data, error } = await supabase
-          .from("murals")
+          .from("fanaha_murals")
           .update({
             location,
             year,
-            images: uploadedImages,
+            images_public_ids: uploadedImages, // Store Cloudinary public_ids
+            images: imageUrls, // Store URLs for backward compatibility
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingMural.id)
@@ -163,12 +187,13 @@ export default function MuralsManageClient({ initialMurals, section }) {
       } else {
         // Create new mural
         const { data, error } = await supabase
-          .from("murals")
+          .from("fanaha_murals")
           .insert([
             {
               location,
               year,
-              images: uploadedImages,
+              images_public_ids: uploadedImages, // Store Cloudinary public_ids
+              images: imageUrls, // Store URLs for backward compatibility
             },
           ])
           .select()
@@ -202,7 +227,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
 
     try {
       const { error } = await supabase
-        .from("murals")
+        .from("fanaha_murals")
         .delete()
         .eq("id", mural.id);
 
@@ -292,17 +317,19 @@ export default function MuralsManageClient({ initialMurals, section }) {
 
               {/* Images Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {mural.images.map((imageUrl, index) => (
+                {(mural.images_public_ids || mural.images || []).map((imageId, index) => (
                   <div
                     key={index}
                     className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
                   >
-                    <Image
-                      src={imageUrl}
+                    <OptimizedImage
+                      publicId={mural.images_public_ids?.[index] || imageId}
                       alt={`${mural.location} image ${index + 1}`}
-                      fill
-                      className="object-cover"
+                      width={200}
+                      height={200}
                       sizes="200px"
+                      className="object-contain w-full h-full bg-zinc-100"
+                      crop="fit"
                     />
                   </div>
                 ))}
@@ -399,12 +426,14 @@ export default function MuralsManageClient({ initialMurals, section }) {
                               : ""
                           }`}
                         >
-                          <Image
-                            src={imageUrl}
+                          <OptimizedImage
+                            publicId={imageUrl}
                             alt={`Upload ${index + 1}`}
-                            fill
-                            className="object-cover rounded-lg pointer-events-none"
+                            width={150}
+                            height={150}
                             sizes="150px"
+                            className="object-contain rounded-lg pointer-events-none w-full h-full bg-zinc-100"
+                            crop="fit"
                           />
                           {/* Image number badge */}
                           <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded pointer-events-none">

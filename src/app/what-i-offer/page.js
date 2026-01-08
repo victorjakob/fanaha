@@ -7,14 +7,14 @@ export default async function WhatIOfferPage() {
 
   // Fetch section content
   const { data: sectionContent } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("title, description")
     .eq("slug", "what-i-offer")
     .single();
 
   // Fetch offerings
   const { data: offerings, error } = await supabase
-    .from("offerings")
+    .from("fanaha_offerings")
     .select("*")
     .eq("is_active", true)
     .order("display_order", { ascending: true })

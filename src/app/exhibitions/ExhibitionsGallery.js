@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { isCloudinaryId } from "@/lib/cloudinary";
 import { useState, useEffect } from "react";
 
 export default function ExhibitionsGallery({ exhibitions }) {
@@ -91,27 +92,35 @@ export default function ExhibitionsGallery({ exhibitions }) {
 
           {/* Images Masonry Grid */}
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6">
-            {exhibition.images.map((imageUrl, imageIndex) => (
-              <motion.div
-                key={imageIndex}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: imageIndex * 0.05 }}
-                className="relative mb-4 sm:mb-6 break-inside-avoid rounded-lg overflow-hidden shadow-lg cursor-pointer group"
-                onClick={() => openLightbox(exhibition.images, imageIndex)}
-              >
-                <img
-                  src={imageUrl}
-                  alt={`${exhibition.gallery} ${exhibition.year} - Image ${
-                    imageIndex + 1
-                  }`}
-                  className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-                {/* Overlay on hover */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />
-              </motion.div>
-            ))}
+            {(exhibition.images_public_ids || exhibition.images || []).map((imageId, imageIndex) => {
+              // Use public_ids if available, otherwise fall back to images (URLs)
+              const imageSource = exhibition.images_public_ids?.[imageIndex] || exhibition.images?.[imageIndex];
+              const allImages = exhibition.images_public_ids || exhibition.images || [];
+              
+              return (
+                <motion.div
+                  key={imageIndex}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: imageIndex * 0.05 }}
+                  className="relative mb-4 sm:mb-6 break-inside-avoid rounded-lg overflow-hidden shadow-lg cursor-pointer group"
+                  onClick={() => openLightbox(allImages, imageIndex)}
+                >
+                  <OptimizedImage
+                    publicId={imageSource}
+                    alt={`${exhibition.gallery} ${exhibition.year} - Image ${imageIndex + 1}`}
+                    width={600}
+                    height={800}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                    crop="fill"
+                  />
+                  {/* Overlay on hover */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Divider between exhibitions */}
@@ -197,12 +206,29 @@ export default function ExhibitionsGallery({ exhibitions }) {
                   className="absolute w-full h-full flex items-center justify-center p-8"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <img
-                    src={lightboxImages[currentIndex]}
-                    alt={`Image ${currentIndex + 1}`}
-                    className="max-w-full max-h-full object-contain select-none"
-                    draggable={false}
-                  />
+                  {(() => {
+                    const imageSource = lightboxImages[currentIndex];
+                    // Convert public_id to URL if needed - use original quality and dimensions
+                    let imageUrl;
+                    if (isCloudinaryId(imageSource)) {
+                      const cloudName =
+                        process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
+                      // Use original image with best quality, no size constraints
+                      imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto/${imageSource}`;
+                    } else {
+                      imageUrl = imageSource;
+                    }
+                    
+                    return (
+                      <img
+                        src={imageUrl}
+                        alt={`Image ${currentIndex + 1}`}
+                        className="max-w-full max-h-full object-contain select-none"
+                        style={{ width: "auto", height: "auto", maxWidth: "95vw", maxHeight: "90vh" }}
+                        draggable={false}
+                      />
+                    );
+                  })()}
                 </motion.div>
               </AnimatePresence>
             </div>

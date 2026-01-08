@@ -4,7 +4,7 @@ export async function getSlides() {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from("homepage_slides")
+    .from("fanaha_homepage_slides")
     .select("public_id, alt, target, sort, active")
     .eq("active", true)
     .order("sort", { ascending: true });

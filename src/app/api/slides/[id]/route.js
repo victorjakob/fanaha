@@ -23,7 +23,7 @@ export async function PATCH(req, { params }) {
   const patch = await req.json();
 
   const { data, error } = await supabase
-    .from("homepage_slides")
+    .from("fanaha_homepage_slides")
     .update(patch)
     .eq("id", id)
     .select("*")
@@ -44,7 +44,7 @@ export async function DELETE(req, { params }) {
 
   // Optional: also delete from Cloudinary if you store public_id
   const { data: row } = await supabase
-    .from("homepage_slides")
+    .from("fanaha_homepage_slides")
     .select("public_id")
     .eq("id", id)
     .single();
@@ -63,7 +63,7 @@ export async function DELETE(req, { params }) {
   }
 
   const { error } = await supabase
-    .from("homepage_slides")
+    .from("fanaha_homepage_slides")
     .delete()
     .eq("id", id);
 

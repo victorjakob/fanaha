@@ -7,14 +7,14 @@ export default async function ExhibitionsPage() {
 
   // Fetch section content
   const { data: sectionContent } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("title, description")
     .eq("slug", "exhibitions")
     .single();
 
   // Fetch exhibitions
   const { data: exhibitions, error } = await supabase
-    .from("exhibitions")
+    .from("fanaha_exhibitions")
     .select("*")
     .order("year", { ascending: false })
     .order("display_order", { ascending: true });

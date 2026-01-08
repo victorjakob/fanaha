@@ -7,14 +7,14 @@ export default async function OraclesProjectsPage() {
 
   // Fetch section content
   const { data: sectionContent } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("title, description")
     .eq("slug", "oracles-projects")
     .single();
 
   // Fetch oracles & projects
   const { data: items, error } = await supabase
-    .from("oracles_projects")
+    .from("fanaha_oracles_projects")
     .select("*")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });

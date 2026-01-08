@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { formatISK } from "@/util/formatPrice";
 import OrderModal from "@/app/alchemy/[slug]/OrderModal";
 
@@ -31,13 +31,17 @@ export default function AlchemyArtPieceDetailMain({ piece }) {
               opacity: 0.55,
             }}
           />
-          <Image
-            src={mainImage}
+          <OptimizedImage
+            publicId={mainImage}
             alt={piece.name}
-            width={420}
-            height={420}
+            width={1000}
+            height={1000}
+            sizes="(max-width: 640px) 80vw, 1000px"
             className="rounded-full w-full h-full object-contain relative z-10"
             priority
+            aspectRatio="1:1"
+            crop="fill"
+            quality="auto:best"
           />
         </motion.div>
       )}

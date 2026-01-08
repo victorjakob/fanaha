@@ -30,7 +30,7 @@ export default function ContentManageClient({ sections: initialSections }) {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from("sections")
+        .from("fanaha_sections")
         .update({
           title: editForm.title,
           description: editForm.description,
@@ -63,7 +63,7 @@ export default function ContentManageClient({ sections: initialSections }) {
     try {
       const newStatus = !section.is_active;
       const { error } = await supabase
-        .from("sections")
+        .from("fanaha_sections")
         .update({ is_active: newStatus })
         .eq("id", section.id);
 

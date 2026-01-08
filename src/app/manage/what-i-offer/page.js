@@ -6,14 +6,14 @@ export default async function OfferingsManagePage() {
 
   // Get the section
   const { data: section } = await supabase
-    .from("sections")
+    .from("fanaha_sections")
     .select("*")
     .eq("slug", "what-i-offer")
     .single();
 
   // Fetch offerings
   const { data: offerings, error } = await supabase
-    .from("offerings")
+    .from("fanaha_offerings")
     .select("*")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: true });
