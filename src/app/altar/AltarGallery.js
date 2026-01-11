@@ -129,7 +129,7 @@ export default function AltarGallery({ artworks }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center"
             onClick={closeLightbox}
           >
             {/* Close button */}
@@ -173,10 +173,7 @@ export default function AltarGallery({ artworks }) {
             )}
 
             {/* Carousel image with swipe */}
-            <div
-              className="relative w-full h-full flex items-center justify-center p-8"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="relative w-full h-full flex items-center justify-center p-8">
               <AnimatePresence initial={false} custom={direction}>
                 <motion.div
                   key={currentIndex}
@@ -247,7 +244,10 @@ export default function AltarGallery({ artworks }) {
                     }
 
                     return (
-                      <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
+                      <div
+                        className="relative w-full h-full rounded-full overflow-hidden shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <img
                           src={imageUrl}
                           alt={currentArtwork.alt}

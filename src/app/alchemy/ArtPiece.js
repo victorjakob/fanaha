@@ -42,7 +42,7 @@ export default function AlchemyArtPiece({
 
   return (
     <motion.div
-      className="relative flex flex-col items-center w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl cursor-pointer outline-none group"
+      className="relative flex flex-col items-center w-full px-4 sm:px-8 cursor-pointer outline-none group"
       whileHover="hover"
       whileFocus="hover"
       whileTap={{ scale: 0.95 }}
@@ -140,7 +140,7 @@ export default function AlchemyArtPiece({
         </>
       )}
       <motion.div
-        className="relative flex items-center justify-center w-full aspect-square rounded-full overflow-hidden transition-all duration-700 sm:max-w-md lg:max-w-lg xl:max-w-xl group-hover:shadow-2xl group-hover:shadow-black/50"
+        className="relative flex items-center justify-center aspect-square rounded-full overflow-hidden transition-all duration-700 w-[80vw] sm:max-w-lg md:max-w-md lg:max-w-md xl:max-w-md 2xl:max-w-md group-hover:shadow-2xl group-hover:shadow-black/50"
         initial={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 22 }}
         style={{
@@ -166,9 +166,9 @@ export default function AlchemyArtPiece({
         <OptimizedImage
           publicId={mainImage}
           alt={title}
-          width={800}
-          height={800}
-          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 800px"
+          width={2000}
+          height={2000}
+          sizes="(max-width: 640px) 80vw, (max-width: 768px) 512px, 448px"
           className="object-cover w-full h-full select-none transition-transform duration-300 group-hover:scale-105 rounded-full"
           priority={index !== undefined && index < 3}
           aspectRatio="1:1"
@@ -206,7 +206,7 @@ export default function AlchemyArtPiece({
             </span>
           )}
         </motion.div>
-        
+
         {/* Loading overlay when clicked */}
         {isClicked && (
           <motion.div

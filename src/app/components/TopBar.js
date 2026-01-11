@@ -7,6 +7,7 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showClickOverlay, setShowClickOverlay] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
     // Check if click overlay has been shown in this session
@@ -44,6 +45,19 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Detect touch device to disable hover effects on mobile
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice(
+        "ontouchstart" in window ||
+        navigator.maxTouchPoints > 0 ||
+        // @ts-ignore
+        navigator.msMaxTouchPoints > 0
+      );
+    };
+    checkTouchDevice();
+  }, []);
+
   return (
     <header
       className="pt-12 fixed top-0 left-0 w-full flex justify-center items-center z-50"
@@ -62,8 +76,12 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
           boxShadow: "none",
           opacity: menuOpen ? 0.7 : 1,
         }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => {
+          if (!isTouchDevice) setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          if (!isTouchDevice) setIsHovered(false);
+        }}
         aria-label="Open menu"
         tabIndex={0}
         onClick={() => setMenuOpen(!menuOpen)}
@@ -77,10 +95,14 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
         transition={{
           duration: 0,
         }}
-        whileHover={{
-          scale: 1.08,
-          transition: { duration: 0.15, ease: "easeOut" },
-        }}
+        whileHover={
+          !isTouchDevice
+            ? {
+                scale: 1.08,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }
+            : {}
+        }
         whileTap={{
           scale: 0.95,
           transition: { duration: 0.08 },
