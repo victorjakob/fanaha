@@ -7,7 +7,7 @@ export async function POST(req) {
   // Later you can add: await assertAdmin();
 
   // These should be in your .env.local file
-  const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+  const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
   const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 

@@ -21,6 +21,11 @@ export default async function AlchemyPage() {
     )
     .order("created_at", { ascending: false });
 
+  // Log error in production for debugging
+  if (error) {
+    console.error("Error fetching art pieces:", error);
+  }
+
   // Sort: available first, then commission, then sold, all by date created (desc)
   const sorted = artPieces
     ? [

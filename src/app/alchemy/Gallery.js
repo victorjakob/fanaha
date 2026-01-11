@@ -12,7 +12,18 @@ export default function AlchemyGallery({ artPieces }) {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!artPieces) return <div className="text-zinc-400">Loading...</div>;
+  if (!artPieces || artPieces.length === 0) {
+    return (
+      <div className="text-zinc-400 text-center py-12">
+        <p>No art pieces found.</p>
+        {process.env.NODE_ENV === "development" && (
+          <p className="text-xs mt-2 text-zinc-500">
+            Check console for Supabase connection errors.
+          </p>
+        )}
+      </div>
+    );
+  }
 
   const available = artPieces.filter((a) => a.status === "available");
   const commission = artPieces.filter((a) => a.status === "commission");
