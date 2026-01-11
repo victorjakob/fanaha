@@ -20,7 +20,7 @@ export default function AlchemyArtPieceDetailMain({ piece }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+          transition={{ duration: 0.6, delay: 0, ease: "easeOut" }}
           className="relative rounded-full overflow-hidden mb-8 flex items-center justify-center w-[80vw] max-w-[420px] h-[80vw] max-h-[420px]"
         >
           <div

@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { cldUrlEnhanced, isCloudinaryId } from "@/lib/cloudinary";
 
 export default function AlchemyArtPiece({
   slug,
@@ -17,6 +18,95 @@ export default function AlchemyArtPiece({
 }) {
   const router = useRouter();
   const [isClicked, setIsClicked] = useState(false);
+  const containerRef = useRef(null);
+  const hasPreloadedRef = useRef(false);
+
+  // Preload the detail page image on hover/touch/visibility for faster navigation
+  const preloadDetailImage = () => {
+    // Only preload once per component instance
+    if (hasPreloadedRef.current) return;
+    // Ensure we're on the client side
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
+    if (!mainImage) return;
+
+    hasPreloadedRef.current = true;
+
+    // Prefetch the route (Next.js will prefetch the page)
+    router.prefetch(`/alchemy/${slug}`);
+
+    // Preload the larger image that will be used on the detail page
+    if (isCloudinaryId(mainImage)) {
+      const detailImageUrl = cldUrlEnhanced({
+        publicId: mainImage,
+        width: 1000,
+        height: 1000,
+        quality: "auto:best",
+        crop: "fill",
+        aspectRatio: "1:1",
+      });
+
+      // Check if already preloaded to avoid duplicates
+      try {
+        const existingLink = document.querySelector(
+          `link[href="${detailImageUrl}"]`
+        );
+        if (!existingLink) {
+          const link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.href = detailImageUrl;
+          document.head.appendChild(link);
+        }
+      } catch (error) {
+        // Silently fail if document manipulation fails
+        console.warn("Failed to preload image:", error);
+      }
+    }
+  };
+
+  // Use Intersection Observer for mobile - preload when item comes into view
+  useEffect(() => {
+    // Only run on client side to avoid hydration issues
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
+    if (!containerRef.current) return;
+
+    if (!("IntersectionObserver" in window)) {
+      // Fallback: preload immediately if IntersectionObserver not supported
+      preloadDetailImage();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            preloadDetailImage();
+            // Once preloaded, we can unobserve to save resources
+            if (entry.target) {
+              observer.unobserve(entry.target);
+            }
+          }
+        });
+      },
+      {
+        // Start preloading when item is 200px away from viewport
+        rootMargin: "200px",
+        threshold: 0,
+      }
+    );
+
+    const currentElement = containerRef.current;
+    observer.observe(currentElement);
+
+    return () => {
+      if (currentElement) {
+        observer.unobserve(currentElement);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleClick = () => {
     setIsClicked(true);
@@ -42,6 +132,7 @@ export default function AlchemyArtPiece({
 
   return (
     <motion.div
+      ref={containerRef}
       className="relative flex flex-col items-center w-full px-4 sm:px-8 cursor-pointer outline-none group"
       whileHover="hover"
       whileFocus="hover"
@@ -49,6 +140,9 @@ export default function AlchemyArtPiece({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onMouseEnter={preloadDetailImage}
+      onTouchStart={preloadDetailImage}
+      onFocus={preloadDetailImage}
       aria-label={title}
       style={{ minHeight: 320 }}
       initial={{ opacity: 0, y: 20 }}

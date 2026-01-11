@@ -19,6 +19,10 @@ export default async function AltarPage() {
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
 
+  if (error) {
+    console.error("Error fetching altar artworks:", error);
+  }
+
   return (
     <main className="relative flex flex-col items-center w-full min-h-screen pt-32 sm:pt-40 py-6 sm:py-12 px-2 sm:px-8 overflow-hidden">
       {/* Full-screen runes background */}

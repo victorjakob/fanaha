@@ -26,7 +26,7 @@ export default function AlchemyArtPieceDetailClient({ piece }) {
             zIndex: 0,
             pointerEvents: "none",
             backgroundImage: `url('${mainImage}')`,
-            backgroundSize: "120%",
+            backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             opacity: 0.11,
