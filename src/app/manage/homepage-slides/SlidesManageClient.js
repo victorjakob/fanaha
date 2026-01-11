@@ -161,8 +161,12 @@ export default function SlidesManageClient() {
           throw new Error("Cloudinary upload preset not configured");
         }
 
-        const cloudName =
-          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        if (!cloudName) {
+          throw new Error(
+            "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
+          );
+        }
 
         const form = new FormData();
         form.append("file", fileToUpload);

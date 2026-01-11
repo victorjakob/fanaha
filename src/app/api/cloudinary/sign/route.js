@@ -7,10 +7,28 @@ export async function POST(req) {
   // Later you can add: await assertAdmin();
 
   // These should be in your .env.local file
-  const CLOUDINARY_CLOUD_NAME =
-    process.env.CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
-  const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || "";
-  const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || "";
+  const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+  const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+  const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+  if (!CLOUDINARY_CLOUD_NAME) {
+    return NextResponse.json(
+      { error: "CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables." },
+      { status: 500 }
+    );
+  }
+  if (!CLOUDINARY_API_KEY) {
+    return NextResponse.json(
+      { error: "CLOUDINARY_API_KEY is not configured. Please set it in your environment variables." },
+      { status: 500 }
+    );
+  }
+  if (!CLOUDINARY_API_SECRET) {
+    return NextResponse.json(
+      { error: "CLOUDINARY_API_SECRET is not configured. Please set it in your environment variables." },
+      { status: 500 }
+    );
+  }
 
   // Get folder from request body
   const { folder: requestedFolder } = await req.json();

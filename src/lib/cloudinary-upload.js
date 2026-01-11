@@ -75,8 +75,12 @@ export async function uploadToCloudinary(
   // Note: Transformation parameters are not allowed in unsigned uploads
   // Transformations are applied when generating URLs (in cldUrlEnhanced)
 
-  const cloudName =
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    throw new Error(
+      "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
+    );
+  }
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -188,8 +192,12 @@ export async function uploadToCloudinaryWithId(
   // Note: Transformation parameters are not allowed in unsigned uploads
   // Transformations are applied when generating URLs (in cldUrlEnhanced)
 
-  const cloudName =
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    throw new Error(
+      "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
+    );
+  }
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,

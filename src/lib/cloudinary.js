@@ -1,7 +1,20 @@
+/**
+ * Get Cloudinary cloud name from environment variables
+ * @throws {Error} If NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not set
+ */
+function getCloudName() {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    throw new Error(
+      "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
+    );
+  }
+  return cloudName;
+}
+
 // Cloudinary URL builder with optimized transforms for homepage slides
 export function cldUrl({ publicId, isMobile = false, w, h }) {
-  const cloudName =
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
+  const cloudName = getCloudName();
 
   // Determine aspect ratio based on viewport
   // Desktop: 16:9, Mobile: 4:5
@@ -55,8 +68,7 @@ export function cldUrlEnhanced({
   gravity = "center",
   aspectRatio,
 }) {
-  const cloudName =
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
+  const cloudName = getCloudName();
 
   const transforms = [
     `c_${crop}`,
@@ -76,8 +88,7 @@ export function cldUrlEnhanced({
 
 // Helper for thumbnail generation (admin panel)
 export function cldThumbnail({ publicId }) {
-  const cloudName =
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dy8q4hf0k";
+  const cloudName = getCloudName();
 
   const transforms = [
     "c_fill",

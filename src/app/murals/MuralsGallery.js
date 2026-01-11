@@ -211,8 +211,12 @@ export default function MuralsGallery({ murals }) {
                     let imageUrl;
                     if (isCloudinaryId(imageSource)) {
                       const cloudName =
-                        process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
-                        "dy8q4hf0k";
+                        process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+                      if (!cloudName) {
+                        throw new Error(
+                          "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
+                        );
+                      }
                       // Use original image with best quality, no size constraints
                       imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto/${imageSource}`;
                     } else {
