@@ -142,7 +142,7 @@ export default function AltarGallery({ artworks }) {
             </button>
 
             {/* Image counter */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-zinc-900/80 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
+            <div className="absolute top-6 left-6 bg-zinc-900/80 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
               {currentIndex + 1} / {artworks.length}
             </div>
 
