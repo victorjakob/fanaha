@@ -27,13 +27,26 @@ export default async function AlchemyPage() {
   // Log error in production for debugging
   if (error) {
     console.error("Error fetching art pieces:", error);
+    console.error("Error details:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    });
+  }
+
+  // Log data for debugging
+  console.log("Fetched art pieces:", artPieces?.length || 0, "items");
+  if (artPieces && artPieces.length > 0) {
+    console.log("Art pieces statuses:", artPieces.map(p => ({ id: p.id, status: p.status })));
   }
 
   // Sort: available first, then commission, then sold, all by date created (desc)
+  // Handle items without status by defaulting to "available"
   const sorted = artPieces
     ? [
         ...artPieces
-          .filter((a) => a.status === "available")
+          .filter((a) => (a.status || "available") === "available")
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
         ...artPieces
           .filter((a) => a.status === "commission")

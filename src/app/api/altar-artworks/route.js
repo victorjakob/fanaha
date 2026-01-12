@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/util/supabase/server";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const supabase = createServerSupabase();
 

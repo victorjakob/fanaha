@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/util/supabase/server";
 import MuralsManageClient from "./MuralsManageClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function MuralsManagePage() {
   const supabase = createServerSupabase();
 

@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/util/supabase/server";
 import OraclesProjectsManageClient from "./OraclesProjectsManageClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function OraclesProjectsManagePage() {
   const supabase = createServerSupabase();
 

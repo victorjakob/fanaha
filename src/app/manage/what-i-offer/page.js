@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/util/supabase/server";
 import OfferingsManageClient from "./OfferingsManageClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function OfferingsManagePage() {
   const supabase = createServerSupabase();
 

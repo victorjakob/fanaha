@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/util/supabase/server";
 import AltarManageClient from "./AltarManageClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AltarManagePage() {
   const supabase = createServerSupabase();
 

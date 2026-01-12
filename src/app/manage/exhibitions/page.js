@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/util/supabase/server";
 import ExhibitionsManageClient from "./ExhibitionsManageClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function ExhibitionsManagePage() {
   const supabase = createServerSupabase();
 

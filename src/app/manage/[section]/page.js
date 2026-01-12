@@ -2,6 +2,8 @@ import { createServerSupabase } from "@/util/supabase/server";
 import { notFound } from "next/navigation";
 import ManageClient from "../ManageClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SectionManagePage({ params }) {
   const { section: sectionSlug } = await params;
   const supabase = createServerSupabase();
