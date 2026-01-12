@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
 import { Plus, Trash2, Upload, X, Edit2 } from "lucide-react";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 
 export default function ExhibitionsManageClient({
@@ -379,17 +379,20 @@ export default function ExhibitionsManageClient({
 
               {/* Images Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {exhibition.images.map((imageUrl, index) => (
+                {(exhibition.images_public_ids || exhibition.images || []).map((imageId, index) => (
                   <div
                     key={index}
                     className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
                   >
-                    <Image
-                      src={imageUrl}
+                    <OptimizedImage
+                      publicId={imageId}
                       alt={`${exhibition.gallery} image ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="200px"
+                      width={300}
+                      height={300}
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                      className="object-cover w-full h-full"
+                      aspectRatio="1:1"
+                      crop="fill"
                     />
                   </div>
                 ))}
@@ -520,7 +523,7 @@ export default function ExhibitionsManageClient({
                           onDragLeave={handleDragLeave}
                           onDrop={(e) => handleDrop(e, index)}
                           onDragEnd={handleDragEnd}
-                          className={`relative aspect-square group cursor-move transition-all ${
+                          className={`relative aspect-square rounded-lg overflow-hidden group cursor-move transition-all ${
                             draggedIndex === index ? "opacity-50 scale-95" : ""
                           } ${
                             dragOverIndex === index && draggedIndex !== index
@@ -528,12 +531,15 @@ export default function ExhibitionsManageClient({
                               : ""
                           }`}
                         >
-                          <Image
-                            src={imageUrl}
+                          <OptimizedImage
+                            publicId={imageUrl}
                             alt={`Upload ${index + 1}`}
-                            fill
-                            className="object-cover rounded-lg pointer-events-none"
+                            width={200}
+                            height={200}
                             sizes="150px"
+                            className="object-cover w-full h-full pointer-events-none"
+                            aspectRatio="1:1"
+                            crop="fill"
                           />
                           {/* Image number badge */}
                           <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded pointer-events-none">

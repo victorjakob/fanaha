@@ -8,6 +8,7 @@ import { cldThumbnail } from "@/lib/cloudinary";
 export default function SlidesManageClient() {
   const [slides, setSlides] = useState([]);
   const [files, setFiles] = useState([]);
+  const [filePreviews, setFilePreviews] = useState([]);
   const [target, setTarget] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all"); // all, desktop, mobile
@@ -222,6 +223,7 @@ export default function SlidesManageClient() {
       }
 
       setFiles([]);
+      setFilePreviews([]);
       setTarget(null);
       await load();
     } catch (error) {
@@ -312,16 +314,57 @@ export default function SlidesManageClient() {
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                onChange={async (e) => {
+                  const selectedFiles = Array.from(e.target.files || []);
+                  setFiles(selectedFiles);
+                  
+                  if (selectedFiles.length === 0) {
+                    setFilePreviews([]);
+                    return;
+                  }
+                  
+                  // Create preview URLs using Promise.all
+                  const previewPromises = selectedFiles.map((file) => {
+                    return new Promise((resolve) => {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        resolve(event.target.result);
+                      };
+                      reader.onerror = () => resolve(null);
+                      reader.readAsDataURL(file);
+                    });
+                  });
+                  
+                  const previews = await Promise.all(previewPromises);
+                  setFilePreviews(previews.filter(Boolean));
+                }}
                 className="hidden"
               />
             </label>
             {files.length > 0 && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm font-medium text-blue-900 flex items-center gap-2">
+              <div className="mt-4">
+                <p className="text-sm font-medium text-zinc-900 mb-3 flex items-center gap-2">
                   <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
                   {files.length} file{files.length !== 1 ? "s" : ""} selected
                 </p>
+                {/* Image Previews */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {filePreviews.map((preview, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-video rounded-lg overflow-hidden border-2 border-zinc-200 shadow-sm"
+                    >
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                        {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -35,12 +35,31 @@ export async function POST(req) {
     );
   }
 
+  // Verify API secret is not truncated or empty
+  if (CLOUDINARY_API_SECRET.length < 20) {
+    console.error("CLOUDINARY_API_SECRET appears to be invalid (too short)");
+    return NextResponse.json(
+      {
+        error:
+          "CLOUDINARY_API_SECRET appears to be invalid. Please check your environment variables.",
+      },
+      { status: 500 }
+    );
+  }
+
   const { public_id } = await req.json();
   if (!public_id) {
     return NextResponse.json({ error: "public_id required" }, { status: 400 });
   }
 
   try {
+    // Ensure Cloudinary is configured before making API call
+    cloudinary.config({
+      cloud_name: CLOUDINARY_CLOUD_NAME,
+      api_key: CLOUDINARY_API_KEY,
+      api_secret: CLOUDINARY_API_SECRET,
+    });
+
     // Add fanaha/bg/ prefix if not already present
     const fullPublicId = public_id.startsWith("fanaha/bg/")
       ? public_id
@@ -49,6 +68,22 @@ export async function POST(req) {
     return NextResponse.json({ result });
   } catch (error) {
     console.error("Cloudinary delete error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    
+    // Provide more helpful error message
+    if (error.error?.message === "api_secret mismatch") {
+      return NextResponse.json(
+        {
+          error:
+            "Cloudinary API secret mismatch. Please verify CLOUDINARY_API_SECRET matches your Cloudinary account settings.",
+          details: "Check that your environment variable CLOUDINARY_API_SECRET is correct and matches the API secret in your Cloudinary dashboard.",
+        },
+        { status: 401 }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: error.message || "Failed to delete from Cloudinary" },
+      { status: 500 }
+    );
   }
 }

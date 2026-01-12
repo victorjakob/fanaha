@@ -91,6 +91,7 @@ export default function AltarGallery({ artworks }) {
               key={artwork.id}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.1 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.4, delay: index * 0.05 }}
               className="relative aspect-square rounded-full overflow-hidden shadow-lg cursor-pointer group"
@@ -108,7 +109,7 @@ export default function AltarGallery({ artworks }) {
                     width={600}
                     height={600}
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
+                    className="object-cover w-full h-full"
                     aspectRatio="1:1"
                     crop="fill"
                     quality="auto:best"

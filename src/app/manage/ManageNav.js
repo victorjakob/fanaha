@@ -101,7 +101,7 @@ export default function ManageNav({ sections }) {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Settings className="w-5 h-5 text-zinc-600" />
               <h1 className="text-lg font-bold text-zinc-900">Manage</h1>
             </div>
@@ -133,10 +133,10 @@ export default function ManageNav({ sections }) {
               ))}
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Always on the right */}
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 rounded-lg text-zinc-600 hover:bg-zinc-100 transition-colors"
+              className="md:hidden p-2.5 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 transition-colors mt-2 mr-2 shadow-md ml-auto"
               aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? (

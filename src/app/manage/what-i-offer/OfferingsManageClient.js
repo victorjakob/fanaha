@@ -12,6 +12,8 @@ import {
   Eye,
   EyeOff,
   GripVertical,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
@@ -24,6 +26,9 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
   const [editingOffering, setEditingOffering] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [reordering, setReordering] = useState(false);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -135,6 +140,12 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
           type: "success",
         });
       } else {
+        // Get current max display_order and increment
+        const currentMax =
+          offerings.length > 0
+            ? Math.max(...offerings.map((o) => o.display_order || 0))
+            : 0;
+
         // Create new offering
         const { data, error } = await supabase
           .from("fanaha_offerings")
@@ -144,6 +155,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
               description,
               image_public_id: imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
               image_url: finalImageUrl || null, // Store URL for backward compatibility
+              display_order: currentMax + 1,
             },
           ])
           .select()
@@ -218,6 +230,142 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
     }
   };
 
+  // Drag and drop handlers for reordering
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    const img = new Image();
+    img.src =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    e.dataTransfer.setDragImage(img, 0, 0);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (e, dropIndex) => {
+    e.preventDefault();
+
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newOfferings = [...offerings];
+    const draggedOffering = newOfferings[draggedIndex];
+
+    // Remove from old position
+    newOfferings.splice(draggedIndex, 1);
+    // Insert at new position
+    newOfferings.splice(dropIndex, 0, draggedOffering);
+
+    // Update display_order for all items
+    const updatedOfferings = newOfferings.map((offering, index) => ({
+      ...offering,
+      display_order: index + 1,
+    }));
+
+    // Optimistically update UI
+    setOfferings(updatedOfferings);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+    setReordering(true);
+
+    try {
+      // Update all display_order values in database
+      const updates = updatedOfferings.map((offering) =>
+        supabase
+          .from("fanaha_offerings")
+          .update({ display_order: offering.display_order })
+          .eq("id", offering.id)
+      );
+
+      const results = await Promise.all(updates);
+      
+      // Check for errors
+      const hasError = results.some((result) => result.error);
+      if (hasError) {
+        const errors = results.filter((result) => result.error);
+        console.error("Error updating order:", errors);
+        throw new Error("Failed to update order in database");
+      }
+
+      setToast({ message: "Order updated successfully!", type: "success" });
+      router.refresh();
+    } catch (err) {
+      console.error("Error updating order:", err);
+      setToast({ message: "Failed to update order", type: "error" });
+      // Revert on error
+      setOfferings(offerings);
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // Move item up or down by 1
+  const moveItem = async (index, direction) => {
+    if (direction === -1 && index === 0) return; // Can't move first item up
+    if (direction === 1 && index === offerings.length - 1) return; // Can't move last item down
+
+    const newIndex = index + direction;
+    const newOfferings = [...offerings];
+    const [movedItem] = newOfferings.splice(index, 1);
+    newOfferings.splice(newIndex, 0, movedItem);
+
+    // Update display_order for all items
+    const updatedOfferings = newOfferings.map((offering, idx) => ({
+      ...offering,
+      display_order: idx + 1,
+    }));
+
+    // Optimistically update UI
+    setOfferings(updatedOfferings);
+    setReordering(true);
+
+    try {
+      // Update all display_order values in database
+      const updates = updatedOfferings.map((offering) =>
+        supabase
+          .from("fanaha_offerings")
+          .update({ display_order: offering.display_order })
+          .eq("id", offering.id)
+      );
+
+      const results = await Promise.all(updates);
+      
+      // Check for errors
+      const hasError = results.some((result) => result.error);
+      if (hasError) {
+        const errors = results.filter((result) => result.error);
+        console.error("Error updating order:", errors);
+        throw new Error("Failed to update order in database");
+      }
+
+      setToast({ message: "Order updated successfully!", type: "success" });
+      router.refresh();
+    } catch (err) {
+      console.error("Error updating order:", err);
+      setToast({ message: "Failed to update order", type: "error" });
+      // Revert on error
+      setOfferings(offerings);
+    } finally {
+      setReordering(false);
+    }
+  };
+
   return (
     <div
       className="max-w-5xl mx-auto"
@@ -256,16 +404,56 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
             No offerings yet. Click &quot;Add Offering&quot; to create one.
           </div>
         ) : (
-          offerings.map((offering) => (
+          offerings.map((offering, index) => (
             <div
               key={offering.id}
-              className="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden"
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden transition-all ${
+                draggedIndex === index ? "opacity-50 scale-95" : ""
+              } ${
+                dragOverIndex === index && draggedIndex !== index
+                  ? "ring-2 ring-blue-500 border-blue-500"
+                  : ""
+              } ${reordering ? "cursor-wait" : "cursor-move"}`}
             >
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <GripVertical className="w-5 h-5 text-zinc-400 cursor-move" />
+                      <GripVertical
+                        className={`w-5 h-5 text-zinc-400 ${
+                          reordering ? "cursor-wait" : "cursor-move"
+                        }`}
+                      />
+                      {/* Order controls */}
+                      <div className="flex flex-col items-center gap-0.5">
+                        <button
+                          onClick={() => moveItem(index, -1)}
+                          disabled={index === 0 || reordering}
+                          className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Move up"
+                          aria-label="Move up"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <span className="text-xs font-semibold text-zinc-500 min-w-[1.5rem] text-center">
+                          {(offering.display_order || index + 1)}
+                        </span>
+                        <button
+                          onClick={() => moveItem(index, 1)}
+                          disabled={index === offerings.length - 1 || reordering}
+                          className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Move down"
+                          aria-label="Move down"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                      </div>
                       <h3 className="text-xl font-bold text-zinc-900">
                         {offering.title}
                       </h3>
