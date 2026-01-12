@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Save, X, Eye, EyeOff } from "lucide-react";
+import { Pencil, Save, X } from "lucide-react";
 
 export default function ContentManageClient({ sections: initialSections }) {
   const router = useRouter();
@@ -16,7 +16,6 @@ export default function ContentManageClient({ sections: initialSections }) {
     setEditForm({
       title: section.title,
       description: section.description,
-      is_active: section.is_active,
     });
   };
 
@@ -34,7 +33,6 @@ export default function ContentManageClient({ sections: initialSections }) {
         body: JSON.stringify({
           title: editForm.title,
           description: editForm.description,
-          is_active: editForm.is_active,
         }),
       });
 
@@ -61,39 +59,13 @@ export default function ContentManageClient({ sections: initialSections }) {
     }
   };
 
-  const toggleActive = async (section) => {
-    try {
-      const newStatus = !section.is_active;
-      
-      const response = await fetch(`/api/sections/${section.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_active: newStatus }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update status");
-      }
-
-      const { data: updatedSection } = await response.json();
-
-      setSections(
-        sections.map((s) => (s.id === section.id ? updatedSection : s))
-      );
-      router.refresh();
-    } catch (err) {
-      console.error("Error toggling status:", err);
-      alert(err.message || "Failed to update status");
-    }
-  };
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-zinc-900 mb-2">Content Management</h1>
-          <p className="text-zinc-600">Manage titles, descriptions, and visibility for all sections</p>
+          <p className="text-zinc-600">Manage titles and descriptions for all sections</p>
         </div>
 
         <div className="space-y-4">
@@ -130,20 +102,6 @@ export default function ContentManageClient({ sections: initialSections }) {
                     />
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={editForm.is_active}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, is_active: e.target.checked })
-                      }
-                      className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
-                    />
-                    <label className="text-sm font-medium text-zinc-700">
-                      Show on website
-                    </label>
-                  </div>
-
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => handleSave(section.id)}
@@ -170,15 +128,6 @@ export default function ContentManageClient({ sections: initialSections }) {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h2 className="text-xl font-bold text-zinc-900">{section.title}</h2>
-                        <span
-                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            section.is_active
-                              ? "bg-green-100 text-green-800"
-                              : "bg-zinc-100 text-zinc-600"
-                          }`}
-                        >
-                          {section.is_active ? "Active" : "Inactive"}
-                        </span>
                       </div>
                       <p className="text-sm text-zinc-500 mb-2">Slug: /{section.slug}</p>
                       {section.description && (
@@ -186,17 +135,6 @@ export default function ContentManageClient({ sections: initialSections }) {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => toggleActive(section)}
-                        className="p-2 text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors"
-                        title={section.is_active ? "Hide section" : "Show section"}
-                      >
-                        {section.is_active ? (
-                          <Eye className="w-5 h-5" />
-                        ) : (
-                          <EyeOff className="w-5 h-5" />
-                        )}
-                      </button>
                       <button
                         onClick={() => handleEdit(section)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
