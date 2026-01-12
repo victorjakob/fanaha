@@ -20,7 +20,15 @@ export default async function AltarManagePage() {
 
   if (error) {
     console.error("Error fetching altar artworks:", error);
+    console.error("Error details:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    });
   }
+
+  console.log("Fetched altar artworks:", artworks?.length || 0, "items");
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">

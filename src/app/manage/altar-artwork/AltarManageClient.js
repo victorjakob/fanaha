@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/util/supabase/supabaseClient";
 import { Plus, Trash2, Upload } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
@@ -66,17 +65,28 @@ export default function AltarManageClient({ initialArtworks, section }) {
         crop: "fill",
       });
 
-      // Insert into database with both public_id and URL
-      const { data: newArtwork, error: dbError } = await supabase
-        .from("fanaha_altar_artworks")
-        .insert([{ 
+      // Insert into database via API route (uses server-side Supabase with service role key)
+      const response = await fetch("/api/altar-artworks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           image_public_id: publicId,
           image_url: imageUrl // backward compatibility
-        }])
-        .select()
-        .single();
+        }),
+      });
 
-      if (dbError) throw dbError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save artwork");
+      }
+
+      const { data: newArtwork } = await response.json();
+
+      if (!newArtwork) {
+        throw new Error("Insert succeeded but no data returned");
+      }
+
+      console.log("Successfully inserted artwork:", newArtwork);
 
       setArtworks([newArtwork, ...artworks]);
       setToast({ message: "Artwork added successfully!", type: "success" });
@@ -89,7 +99,17 @@ export default function AltarManageClient({ initialArtworks, section }) {
       router.refresh();
     } catch (err) {
       console.error("Upload error:", err);
-      setToast({ message: "Failed to upload artwork", type: "error" });
+      console.error("Error details:", {
+        message: err.message,
+        details: err.details,
+        hint: err.hint,
+        code: err.code,
+        stack: err.stack,
+      });
+      setToast({ 
+        message: err.message || "Failed to upload artwork", 
+        type: "error" 
+      });
       // Clean up on error too
       setShowCropper(false);
       setTempImageSrc(null);
@@ -122,12 +142,14 @@ export default function AltarManageClient({ initialArtworks, section }) {
     setArtworkToDelete(null);
 
     try {
-      const { error } = await supabase
-        .from("fanaha_altar_artworks")
-        .delete()
-        .eq("id", artworkToDelete.id);
+      const response = await fetch(`/api/altar-artworks/${artworkToDelete.id}`, {
+        method: "DELETE",
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete artwork");
+      }
 
       setToast({ message: "Artwork deleted successfully!", type: "success" });
       router.refresh();
