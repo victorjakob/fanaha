@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/util/supabase/supabaseClient";
 import { Pencil, Save, X, Eye, EyeOff } from "lucide-react";
 
 export default function ContentManageClient({ sections: initialSections }) {
@@ -29,23 +28,26 @@ export default function ContentManageClient({ sections: initialSections }) {
   const handleSave = async (sectionId) => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("fanaha_sections")
-        .update({
+      const response = await fetch(`/api/sections/${sectionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: editForm.title,
           description: editForm.description,
           is_active: editForm.is_active,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", sectionId);
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save changes");
+      }
+
+      const { data: updatedSection } = await response.json();
 
       setSections(
         sections.map((s) =>
-          s.id === sectionId
-            ? { ...s, ...editForm, updated_at: new Date().toISOString() }
-            : s
+          s.id === sectionId ? updatedSection : s
         )
       );
       setEditingId(null);
@@ -53,7 +55,7 @@ export default function ContentManageClient({ sections: initialSections }) {
       router.refresh();
     } catch (err) {
       console.error("Error saving:", err);
-      alert("Failed to save changes");
+      alert(err.message || "Failed to save changes");
     } finally {
       setSaving(false);
     }
@@ -62,20 +64,27 @@ export default function ContentManageClient({ sections: initialSections }) {
   const toggleActive = async (section) => {
     try {
       const newStatus = !section.is_active;
-      const { error } = await supabase
-        .from("fanaha_sections")
-        .update({ is_active: newStatus })
-        .eq("id", section.id);
+      
+      const response = await fetch(`/api/sections/${section.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: newStatus }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update status");
+      }
+
+      const { data: updatedSection } = await response.json();
 
       setSections(
-        sections.map((s) => (s.id === section.id ? { ...s, is_active: newStatus } : s))
+        sections.map((s) => (s.id === section.id ? updatedSection : s))
       );
       router.refresh();
     } catch (err) {
       console.error("Error toggling status:", err);
-      alert("Failed to update status");
+      alert(err.message || "Failed to update status");
     }
   };
 

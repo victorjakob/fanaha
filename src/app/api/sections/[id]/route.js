@@ -1,0 +1,29 @@
+import { NextResponse } from "next/server";
+import { createServerSupabase } from "@/util/supabase/server";
+
+const supabase = createServerSupabase();
+
+export async function PATCH(req, { params }) {
+  // For now, we'll skip auth check
+  // Later you can add: await assertAdmin();
+
+  const { id } = await params;
+  const patch = await req.json();
+
+  const { data, error } = await supabase
+    .from("fanaha_sections")
+    .update({
+      ...patch,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("Error updating section:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ data });
+}
