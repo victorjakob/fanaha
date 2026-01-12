@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FaInstagram, FaFacebookF, FaEnvelope } from "react-icons/fa";
 import { Send, Loader2 } from "lucide-react";
 
-export default function ContactClient() {
+export default function OrderClient() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    subject: "",
+    artPieceName: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,7 +27,7 @@ export default function ContactClient() {
     setSuccess(false);
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch("/api/order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,21 +38,23 @@ export default function ContactClient() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send message");
+        throw new Error(data.error || "Failed to submit order request");
       }
 
       setSuccess(true);
       setFormData({
         name: "",
         email: "",
-        subject: "",
+        artPieceName: "",
         message: "",
       });
 
       // Hide success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000);
     } catch (err) {
-      setError(err.message || "Failed to send message. Please try again.");
+      setError(
+        err.message || "Failed to submit order request. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -82,21 +83,26 @@ export default function ContactClient() {
           className="text-center mb-12"
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl mb-6 tracking-wider">
-            Get in Touch
+            Commission Your Art
           </h1>
           <p className="text-base sm:text-lg text-zinc-700 max-w-xl mx-auto px-4 leading-loose tracking-wide">
-            Have a question about my work, interested in a commission, or just
-            want to connect? I&apos;d love to hear from you.
+            Transform your sacred space with a custom alchemical art piece. Each
+            creation is crafted with intention, infused with symbolism, and
+            designed to resonate with your unique journey.
+          </p>
+          <p className="text-base sm:text-lg text-zinc-600 max-w-xl mx-auto px-4 mt-4 leading-loose tracking-wide">
+            I will answer your request and we will have a further conversation
+            about your journey and vision.
           </p>
         </motion.div>
 
-        {/* Contact Form */}
+        {/* Order Form */}
         <motion.form
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           onSubmit={handleSubmit}
-          className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8 sm:p-10 border border-zinc-200 mb-12"
+          className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8 sm:p-10 border border-zinc-200"
           style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
         >
           <div className="space-y-6">
@@ -106,7 +112,7 @@ export default function ContactClient() {
                 htmlFor="name"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Name
+                Your Name
               </label>
               <input
                 type="text"
@@ -126,7 +132,7 @@ export default function ContactClient() {
                 htmlFor="email"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Email
+                Email Address
               </label>
               <input
                 type="email"
@@ -140,23 +146,23 @@ export default function ContactClient() {
               />
             </div>
 
-            {/* Subject */}
+            {/* Art Piece Name */}
             <div>
               <label
-                htmlFor="subject"
+                htmlFor="artPieceName"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Subject
+                Art Piece Interest
               </label>
               <input
                 type="text"
-                id="subject"
-                name="subject"
-                value={formData.subject}
+                id="artPieceName"
+                name="artPieceName"
+                value={formData.artPieceName}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all"
-                placeholder="What's this about?"
+                placeholder="e.g., Custom Alchemical Art Piece, Altar Artwork, etc."
               />
             </div>
 
@@ -166,7 +172,7 @@ export default function ContactClient() {
                 htmlFor="message"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Message
+                Tell Me About Your Vision
               </label>
               <textarea
                 id="message"
@@ -176,14 +182,15 @@ export default function ContactClient() {
                 required
                 rows={6}
                 className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all resize-none"
-                placeholder="Tell me about your inquiry..."
+                placeholder="Share your vision, intentions, preferred dimensions, color palette, or any specific symbolism you'd like to incorporate..."
               />
             </div>
 
             {/* Success Message */}
             {success && (
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-center">
-                ✅ Message sent successfully! I&apos;ll get back to you soon.
+                ✅ Your commission request has been received! I&apos;ll get back
+                to you soon to discuss your vision.
               </div>
             )}
 
@@ -203,64 +210,17 @@ export default function ContactClient() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Sending...
+                  Submitting...
                 </>
               ) : (
                 <>
                   <Send className="w-5 h-5" />
-                  Send Message
+                  Submit Commission Request
                 </>
               )}
             </button>
           </div>
         </motion.form>
-
-        {/* Social Media Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center"
-        >
-          <h2 className="text-2xl sm:text-3xl mb-6 tracking-wide">
-            Connect With Me
-          </h2>
-          <div className="flex gap-6 justify-center">
-            <a
-              href="https://www.instagram.com/fanaha"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-4 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:bg-white"
-              aria-label="Instagram"
-            >
-              <FaInstagram className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
-            </a>
-            <a
-              href="https://www.facebook.com/fanahacrea"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-4 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:bg-white"
-              aria-label="Facebook"
-            >
-              <FaFacebookF className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
-            </a>
-            <a
-              href="mailto:fanahacrea@gmail.com"
-              className="p-4 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:bg-white"
-              aria-label="Email"
-            >
-              <FaEnvelope className="w-7 h-7 sm:w-8 sm:h-8 text-zinc-700" />
-            </a>
-          </div>
-          <p className="mt-6 text-zinc-600">
-            <a
-              href="mailto:fanahacrea@gmail.com"
-              className="hover:text-zinc-900 transition-colors"
-            >
-              fanahacrea@gmail.com
-            </a>
-          </p>
-        </motion.div>
       </div>
     </main>
   );

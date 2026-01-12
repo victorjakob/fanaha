@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
-import { Save, Plus, Trash2, X } from "lucide-react";
+import { Save, Plus, Trash2, X, CheckCircle2 } from "lucide-react";
 import Toast from "../Toast";
 
 export default function AboutManageClient({ content: initialContent }) {
   const router = useRouter();
   const [content, setContent] = useState(initialContent);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [toast, setToast] = useState(null);
 
   // Form state
@@ -26,8 +27,15 @@ export default function AboutManageClient({ content: initialContent }) {
     content.quote_author || "— Fanaha"
   );
   const [instagram, setInstagram] = useState(content.socials?.instagram || "");
+  const [instagramEnabled, setInstagramEnabled] = useState(content.socials?.instagram_enabled ?? false);
   const [youtube, setYoutube] = useState(content.socials?.youtube || "");
+  const [youtubeEnabled, setYoutubeEnabled] = useState(content.socials?.youtube_enabled ?? false);
   const [spotify, setSpotify] = useState(content.socials?.spotify || "");
+  const [spotifyEnabled, setSpotifyEnabled] = useState(content.socials?.spotify_enabled ?? false);
+  const [facebook, setFacebook] = useState(content.socials?.facebook || "");
+  const [facebookEnabled, setFacebookEnabled] = useState(content.socials?.facebook_enabled ?? false);
+  const [email, setEmail] = useState(content.socials?.email || "");
+  const [emailEnabled, setEmailEnabled] = useState(content.socials?.email_enabled ?? false);
 
   const handleSave = async () => {
     setSaving(true);
@@ -45,8 +53,15 @@ export default function AboutManageClient({ content: initialContent }) {
           quote_author: quoteAuthor,
           socials: {
             instagram,
+            instagram_enabled: instagramEnabled,
             youtube,
+            youtube_enabled: youtubeEnabled,
             spotify,
+            spotify_enabled: spotifyEnabled,
+            facebook,
+            facebook_enabled: facebookEnabled,
+            email,
+            email_enabled: emailEnabled,
           },
           updated_at: new Date().toISOString(),
         })
@@ -54,10 +69,15 @@ export default function AboutManageClient({ content: initialContent }) {
 
       if (error) throw error;
 
+      setSaved(true);
       setToast({
         message: "About content saved successfully!",
         type: "success",
       });
+      
+      // Reset saved state after 3 seconds
+      setTimeout(() => setSaved(false), 3000);
+      
       router.refresh();
     } catch (err) {
       console.error("Save error:", err);
@@ -114,7 +134,7 @@ export default function AboutManageClient({ content: initialContent }) {
 
   return (
     <div
-      className="max-w-5xl mx-auto"
+      className="max-w-5xl mx-auto pb-24"
       style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
     >
       <div className="mb-8">
@@ -338,59 +358,189 @@ export default function AboutManageClient({ content: initialContent }) {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-zinc-900">Social Links</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
-                Instagram URL
-              </label>
+          <div className="space-y-4">
+            {/* Instagram */}
+            <div className="p-4 bg-zinc-50 rounded-lg">
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="checkbox"
+                  id="instagram-enabled"
+                  checked={instagramEnabled}
+                  onChange={(e) => setInstagramEnabled(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="instagram-enabled" className="text-sm font-semibold text-zinc-900">
+                  Enable Instagram
+                </label>
+              </div>
               <input
                 type="text"
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
                 placeholder="https://instagram.com/..."
-                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                disabled={!instagramEnabled}
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
-                YouTube URL
-              </label>
+            {/* YouTube */}
+            <div className="p-4 bg-zinc-50 rounded-lg">
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="checkbox"
+                  id="youtube-enabled"
+                  checked={youtubeEnabled}
+                  onChange={(e) => setYoutubeEnabled(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="youtube-enabled" className="text-sm font-semibold text-zinc-900">
+                  Enable YouTube
+                </label>
+              </div>
               <input
                 type="text"
                 value={youtube}
                 onChange={(e) => setYoutube(e.target.value)}
                 placeholder="https://youtube.com/..."
-                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                disabled={!youtubeEnabled}
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
-                Spotify URL
-              </label>
+            {/* Spotify */}
+            <div className="p-4 bg-zinc-50 rounded-lg">
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="checkbox"
+                  id="spotify-enabled"
+                  checked={spotifyEnabled}
+                  onChange={(e) => setSpotifyEnabled(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="spotify-enabled" className="text-sm font-semibold text-zinc-900">
+                  Enable Spotify
+                </label>
+              </div>
               <input
                 type="text"
                 value={spotify}
                 onChange={(e) => setSpotify(e.target.value)}
                 placeholder="https://spotify.com/..."
-                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                disabled={!spotifyEnabled}
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
+              />
+            </div>
+
+            {/* Facebook */}
+            <div className="p-4 bg-zinc-50 rounded-lg">
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="checkbox"
+                  id="facebook-enabled"
+                  checked={facebookEnabled}
+                  onChange={(e) => setFacebookEnabled(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="facebook-enabled" className="text-sm font-semibold text-zinc-900">
+                  Enable Facebook
+                </label>
+              </div>
+              <input
+                type="text"
+                value={facebook}
+                onChange={(e) => setFacebook(e.target.value)}
+                placeholder="https://facebook.com/..."
+                disabled={!facebookEnabled}
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
+              />
+            </div>
+
+            {/* Email */}
+            <div className="p-4 bg-zinc-50 rounded-lg">
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="checkbox"
+                  id="email-enabled"
+                  checked={emailEnabled}
+                  onChange={(e) => setEmailEnabled(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="email-enabled" className="text-sm font-semibold text-zinc-900">
+                  Enable Email
+                </label>
+              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                disabled={!emailEnabled}
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
               />
             </div>
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="pt-6 border-t border-zinc-200">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium flex items-center justify-center gap-2"
-          >
-            <Save className="w-5 h-5" />
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
+      </div>
+
+      {/* Floating Save Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`
+            group relative px-8 py-4 rounded-2xl shadow-2xl font-medium
+            transition-all duration-300 ease-out
+            flex items-center justify-center gap-2.5 min-w-[140px]
+            ${
+              saved
+                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white scale-105 shadow-green-500/50"
+                : saving
+                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-wait"
+                : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:shadow-blue-500/50 hover:scale-105 active:scale-95"
+            }
+            disabled:opacity-70 disabled:cursor-not-allowed
+            backdrop-blur-sm
+          `}
+        >
+          {saving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm">Saving...</span>
+            </>
+          ) : saved ? (
+            <>
+              <div className="relative w-5 h-5 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={3}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <span className="text-sm font-semibold">Saved!</span>
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-semibold">Save</span>
+            </>
+          )}
+          
+          {/* Success ripple effect */}
+          {saved && (
+            <>
+              <div className="absolute inset-0 rounded-2xl bg-green-400/40 animate-ping opacity-75" />
+              <div className="absolute -inset-1 rounded-2xl bg-green-500/20 blur-xl animate-pulse" />
+            </>
+          )}
+        </button>
       </div>
 
       {/* Toast Notifications */}

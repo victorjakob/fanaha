@@ -16,11 +16,6 @@ export default function AlchemyGallery({ artPieces }) {
     return (
       <div className="text-zinc-400 text-center py-12">
         <p>No art pieces found.</p>
-        {process.env.NODE_ENV === "development" && (
-          <p className="text-xs mt-2 text-zinc-500">
-            Check console for Supabase connection errors.
-          </p>
-        )}
       </div>
     );
   }

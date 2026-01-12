@@ -29,10 +29,10 @@ export default function Footer({ footerContent }) {
             {description}
           </p>
           <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-medium tracking-wide transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            href="/order"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-bold tracking-widest transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            <span>Start Your Commission</span>
+            <span className="font-extrabold">GET YOURS</span>
             <svg
               className="w-5 h-5"
               fill="none"

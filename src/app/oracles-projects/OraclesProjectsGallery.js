@@ -119,11 +119,11 @@ export default function OraclesProjectsGallery({ items }) {
                     <OptimizedImage
                       publicId={imageSource}
                       alt={`${item.name} - Image ${imageIndex + 1}`}
-                      width={600}
-                      height={800}
+                      width={1200}
+                      height={1600}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                      crop="fill"
+                      className="w-full h-auto object-contain"
+                      crop="fit"
                     />
                     {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />

@@ -17,8 +17,15 @@ export default function AboutClient({ content }) {
 
   const socials = content?.socials || {
     instagram: "https://instagram.com/fanaha7",
+    instagram_enabled: false,
     youtube: "#",
+    youtube_enabled: false,
     spotify: "#",
+    spotify_enabled: false,
+    facebook: "",
+    facebook_enabled: false,
+    email: "",
+    email_enabled: false,
   };
 
   const pillars = content?.pillars || [
@@ -226,40 +233,66 @@ export default function AboutClient({ content }) {
         </motion.div>
 
         {/* Social Links */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-          className="w-full text-center mb-16"
-        >
-          <h2 className="text-2xl sm:text-3xl mb-8 tracking-wide">Connect</h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href={socials.instagram}
-              target="_blank"
-              rel="noreferrer"
-              className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
-            >
-              Instagram
-            </a>
-            <a
-              href={socials.youtube}
-              target="_blank"
-              rel="noreferrer"
-              className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
-            >
-              YouTube
-            </a>
-            <a
-              href={socials.spotify}
-              target="_blank"
-              rel="noreferrer"
-              className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
-            >
-              Spotify
-            </a>
-          </div>
-        </motion.div>
+        {(socials.instagram_enabled || socials.youtube_enabled || socials.spotify_enabled || socials.facebook_enabled || socials.email_enabled) && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+            className="w-full text-center mb-16"
+          >
+            <h2 className="text-2xl sm:text-3xl mb-8 tracking-wide">Connect</h2>
+            <div className="flex flex-wrap justify-center gap-4">
+              {socials.instagram_enabled && socials.instagram && (
+                <a
+                  href={socials.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
+                >
+                  Instagram
+                </a>
+              )}
+              {socials.youtube_enabled && socials.youtube && (
+                <a
+                  href={socials.youtube}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
+                >
+                  YouTube
+                </a>
+              )}
+              {socials.spotify_enabled && socials.spotify && (
+                <a
+                  href={socials.spotify}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
+                >
+                  Spotify
+                </a>
+              )}
+              {socials.facebook_enabled && socials.facebook && (
+                <a
+                  href={socials.facebook}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
+                >
+                  Facebook
+                </a>
+              )}
+              {socials.email_enabled && socials.email && (
+                <a
+                  href={`mailto:${socials.email}`}
+                  className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
+                >
+                  Email
+                </a>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Decorative Element */}
         <motion.div
