@@ -3,6 +3,9 @@ import AlchemyGallery from "./Gallery";
 import { createServerSupabase } from "@/util/supabase/server";
 import Image from "next/image";
 
+// Revalidate every 60 seconds to ensure fresh content
+export const revalidate = 60;
+
 export default async function AlchemyPage() {
   const supabase = createServerSupabase();
 

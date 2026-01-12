@@ -6,6 +6,9 @@ export const metadata = {
   description: "Learn more about Fanaha and the creative journey",
 };
 
+// Revalidate every 60 seconds to ensure fresh content
+export const revalidate = 60;
+
 export default async function AboutPage() {
   const supabase = createServerSupabase();
 

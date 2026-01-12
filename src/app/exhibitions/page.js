@@ -2,6 +2,9 @@ import AlchemyHeader from "../alchemy/Header";
 import ExhibitionsGallery from "./ExhibitionsGallery";
 import { createServerSupabase } from "@/util/supabase/server";
 
+// Revalidate every 60 seconds to ensure fresh content
+export const revalidate = 60;
+
 export default async function ExhibitionsPage() {
   const supabase = createServerSupabase();
 
