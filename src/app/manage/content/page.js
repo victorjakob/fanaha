@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/util/supabase/server";
 import ContentManageClient from "./ContentManageClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function ContentManagePage() {
   const supabase = createServerSupabase();
   const { data: sections } = await supabase
@@ -10,5 +12,3 @@ export default async function ContentManagePage() {
 
   return <ContentManageClient sections={sections || []} />;
 }
-
-

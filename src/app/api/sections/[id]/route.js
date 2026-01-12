@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/util/supabase/server";
 
-const supabase = createServerSupabase();
+export const dynamic = 'force-dynamic';
 
 export async function PATCH(req, { params }) {
   // For now, we'll skip auth check
   // Later you can add: await assertAdmin();
 
+  const supabase = createServerSupabase();
   const { id } = await params;
   const patch = await req.json();
 
