@@ -12,17 +12,24 @@ const getOfferingLinks = (title) => {
     titleLower.includes("alchemical art") ||
     titleLower.includes("commission")
   ) {
-    return { seeMore: "/alchemy", getYours: "/contact" };
+    return { seeMore: "/alchemy", getYours: "/order" };
   } else if (titleLower.includes("altar")) {
-    return { seeMore: "/altar", getYours: "/contact" };
+    return { seeMore: "/altar", getYours: "/order" };
   } else if (titleLower.includes("mural")) {
-    return { seeMore: "/murals", getYours: "/contact" };
+    return { seeMore: "/murals", getYours: "/order" };
   } else if (titleLower.includes("oracle") || titleLower.includes("project")) {
-    return { seeMore: "/oracles-projects", getYours: "/contact" };
+    return { seeMore: "/oracles-projects", getYours: "/order" };
+  } else if (
+    titleLower.includes("grand scale") ||
+    titleLower.includes("grandscale") ||
+    titleLower.includes("personal creation")
+  ) {
+    // Grand scale personal creation - only "Get Yours" button, no "See More"
+    return { seeMore: null, getYours: "/order" };
   }
 
   // Default fallback
-  return { seeMore: "/contact", getYours: "/contact" };
+  return { seeMore: "/contact", getYours: "/order" };
 };
 
 export default function OfferingsSection({ offerings }) {
@@ -118,25 +125,27 @@ export default function OfferingsSection({ offerings }) {
                     : "justify-center"
                 }`}
               >
-                <Link
-                  href={links.seeMore}
-                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-zinc-400 text-zinc-800 rounded-full font-semibold tracking-wide hover:border-zinc-500 hover:text-zinc-900 transition-colors"
-                >
-                  See More
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                {links.seeMore && (
+                  <Link
+                    href={links.seeMore}
+                    className="inline-flex items-center gap-2 px-6 py-3 border-2 border-zinc-400 text-zinc-800 rounded-full font-semibold tracking-wide hover:border-zinc-500 hover:text-zinc-900 transition-colors"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
+                    See More
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </Link>
+                )}
                 <Link
                   href={links.getYours}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-200 text-zinc-900 rounded-full font-semibold tracking-wide hover:bg-zinc-300 transition-colors"
