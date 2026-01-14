@@ -6,7 +6,10 @@ import { supabase } from "../../../../util/supabase/supabaseClient";
 import ImageCropper from "../../create/ImageCropper";
 import { getCroppedImg } from "../../create/cropImage";
 import ColorThief from "color-thief-browser";
-import { uploadToCloudinary, uploadMultipleToCloudinary } from "@/lib/cloudinary-upload";
+import {
+  uploadToCloudinary,
+  uploadMultipleToCloudinary,
+} from "@/lib/cloudinary-upload";
 import { cldUrlEnhanced, isCloudinaryId } from "@/lib/cloudinary";
 
 export default function EditForm({ piece }) {
@@ -23,13 +26,15 @@ export default function EditForm({ piece }) {
     videoUrl: piece.video_url || "",
     mainImage: null,
     // Use public_ids if available, otherwise fall back to images URLs
-    images: piece.images_public_ids 
-      ? piece.images_public_ids.slice(1) 
-      : (piece.images ? piece.images.slice(1) : []), // exclude main image
+    images: piece.images_public_ids
+      ? piece.images_public_ids.slice(1)
+      : piece.images
+      ? piece.images.slice(1)
+      : [], // exclude main image
   });
   const [mainImagePreview, setMainImagePreview] = useState(
     // Use public_id to generate URL if available, otherwise use existing URL
-    piece.main_image_public_id 
+    piece.main_image_public_id
       ? cldUrlEnhanced({
           publicId: piece.main_image_public_id,
           width: 400,
@@ -38,7 +43,7 @@ export default function EditForm({ piece }) {
           crop: "fill",
           aspectRatio: "1:1",
         })
-      : (piece.main_image || (piece.images && piece.images[0]) || null)
+      : piece.main_image || (piece.images && piece.images[0]) || null
   );
   const [galleryPreviews, setGalleryPreviews] = useState(() => {
     // Generate preview URLs from public_ids if available
@@ -185,14 +190,14 @@ export default function EditForm({ piece }) {
       if (form.mainImage) {
         paletteArr = await extractPalette(form.mainImage);
         setPalette(paletteArr);
-        
+
         // Upload to Cloudinary
         mainImagePublicId = await uploadToCloudinary(
           form.mainImage,
           `fanaha/alchemy/${form.slug}`,
           { alwaysCompress: true }
         );
-        
+
         // Generate optimized URL
         mainImageUrl = cldUrlEnhanced({
           publicId: mainImagePublicId,
@@ -206,8 +211,10 @@ export default function EditForm({ piece }) {
 
       // Handle gallery images
       const newGalleryFiles = form.images.filter((img) => img instanceof File);
-      const existingImageIds = form.images.filter((img) => typeof img === "string");
-      
+      const existingImageIds = form.images.filter(
+        (img) => typeof img === "string"
+      );
+
       // Upload new gallery images in parallel
       if (newGalleryFiles.length > 0) {
         const newPublicIds = await uploadMultipleToCloudinary(
@@ -216,10 +223,10 @@ export default function EditForm({ piece }) {
           null,
           { alwaysCompress: true }
         );
-        
+
         // Combine existing public_ids with new ones
         imagesPublicIds = [...existingImageIds, ...newPublicIds];
-        
+
         // Generate URLs for all images (existing + new)
         imageUrls = imagesPublicIds.map((publicId) =>
           cldUrlEnhanced({
@@ -352,7 +359,7 @@ export default function EditForm({ piece }) {
               name="title"
               value={form.title}
               onChange={handleChange}
-              className="w-full text-center rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-xl font-semibold shadow-sm"
+              className="w-full text-center rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-xl font-normal shadow-sm"
               required
               disabled={loading}
             />
@@ -366,8 +373,9 @@ export default function EditForm({ piece }) {
               name="description"
               value={form.description}
               onChange={handleChange}
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
-              rows={3}
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-left shadow-sm resize-y"
+              rows={5}
+              placeholder="Enter description... (Press Enter for new lines)"
               disabled={loading}
             />
           </div>
@@ -381,7 +389,7 @@ export default function EditForm({ piece }) {
               name="dimension"
               value={form.dimension}
               onChange={handleChange}
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
           </div>
@@ -396,7 +404,7 @@ export default function EditForm({ piece }) {
               value={form.price}
               onChange={handleChange}
               placeholder="0"
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
           </div>
@@ -413,7 +421,7 @@ export default function EditForm({ piece }) {
               placeholder={new Date().getFullYear().toString()}
               min="1900"
               max="2100"
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
           </div>
@@ -428,7 +436,7 @@ export default function EditForm({ piece }) {
               value={form.videoUrl}
               onChange={handleChange}
               placeholder="https://www.instagram.com/p/..."
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
             <p className="text-sm text-zinc-500">
@@ -444,7 +452,7 @@ export default function EditForm({ piece }) {
               name="status"
               value={form.status}
               onChange={handleChange}
-              className="w-48 rounded-xl px-4 py-2 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-48 rounded-xl px-4 py-2 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             >
               <option value="available">Available</option>

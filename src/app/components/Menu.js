@@ -39,7 +39,7 @@ export default function Menu({ menuOpen, onMenuToggle }) {
                 {[
                   { label: "Alchemical Art Pieces", href: "/alchemy" },
                   { label: "Altar Artwork", href: "/altar" },
-                  { label: "Murals", href: "/murals" },
+                  { label: "Big Scale", href: "/murals" },
                   { label: "Exhibitions", href: "/exhibitions" },
                   { label: "Oracles & Projects", href: "/oracles-projects" },
                   { label: "What I Offer", href: "/what-i-offer" },

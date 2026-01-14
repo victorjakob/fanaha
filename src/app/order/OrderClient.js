@@ -9,7 +9,6 @@ export default function OrderClient() {
     name: "",
     email: "",
     artPieceName: "",
-    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -46,7 +45,6 @@ export default function OrderClient() {
         name: "",
         email: "",
         artPieceName: "",
-        message: "",
       });
 
       // Hide success message after 5 seconds
@@ -89,10 +87,6 @@ export default function OrderClient() {
             Transform your sacred space with a custom alchemical art piece. Each
             creation is crafted with intention, infused with symbolism, and
             designed to resonate with your unique journey.
-          </p>
-          <p className="text-base sm:text-lg text-zinc-600 max-w-xl mx-auto px-4 mt-4 leading-loose tracking-wide">
-            I will answer your request and we will have a further conversation
-            about your journey and vision.
           </p>
         </motion.div>
 
@@ -166,26 +160,6 @@ export default function OrderClient() {
               />
             </div>
 
-            {/* Message */}
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-sm font-semibold text-zinc-700 mb-2"
-              >
-                Tell Me About Your Vision
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                required
-                rows={6}
-                className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all resize-none"
-                placeholder="Share your vision, intentions, preferred dimensions, color palette, or any specific symbolism you'd like to incorporate..."
-              />
-            </div>
-
             {/* Success Message */}
             {success && (
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-center">
@@ -201,24 +175,30 @@ export default function OrderClient() {
               </div>
             )}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-br from-purple-700 to-violet-900 hover:from-purple-800 hover:to-violet-950 text-white font-bold py-4 px-8 rounded-full shadow-xl transition-all text-lg tracking-wide focus:outline-none focus:ring-4 focus:ring-purple-300 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Send className="w-5 h-5" />
-                  Submit Commission Request
-                </>
-              )}
-            </button>
+            {/* Message and Submit Button */}
+            <div className="space-y-4">
+              <p className="text-base sm:text-lg text-zinc-600 text-center leading-relaxed tracking-wide italic">
+                I welcome your request and delight in the opportunity to channel your unique universe onto canvas.
+              </p>
+              
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-br from-purple-700 to-violet-900 hover:from-purple-800 hover:to-violet-950 text-white font-bold py-4 px-8 rounded-full shadow-xl transition-all text-lg tracking-wide focus:outline-none focus:ring-4 focus:ring-purple-300 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    Submit Commission Request
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </motion.form>
       </div>

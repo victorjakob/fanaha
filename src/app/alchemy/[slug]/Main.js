@@ -91,7 +91,7 @@ export default function AlchemyArtPieceDetailMain({ piece }) {
 
       {piece.description && (
         <motion.p
-          className="text-base sm:text-lg text-black/60 max-w-2xl mx-auto mb-8 leading-loose tracking-wide text-center px-6"
+          className="text-base sm:text-lg text-black/60 max-w-2xl mx-auto mb-8 leading-loose tracking-wide text-center px-6 whitespace-pre-line"
           style={{ fontWeight: 300 }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

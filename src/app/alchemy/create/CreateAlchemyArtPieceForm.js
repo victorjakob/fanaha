@@ -6,7 +6,10 @@ import { supabase } from "../../../util/supabase/supabaseClient";
 import ColorThief from "color-thief-browser";
 import ImageCropper from "./ImageCropper";
 import { getCroppedImg } from "./cropImage";
-import { uploadToCloudinary, uploadMultipleToCloudinary } from "@/lib/cloudinary-upload";
+import {
+  uploadToCloudinary,
+  uploadMultipleToCloudinary,
+} from "@/lib/cloudinary-upload";
 import { cldUrlEnhanced } from "@/lib/cloudinary";
 
 function slugify(str) {
@@ -206,7 +209,7 @@ export default function CreateAlchemyArtPieceForm() {
     setLoading(true);
     try {
       if (!form.mainImage) throw new Error("Main image is required");
-      
+
       // Ensure slug is unique
       const uniqueSlug = await generateUniqueSlug(form.slug, supabase);
       if (uniqueSlug !== form.slug) {
@@ -214,37 +217,38 @@ export default function CreateAlchemyArtPieceForm() {
         setForm((f) => ({ ...f, slug: uniqueSlug }));
         console.log(`Slug updated to: ${uniqueSlug} (original was taken)`);
       }
-      
+
       // Extract palette from main image
       const paletteArr = await extractPalette(form.mainImage);
       setPalette(paletteArr);
-      
+
       // Use the unique slug for uploads
       const finalSlug = uniqueSlug;
-      
+
       // Upload main image to Cloudinary
       const mainImagePublicId = await uploadToCloudinary(
         form.mainImage,
         `fanaha/alchemy/${finalSlug}`,
         { alwaysCompress: true }
       );
-      
+
       // Upload gallery images in parallel (much faster!)
-      const galleryPublicIds = form.images.length > 0
-        ? await uploadMultipleToCloudinary(
-            form.images,
-            `fanaha/alchemy/${finalSlug}/gallery`,
-            (progress) => {
-              // Optional: Update progress indicator
-              console.log(`Upload progress: ${Math.round(progress * 100)}%`);
-            },
-            { alwaysCompress: true }
-          )
-        : [];
-      
+      const galleryPublicIds =
+        form.images.length > 0
+          ? await uploadMultipleToCloudinary(
+              form.images,
+              `fanaha/alchemy/${finalSlug}/gallery`,
+              (progress) => {
+                // Optional: Update progress indicator
+                console.log(`Upload progress: ${Math.round(progress * 100)}%`);
+              },
+              { alwaysCompress: true }
+            )
+          : [];
+
       // Combine main image with gallery images
       const allPublicIds = [mainImagePublicId, ...galleryPublicIds];
-      
+
       // Generate full URLs for backward compatibility (existing code expects URLs)
       const mainImageUrl = cldUrlEnhanced({
         publicId: mainImagePublicId,
@@ -254,7 +258,7 @@ export default function CreateAlchemyArtPieceForm() {
         crop: "fill",
         aspectRatio: "1:1",
       });
-      
+
       const imageUrls = allPublicIds.map((publicId) =>
         cldUrlEnhanced({
           publicId,
@@ -264,7 +268,7 @@ export default function CreateAlchemyArtPieceForm() {
           crop: "fill",
         })
       );
-      
+
       // Get section_id for alchemical-art-pieces section
       const { data: section } = await supabase
         .from("fanaha_sections")
@@ -273,27 +277,29 @@ export default function CreateAlchemyArtPieceForm() {
         .single();
 
       // Insert into DB with both public_ids (new) and URLs (backward compatibility)
-      const { error: dbError } = await supabase.from("fanaha_alchemy_pieces").insert([
-        {
-          slug: finalSlug,
-          name: form.title,
-          description: form.description,
-          dimensions: form.dimension,
-          price: form.price ? parseFloat(form.price) : null,
-          year: form.year ? parseInt(form.year) : null,
-          status: form.status,
-          video_url: form.videoUrl || null,
-          section_id: section?.id || null, // Link to section for manage page
-          // New: Store Cloudinary public_ids
-          main_image_public_id: mainImagePublicId,
-          images_public_ids: allPublicIds,
-          // Backward compatibility: Also store full URLs (existing code uses these)
-          main_image: mainImageUrl,
-          images: imageUrls,
-          palette: paletteArr,
-        },
-      ]);
-      
+      const { error: dbError } = await supabase
+        .from("fanaha_alchemy_pieces")
+        .insert([
+          {
+            slug: finalSlug,
+            name: form.title,
+            description: form.description,
+            dimensions: form.dimension,
+            price: form.price ? parseFloat(form.price) : null,
+            year: form.year ? parseInt(form.year) : null,
+            status: form.status,
+            video_url: form.videoUrl || null,
+            section_id: section?.id || null, // Link to section for manage page
+            // New: Store Cloudinary public_ids
+            main_image_public_id: mainImagePublicId,
+            images_public_ids: allPublicIds,
+            // Backward compatibility: Also store full URLs (existing code uses these)
+            main_image: mainImageUrl,
+            images: imageUrls,
+            palette: paletteArr,
+          },
+        ]);
+
       if (dbError) throw dbError;
       setSuccess(true);
       setLoading(false);
@@ -378,7 +384,7 @@ export default function CreateAlchemyArtPieceForm() {
               name="title"
               value={form.title}
               onChange={handleChange}
-              className="w-full text-center rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-xl font-semibold shadow-sm"
+              className="w-full text-center rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-xl font-normal shadow-sm"
               required
               disabled={loading}
             />
@@ -392,8 +398,9 @@ export default function CreateAlchemyArtPieceForm() {
               name="description"
               value={form.description}
               onChange={handleChange}
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
-              rows={3}
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-left shadow-sm resize-y"
+              rows={5}
+              placeholder="Enter description... (Press Enter for new lines)"
               disabled={loading}
             />
           </div>
@@ -407,7 +414,7 @@ export default function CreateAlchemyArtPieceForm() {
               name="dimension"
               value={form.dimension}
               onChange={handleChange}
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
           </div>
@@ -422,7 +429,7 @@ export default function CreateAlchemyArtPieceForm() {
               value={form.price}
               onChange={handleChange}
               placeholder="0"
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
           </div>
@@ -439,7 +446,7 @@ export default function CreateAlchemyArtPieceForm() {
               placeholder={new Date().getFullYear().toString()}
               min="1900"
               max="2100"
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
           </div>
@@ -454,7 +461,7 @@ export default function CreateAlchemyArtPieceForm() {
               value={form.videoUrl}
               onChange={handleChange}
               placeholder="https://www.instagram.com/p/..."
-              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
             <p className="text-sm text-zinc-500">
@@ -470,7 +477,7 @@ export default function CreateAlchemyArtPieceForm() {
               name="status"
               value={form.status}
               onChange={handleChange}
-              className="w-48 rounded-xl px-4 py-2 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm"
+              className="w-48 rounded-xl px-4 py-2 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             >
               <option value="available">Available</option>

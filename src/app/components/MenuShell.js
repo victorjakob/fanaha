@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import RippleOverlay from "./RippleOverlay";
 import Menu from "./Menu";
 import TopBar from "./TopBar";
+import HamburgerMenu from "./HamburgerMenu";
 
 export default function MenuShell() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -18,6 +19,8 @@ export default function MenuShell() {
       {!menuOpen && !isHome && (
         <TopBar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       )}
+      {/* Hamburger menu - always visible */}
+      <HamburgerMenu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
       <Menu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
     </>
   );

@@ -7,6 +7,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { isCloudinaryId } from "@/lib/cloudinary";
 
 export default function AlchemyArtPieceGallery({ images, name }) {
   // Hooks must be called before any early returns
@@ -40,6 +41,63 @@ export default function AlchemyArtPieceGallery({ images, name }) {
 
   const prevImage = () => paginate(-1);
   const nextImage = () => paginate(1);
+
+  // Preload adjacent images for faster navigation
+  useEffect(() => {
+    if (lightboxIdx === null || galleryImages.length === 0) return;
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
+
+    const preloadImage = (publicId) => {
+      if (!publicId) return;
+
+      let imageUrl;
+      if (isCloudinaryId(publicId)) {
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        if (!cloudName) return;
+        // Preload full-size image for lightbox (600px max display, but request larger for quality)
+        imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto,w_1200/${publicId}`;
+      } else {
+        imageUrl = publicId;
+      }
+
+      // Check if already preloaded
+      const existingLink = document.querySelector(
+        `link[href="${imageUrl}"][data-preload="lightbox"]`
+      );
+      if (existingLink) return;
+
+      // Preload using link element
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = imageUrl;
+      link.setAttribute("data-preload", "lightbox");
+      document.head.appendChild(link);
+
+      // Also preload using Image object as fallback for better browser support
+      const img = new Image();
+      img.src = imageUrl;
+    };
+
+    // Preload current image at higher quality
+    if (galleryImages[lightboxIdx]) {
+      preloadImage(galleryImages[lightboxIdx]);
+    }
+
+    // Preload next image
+    const nextIdx = (lightboxIdx + 1) % galleryImages.length;
+    if (galleryImages[nextIdx] && nextIdx !== lightboxIdx) {
+      preloadImage(galleryImages[nextIdx]);
+    }
+
+    // Preload previous image
+    const prevIdx =
+      lightboxIdx === 0 ? galleryImages.length - 1 : lightboxIdx - 1;
+    if (galleryImages[prevIdx] && prevIdx !== lightboxIdx) {
+      preloadImage(galleryImages[prevIdx]);
+    }
+  }, [lightboxIdx, galleryImages]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -111,21 +169,85 @@ export default function AlchemyArtPieceGallery({ images, name }) {
       <AnimatePresence>
         {lightboxIdx !== null && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeLightbox}
-            tabIndex={-1}
           >
-            <motion.div
-              className="relative flex flex-col items-center w-full h-full"
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              onClick={(e) => e.stopPropagation()}
+            {/* Close button */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10 transition-colors"
+              aria-label="Close carousel"
             >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            {/* Navigation arrows */}
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                  aria-label="Previous image"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                  aria-label="Next image"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* Carousel image with swipe */}
+            <div className="relative w-full h-full flex items-center justify-center p-8">
               <AnimatePresence initial={false} custom={direction}>
                 <motion.div
                   key={lightboxIdx}
@@ -134,16 +256,19 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                     enter: (direction) => ({
                       x: direction > 0 ? 1000 : -1000,
                       opacity: 0,
+                      scale: 0.8,
                     }),
                     center: {
                       zIndex: 1,
                       x: 0,
                       opacity: 1,
+                      scale: 1,
                     },
                     exit: (direction) => ({
                       zIndex: 0,
                       x: direction < 0 ? 1000 : -1000,
                       opacity: 0,
+                      scale: 0.8,
                     }),
                   }}
                   initial="enter"
@@ -152,20 +277,25 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                   transition={{
                     x: { type: "spring", stiffness: 300, damping: 30 },
                     opacity: { duration: 0.2 },
+                    scale: { duration: 0.2 },
                   }}
-                  drag="x"
+                  drag={galleryImages.length > 1 ? "x" : false}
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={1}
                   onDragEnd={(e, { offset, velocity }) => {
                     const swipe = Math.abs(offset.x) * velocity.x;
-
-                    if (swipe < -10000) {
-                      nextImage();
-                    } else if (swipe > 10000) {
+                    if (swipe > 10000) {
                       prevImage();
+                    } else if (swipe < -10000) {
+                      nextImage();
                     }
                   }}
-                  className="absolute flex items-center justify-center w-full h-full"
+                  className="absolute flex items-center justify-center"
+                  style={{
+                    maxWidth: "min(90vw, 600px)",
+                    maxHeight: "min(90vh, 600px)",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <OptimizedImage
                     publicId={galleryImages[lightboxIdx]}
@@ -175,8 +305,8 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                     sizes="90vw"
                     className="rounded-xl shadow-2xl"
                     style={{
-                      maxWidth: "90vw",
-                      maxHeight: "80vh",
+                      width: "100%",
+                      height: "100%",
                       objectFit: "contain",
                       backgroundColor: "transparent",
                     }}
@@ -185,73 +315,14 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                   />
                 </motion.div>
               </AnimatePresence>
+            </div>
 
-              {/* Close button */}
-              <button
-                className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10"
-                onClick={closeLightbox}
-                aria-label="Close image preview"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-
-              {/* Navigation arrows - hidden on mobile, shown on desktop */}
-              <button
-                className="hidden sm:block absolute top-1/2 left-4 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-purple-700 rounded-full p-3 shadow-lg"
-                onClick={prevImage}
-                aria-label="Previous image"
-              >
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              <button
-                className="hidden sm:block absolute top-1/2 right-4 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-purple-700 rounded-full p-3 shadow-lg"
-                onClick={nextImage}
-                aria-label="Next image"
-              >
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-
-              {/* Swipe indicator (mobile only) */}
+            {/* Swipe indicator (mobile only) */}
+            {galleryImages.length > 1 && (
               <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
                 Swipe to navigate
               </div>
-            </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

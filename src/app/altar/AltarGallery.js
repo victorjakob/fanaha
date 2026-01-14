@@ -50,6 +50,67 @@ export default function AltarGallery({ artworks }) {
   const prevImage = useCallback(() => paginate(-1), [paginate]);
   const nextImage = useCallback(() => paginate(1), [paginate]);
 
+  // Preload adjacent images for faster navigation
+  useEffect(() => {
+    if (!lightboxOpen || !artworks || artworks.length === 0) return;
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
+
+    const preloadImage = (publicId) => {
+      if (!publicId) return;
+
+      let imageUrl;
+      if (isCloudinaryId(publicId)) {
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        if (!cloudName) return;
+        // Preload full-size image for lightbox (600px max display, but request larger for quality)
+        imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto,w_1200/${publicId}`;
+      } else {
+        imageUrl = publicId;
+      }
+
+      // Check if already preloaded
+      const existingLink = document.querySelector(
+        `link[href="${imageUrl}"][data-preload="lightbox"]`
+      );
+      if (existingLink) return;
+
+      // Preload using link element
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = imageUrl;
+      link.setAttribute("data-preload", "lightbox");
+      document.head.appendChild(link);
+
+      // Also preload using Image object as fallback for better browser support
+      const img = new Image();
+      img.src = imageUrl;
+    };
+
+    // Get all image sources
+    const imageSources = artworks.map(
+      (artwork) => artwork.image_public_id || artwork.image_url
+    );
+
+    // Preload current image at higher quality
+    if (imageSources[currentIndex]) {
+      preloadImage(imageSources[currentIndex]);
+    }
+
+    // Preload next image
+    const nextIdx = (currentIndex + 1) % artworks.length;
+    if (imageSources[nextIdx] && nextIdx !== currentIndex) {
+      preloadImage(imageSources[nextIdx]);
+    }
+
+    // Preload previous image
+    const prevIdx = currentIndex === 0 ? artworks.length - 1 : currentIndex - 1;
+    if (imageSources[prevIdx] && prevIdx !== currentIndex) {
+      preloadImage(imageSources[prevIdx]);
+    }
+  }, [lightboxOpen, currentIndex, artworks]);
+
   // Keyboard navigation
   useEffect(() => {
     if (!lightboxOpen) return;

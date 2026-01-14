@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
-    const { name, email, message, artPieceName } = await request.json();
+    const { name, email, artPieceName, message } = await request.json();
 
     // Validate required fields
     if (!name || !email || !artPieceName) {
