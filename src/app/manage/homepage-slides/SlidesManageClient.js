@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Trash2, X, Monitor, Smartphone, Upload, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cldThumbnail } from "@/lib/cloudinary";
@@ -354,10 +355,13 @@ export default function SlidesManageClient() {
                       key={index}
                       className="relative aspect-video rounded-lg overflow-hidden border-2 border-zinc-200 shadow-sm"
                     >
-                      <img
+                      <Image
                         src={preview}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 640px) 50vw, 25vw"
+                        className="object-cover"
+                        unoptimized
                       />
                       <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
                         {index + 1}
@@ -512,9 +516,12 @@ export default function SlidesManageClient() {
               key={s.id}
               className="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden hover:shadow-md transition-shadow"
             >
-              <img
+              <Image
                 src={cldThumbnail({ publicId: s.public_id })}
                 alt={s.alt}
+                width={400}
+                height={225}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="w-full h-48 object-cover"
               />
               <div className="p-3 sm:p-4">
@@ -643,10 +650,12 @@ export default function SlidesManageClient() {
               {/* Preview */}
               <div className="mb-4 sm:mb-6 flex justify-center">
                 <div className="relative w-full sm:w-64 h-36 sm:h-36 rounded-lg overflow-hidden shadow-lg">
-                  <img
+                  <Image
                     src={`https://res.cloudinary.com/dy8q4hf0k/image/upload/c_fill,g_center,w_256,h_144,f_auto,q_auto/${slideToDelete.public_id}`}
                     alt="Slide to delete"
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 640px) 100vw, 256px"
+                    className="object-cover"
                   />
                 </div>
               </div>

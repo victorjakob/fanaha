@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   motion,
   AnimatePresence,
@@ -16,16 +16,20 @@ export default function AlchemyArtPieceGallery({ images, name }) {
 
   // Early return check - but must be after all hooks
   const shouldRender = images && images.length >= 2;
-  const galleryImages = shouldRender ? images.slice(1) : [];
+  const galleryImages = useMemo(
+    () => (shouldRender ? images.slice(1) : []),
+    [images, shouldRender]
+  );
 
   const openLightbox = (idx) => {
     setLightboxIdx(idx);
     setPage([idx, 0]);
   };
 
-  const closeLightbox = () => setLightboxIdx(null);
+  const closeLightbox = useCallback(() => setLightboxIdx(null), []);
 
-  const paginate = (newDirection) => {
+  const paginate = useCallback(
+    (newDirection) => {
     const newIndex = lightboxIdx + newDirection;
     if (newIndex < 0) {
       setLightboxIdx(galleryImages.length - 1);
@@ -37,10 +41,12 @@ export default function AlchemyArtPieceGallery({ images, name }) {
       setLightboxIdx(newIndex);
       setPage([newIndex, newDirection]);
     }
-  };
+    },
+    [galleryImages.length, lightboxIdx]
+  );
 
-  const prevImage = () => paginate(-1);
-  const nextImage = () => paginate(1);
+  const prevImage = useCallback(() => paginate(-1), [paginate]);
+  const nextImage = useCallback(() => paginate(1), [paginate]);
 
   // Preload adjacent images for faster navigation
   useEffect(() => {

@@ -28,6 +28,7 @@ export default function BackgroundSlideshow({
   const advanceTimeoutRef = useRef(null);
   const resizeTimerRef = useRef(null);
   const failsafeTimerRef = useRef(null);
+  const advanceSlideRef = useRef(null);
 
   const slides = useMemo(
     () => (isMobile ? mobileSlides : desktopSlides),
@@ -55,7 +56,7 @@ export default function BackgroundSlideshow({
     clearAdvanceTimer();
     if (reducedMotion || !slides || slides.length <= 1) return;
     advanceTimeoutRef.current = setTimeout(() => {
-      advanceSlide();
+      advanceSlideRef.current?.();
     }, DURATION);
   }, [slides, reducedMotion]);
 
@@ -95,6 +96,10 @@ export default function BackgroundSlideshow({
     });
   }, [slides, scheduleNextAdvance, preloadIndex, reducedMotion]);
 
+  useEffect(() => {
+    advanceSlideRef.current = advanceSlide;
+  }, [advanceSlide]);
+
   // ---------- effects ----------
   // Decide mobile/desktop on mount + debounced resize
   useEffect(() => {
@@ -129,7 +134,14 @@ export default function BackgroundSlideshow({
       window.removeEventListener("resize", onResize);
       if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
     };
-  }, [desktopSlides, mobileSlides]);
+  }, [
+    desktopSlides,
+    mobileSlides,
+    currentIndex,
+    preloadIndex,
+    reducedMotion,
+    scheduleNextAdvance,
+  ]);
 
   // Prefers-reduced-motion
   useEffect(() => {

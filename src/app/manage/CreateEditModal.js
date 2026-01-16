@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Upload, Loader2 } from "lucide-react";
 import { supabase } from "@/util/supabase/supabaseClient";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 export default function CreateEditModal({ piece, onClose, onSuccess }) {
   const isEditing = !!piece;
@@ -225,9 +226,11 @@ export default function CreateEditModal({ piece, onClose, onSuccess }) {
                     className="flex items-center gap-2 p-2 bg-zinc-50 rounded-lg"
                   >
                     <div className="w-12 h-12 rounded overflow-hidden bg-zinc-200 flex-shrink-0">
-                      <img
+                      <OptimizedImage
                         src={url}
                         alt={`Image ${index + 1}`}
+                        width={96}
+                        height={96}
                         className="w-full h-full object-cover"
                       />
                     </div>

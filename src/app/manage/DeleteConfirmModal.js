@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/util/supabase/supabaseClient";
 import { formatISK } from "@/util/formatPrice";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 export default function DeleteConfirmModal({ piece, onClose, onSuccess }) {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -66,9 +67,11 @@ export default function DeleteConfirmModal({ piece, onClose, onSuccess }) {
 
           {piece.images?.[0] && (
             <div className="w-full h-32 rounded-lg overflow-hidden bg-zinc-100 mb-4">
-              <img
+              <OptimizedImage
                 src={piece.images[0]}
                 alt={piece.name}
+                width={800}
+                height={256}
                 className="w-full h-full object-cover"
               />
             </div>

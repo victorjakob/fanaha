@@ -2,8 +2,9 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import Image from "next/image";
 import { cldUrlEnhanced, isCloudinaryId } from "@/lib/cloudinary";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export default function MuralsGallery({ murals }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -20,13 +21,14 @@ export default function MuralsGallery({ murals }) {
     setLightboxOpen(true);
   };
 
-  const closeLightbox = () => {
+  const closeLightbox = useCallback(() => {
     setLightboxOpen(false);
     setLightboxImages([]);
     setCurrentIndex(0);
-  };
+  }, []);
 
-  const paginate = (newDirection) => {
+  const paginate = useCallback(
+    (newDirection) => {
     let newIndex = currentIndex + newDirection;
     if (newIndex < 0) {
       newIndex = lightboxImages.length - 1;
@@ -35,10 +37,12 @@ export default function MuralsGallery({ murals }) {
     }
     setCurrentIndex(newIndex);
     setPage([newIndex, newDirection]);
-  };
+    },
+    [currentIndex, lightboxImages.length]
+  );
 
-  const nextImage = () => paginate(1);
-  const prevImage = () => paginate(-1);
+  const nextImage = useCallback(() => paginate(1), [paginate]);
+  const prevImage = useCallback(() => paginate(-1), [paginate]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -56,7 +60,7 @@ export default function MuralsGallery({ murals }) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxOpen, currentIndex, lightboxImages.length]);
+  }, [lightboxOpen, closeLightbox, prevImage, nextImage]);
 
   if (!shouldRender) {
     return <div className="text-zinc-400 text-center py-12">No murals yet</div>;
@@ -224,18 +228,19 @@ export default function MuralsGallery({ murals }) {
                     }
 
                     return (
-                      <img
-                        src={imageUrl}
-                        alt={`Image ${currentIndex + 1}`}
-                        className="max-w-full max-h-full object-contain select-none"
-                        style={{
-                          width: "auto",
-                          height: "auto",
-                          maxWidth: "95vw",
-                          maxHeight: "90vh",
-                        }}
-                        draggable={false}
-                      />
+                      <div
+                        className="relative"
+                        style={{ width: "min(95vw, 1200px)", height: "min(90vh, 900px)" }}
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={`Image ${currentIndex + 1}`}
+                          fill
+                          sizes="95vw"
+                          className="object-contain select-none"
+                          draggable={false}
+                        />
+                      </div>
                     );
                   })()}
                 </motion.div>

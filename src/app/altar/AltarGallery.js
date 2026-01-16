@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { isCloudinaryId } from "@/lib/cloudinary";
@@ -19,6 +20,7 @@ export default function AltarGallery({ artworks }) {
 
   const openLightbox = (index) => {
     setCurrentIndex(index);
+    // Set direction to 0 for initial open to ensure proper centering
     setPage([index, 0]);
     setLightboxOpen(true);
   };
@@ -84,7 +86,7 @@ export default function AltarGallery({ artworks }) {
       document.head.appendChild(link);
 
       // Also preload using Image object as fallback for better browser support
-      const img = new Image();
+      const img = new window.Image();
       img.src = imageUrl;
     };
 
@@ -242,9 +244,9 @@ export default function AltarGallery({ artworks }) {
                   custom={direction}
                   variants={{
                     enter: (direction) => ({
-                      x: direction > 0 ? 1000 : -1000,
-                      opacity: 0,
-                      scale: 0.8,
+                      x: direction === 0 ? 0 : direction > 0 ? 1000 : -1000,
+                      opacity: direction === 0 ? 1 : 0,
+                      scale: direction === 0 ? 1 : 0.8,
                     }),
                     center: {
                       zIndex: 1,
@@ -278,11 +280,12 @@ export default function AltarGallery({ artworks }) {
                       nextImage();
                     }
                   }}
-                  className="absolute flex items-center justify-center"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
                   style={{
-                    maxWidth: "min(90vw, 600px)",
-                    maxHeight: "min(90vh, 600px)",
-                    aspectRatio: "1 / 1",
+                  width: "min(85vw, 85vh, 520px)",
+                  height: "min(85vw, 85vh, 520px)",
+                  aspectRatio: "1 / 1",
+                    willChange: "transform",
                   }}
                 >
                   {(() => {
@@ -310,10 +313,12 @@ export default function AltarGallery({ artworks }) {
                         className="relative w-full h-full rounded-full overflow-hidden shadow-2xl"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <img
+                        <Image
                           src={imageUrl}
                           alt={currentArtwork.alt}
-                          className="w-full h-full object-cover select-none"
+                          fill
+                          sizes="(max-width: 768px) 90vw, 600px"
+                          className="object-cover select-none"
                           draggable={false}
                         />
                       </div>

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "../../../../util/supabase/supabaseClient";
 import ImageCropper from "../../create/ImageCropper";
 import { getCroppedImg } from "../../create/cropImage";
@@ -309,11 +310,14 @@ export default function EditForm({ piece }) {
           <div className="flex flex-col items-center gap-2">
             {mainImagePreview ? (
               <div className="relative flex flex-col items-center">
-                <img
+                <Image
                   src={mainImagePreview}
                   alt="Main Preview"
+                  width={192}
+                  height={192}
                   className="w-48 h-48 object-cover rounded-full shadow-xl border-4 border-purple-400 mb-2 bg-white"
                   style={{ background: "#f6f6fa" }}
+                  unoptimized
                 />
                 <button
                   type="button"
@@ -479,10 +483,13 @@ export default function EditForm({ piece }) {
               <div className="flex flex-wrap justify-center gap-4 mt-2">
                 {galleryPreviews.map((src, idx) => (
                   <div key={src} className="relative group">
-                    <img
+                    <Image
                       src={src}
                       alt={`Gallery Preview ${idx + 1}`}
+                      width={96}
+                      height={96}
                       className="w-24 h-24 object-cover rounded-xl border-2 border-zinc-200 shadow-md bg-zinc-50"
+                      unoptimized
                     />
                     <button
                       type="button"
