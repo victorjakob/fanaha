@@ -138,7 +138,7 @@ export default function ReviewsClient({ reviews }) {
                   {/* Review Text */}
                   <div className="flex-1 mb-6">
                     <p className="text-zinc-700 text-base sm:text-lg leading-relaxed whitespace-pre-wrap">
-                      "{review.review_text}"
+                      &quot;{review.review_text}&quot;
                     </p>
                   </div>
 

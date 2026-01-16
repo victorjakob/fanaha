@@ -379,7 +379,7 @@ export default function ReviewsManageClient({ initialReviews }) {
       <div className="bg-white rounded-lg shadow-sm border border-zinc-200">
         {reviews.length === 0 ? (
           <div className="p-8 text-center text-zinc-500">
-            No reviews yet. Click "Add Review" to create one.
+            No reviews yet. Click &quot;Add Review&quot; to create one.
           </div>
         ) : (
           <div className="divide-y divide-zinc-200">
