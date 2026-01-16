@@ -102,8 +102,7 @@ export default function ReviewsClient({ reviews }) {
             Testimonials
           </h1>
           <p className="text-lg sm:text-xl text-zinc-600">
-            Hear from those who have experienced the transformative power of
-            alchemical art
+            Shared words from those who experienced the work
           </p>
         </div>
 
