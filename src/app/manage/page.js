@@ -33,6 +33,11 @@ export default function ManagePage() {
       label: "Homepage Slides",
       icon: Image,
     },
+    {
+      href: "/manage/reviews",
+      label: "Testimonials",
+      icon: FileText,
+    },
   ];
 
   const sectionItems =

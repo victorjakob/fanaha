@@ -50,11 +50,11 @@ export async function uploadToCloudinary(
       console.log(
         `Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`
       );
-    } catch (error) {
+  } catch (error) {
       console.warn("Compression failed, using original file:", error);
       // Continue with original file if compression fails
-    }
   }
+}
 
   // Get upload preset from environment
   const uploadPreset =
@@ -67,38 +67,38 @@ export async function uploadToCloudinary(
     );
   }
 
-  const formData = new FormData();
+    const formData = new FormData();
   formData.append("file", fileToUpload);
   formData.append("upload_preset", uploadPreset);
-  formData.append("folder", folder);
+    formData.append("folder", folder);
 
   // Note: Transformation parameters are not allowed in unsigned uploads
   // Transformations are applied when generating URLs (in cldUrlEnhanced)
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  if (!cloudName) {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    if (!cloudName) {
     throw new Error(
       "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
     );
-  }
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    {
-      method: "POST",
-      body: formData,
     }
-  );
 
-  if (!response.ok) {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
     const error = await response.json().catch(() => ({
       error: { message: "Upload failed" },
     }));
     throw new Error(error.error?.message || "Upload failed");
-  }
+    }
 
-  const data = await response.json();
-  return data.public_id; // Return public_id, not full URL
+    const data = await response.json();
+    return data.public_id; // Return public_id, not full URL
 }
 
 /**
@@ -181,7 +181,7 @@ export async function uploadToCloudinaryWithId(
 
   if (!uploadPreset) {
     throw new Error("Cloudinary upload preset not configured");
-  }
+    }
 
   const formData = new FormData();
   formData.append("file", fileToUpload);
@@ -207,7 +207,7 @@ export async function uploadToCloudinaryWithId(
     }
   );
 
-  if (!response.ok) {
+    if (!response.ok) {
     const error = await response.json().catch(() => ({
       error: { message: "Upload failed" },
     }));

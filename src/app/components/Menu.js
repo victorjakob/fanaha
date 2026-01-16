@@ -43,8 +43,9 @@ export default function Menu({ menuOpen, onMenuToggle }) {
                   { label: "Exhibitions", href: "/exhibitions" },
                   { label: "Oracles & Projects", href: "/oracles-projects" },
                   { label: "What I Offer", href: "/what-i-offer" },
+                  { label: "Testimonials", href: "/reviews" },
                   { label: "About", href: "/about" },
-                  { label: "Contact Me", href: "/contact" },
+                  { label: "Contact", href: "/contact" },
                 ].map((item, index) => (
                   <motion.li
                     key={item.label}

@@ -20,7 +20,7 @@ export default async function AlchemyPage() {
   const { data: artPieces, error } = await supabase
     .from("fanaha_alchemy_pieces")
     .select(
-      "id, slug, name, images, created_at, dimensions, palette, price, status"
+      "id, slug, name, images, created_at, dimensions, palette, price, status, year"
     )
     .order("created_at", { ascending: false });
 
@@ -41,19 +41,34 @@ export default async function AlchemyPage() {
     console.log("Art pieces statuses:", artPieces.map(p => ({ id: p.id, status: p.status })));
   }
 
-  // Sort: available first, then commission, then sold, all by date created (desc)
+  // Sort: available first, then commission, then sold, all by year (desc - most recent first)
   // Handle items without status by defaulting to "available"
+  // If year is null, fall back to created_at for sorting
   const sorted = artPieces
     ? [
         ...artPieces
           .filter((a) => (a.status || "available") === "available")
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+          .sort((a, b) => {
+            // Sort by year descending (most recent first)
+            // If year is null, use created_at as fallback
+            const yearA = a.year || new Date(a.created_at).getFullYear();
+            const yearB = b.year || new Date(b.created_at).getFullYear();
+            return yearB - yearA;
+          }),
         ...artPieces
           .filter((a) => a.status === "commission")
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+          .sort((a, b) => {
+            const yearA = a.year || new Date(a.created_at).getFullYear();
+            const yearB = b.year || new Date(b.created_at).getFullYear();
+            return yearB - yearA;
+          }),
         ...artPieces
           .filter((a) => a.status === "sold")
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+          .sort((a, b) => {
+            const yearA = a.year || new Date(a.created_at).getFullYear();
+            const yearB = b.year || new Date(b.created_at).getFullYear();
+            return yearB - yearA;
+          }),
       ]
     : [];
 
