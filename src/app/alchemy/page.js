@@ -1,6 +1,7 @@
 import AlchemyHeader from "./Header";
 import AlchemyGallery from "./Gallery";
 import { createServerSupabase } from "@/util/supabase/server";
+import Link from "next/link";
 import Image from "next/image";
 
 // Revalidate every 60 seconds to ensure fresh content
@@ -112,12 +113,32 @@ export default async function AlchemyPage() {
       {/* Content */}
       <div className="relative z-10 w-full flex flex-col items-center">
         <AlchemyHeader
-          title={sectionContent?.title || "Alchemical Art Pieces"}
+          title="Alchemical Art Pieces"
           description={
-            sectionContent?.description ||
-            "Explore a collection of unique, mystical alchemical artworks."
+            "Explore a collection of unique, mystical alchemical artworks. Each piece is crafted with intention, blending ancient symbolism, modern technique, and a touch of the divine. Discover the story, details, and visual journey behind every creation."
           }
         />
+        <div className="mt-5 sm:mt-7 flex justify-center">
+          <Link
+            href="/order"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full font-semibold tracking-widest transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.03]"
+          >
+            <span className="font-bold">CUSTOM ORDER</span>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
+            </svg>
+          </Link>
+        </div>
         <AlchemyGallery artPieces={sorted} />
       </div>
     </main>

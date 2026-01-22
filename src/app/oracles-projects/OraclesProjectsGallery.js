@@ -82,7 +82,7 @@ export default function OraclesProjectsGallery({ items }) {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wider">
               {item.name}
             </h2>
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-sm sm:text-base text-zinc-600">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-sm sm:text-base text-zinc-900 font-medium">
               <span className="tracking-widest">{item.date}</span>
               {item.publisher && (
                 <>
@@ -93,9 +93,36 @@ export default function OraclesProjectsGallery({ items }) {
             </div>
           </div>
 
+          {/* Order Link */}
+          {item.order_url && (
+            <div className="flex justify-center">
+              <a
+                href={item.order_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full font-semibold tracking-widest transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.03]"
+              >
+                <span className="font-bold">ORDER</span>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </a>
+            </div>
+          )}
+
           {/* About Section */}
           {item.about && (
-            <div className="max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
+            <div className="max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
               <p className="text-base sm:text-lg text-zinc-700 leading-loose tracking-wide text-center whitespace-pre-line px-4">
                 {item.about}
               </p>

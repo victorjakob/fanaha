@@ -161,13 +161,13 @@ export default function AlchemyArtPiece({
           <motion.div
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: `radial-gradient(circle, ${palette[0]}40 0%, transparent 60%)`,
-              filter: "blur(20px)",
+              background: `radial-gradient(circle, ${palette[0]}30 0%, transparent 65%)`,
+              filter: "blur(16px)",
               zIndex: -1,
             }}
             animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.4, 0.8, 0.4],
+              scale: [1, 1.2, 1],
+              opacity: [0.2, 0.5, 0.2],
             }}
             transition={{
               duration: 3,
@@ -181,13 +181,13 @@ export default function AlchemyArtPiece({
             <motion.div
               className="absolute inset-0 rounded-full pointer-events-none"
               style={{
-                background: `radial-gradient(circle, ${palette[1]}30 0%, transparent 70%)`,
-                filter: "blur(30px)",
+                background: `radial-gradient(circle, ${palette[1]}24 0%, transparent 75%)`,
+                filter: "blur(24px)",
                 zIndex: -2,
               }}
               animate={{
-                scale: [1.2, 1.5, 1.2],
-                opacity: [0.3, 0.7, 0.3],
+                scale: [1.15, 1.35, 1.15],
+                opacity: [0.2, 0.45, 0.2],
               }}
               transition={{
                 duration: 4,
@@ -203,13 +203,13 @@ export default function AlchemyArtPiece({
             <motion.div
               className="absolute inset-0 rounded-full pointer-events-none"
               style={{
-                background: `radial-gradient(circle, ${palette[2]}25 0%, transparent 80%)`,
-                filter: "blur(40px)",
+                background: `radial-gradient(circle, ${palette[2]}20 0%, transparent 85%)`,
+                filter: "blur(32px)",
                 zIndex: -3,
               }}
               animate={{
-                scale: [1.4, 1.7, 1.4],
-                opacity: [0.2, 0.6, 0.2],
+                scale: [1.3, 1.5, 1.3],
+                opacity: [0.15, 0.4, 0.15],
               }}
               transition={{
                 duration: 5,
@@ -223,7 +223,7 @@ export default function AlchemyArtPiece({
           {/* Dreamy palette background (original) */}
           {bgGradient && (
             <div
-              className="absolute inset-0 z-0 rounded-full blur-2xl opacity-60 pointer-events-none"
+              className="absolute inset-0 z-0 rounded-full blur-2xl opacity-40 pointer-events-none"
               style={{
                 background: bgGradient,
                 filter: "blur(32px)",
@@ -234,27 +234,19 @@ export default function AlchemyArtPiece({
         </>
       )}
       <motion.div
-        className="relative flex items-center justify-center aspect-square rounded-full overflow-hidden transition-all duration-700 w-[80vw] sm:max-w-lg md:max-w-md lg:max-w-md xl:max-w-md 2xl:max-w-md group-hover:shadow-2xl group-hover:shadow-black/50"
+        className="relative flex items-center justify-center aspect-square rounded-full overflow-hidden transition-all duration-700 w-[80vw] sm:max-w-lg md:max-w-md lg:max-w-[420px] xl:max-w-[420px] 2xl:max-w-[420px] group-hover:shadow-lg group-hover:shadow-black/20"
         initial={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 22 }}
         style={{
           filter:
             palette && palette.length > 0
               ? `
-            drop-shadow(0 0 20px ${palette[0]}60)
-            drop-shadow(0 0 40px ${palette[0]}40)
-            drop-shadow(0 0 60px ${palette[0]}30)
-            drop-shadow(0 0 80px ${palette[0]}20)
-            drop-shadow(0 0 100px ${palette[0]}15)
-            ${palette[1] ? `drop-shadow(0 0 120px ${palette[1]}12)` : ""}
-            ${palette[1] ? `drop-shadow(0 0 140px ${palette[1]}10)` : ""}
-            ${palette[2] ? `drop-shadow(0 0 160px ${palette[2]}08)` : ""}
-            ${palette[2] ? `drop-shadow(0 0 180px ${palette[2]}06)` : ""}
-            ${palette[3] ? `drop-shadow(0 0 200px ${palette[3]}05)` : ""}
-            ${palette[4] ? `drop-shadow(0 0 220px ${palette[4]}04)` : ""}
-            ${palette[4] ? `drop-shadow(0 0 240px ${palette[4]}03)` : ""}
+            drop-shadow(0 0 10px ${palette[0]}35)
+            drop-shadow(0 0 20px ${palette[0]}22)
+            ${palette[1] ? `drop-shadow(0 0 32px ${palette[1]}14)` : ""}
+            ${palette[2] ? `drop-shadow(0 0 44px ${palette[2]}10)` : ""}
           `
-              : "drop-shadow(0 0 30px rgba(0,0,0,0.5)) drop-shadow(0 0 60px rgba(0,0,0,0.3)) drop-shadow(0 0 90px rgba(0,0,0,0.2))",
+              : "drop-shadow(0 0 14px rgba(0,0,0,0.28)) drop-shadow(0 0 28px rgba(0,0,0,0.18))",
         }}
       >
         <OptimizedImage

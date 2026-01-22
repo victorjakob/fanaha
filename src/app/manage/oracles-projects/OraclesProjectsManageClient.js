@@ -21,6 +21,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
   const [date, setDate] = useState("");
   const [publisher, setPublisher] = useState("");
   const [about, setAbout] = useState("");
+  const [orderUrl, setOrderUrl] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
 
   // Drag and drop state
@@ -32,6 +33,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
     setDate("");
     setPublisher("");
     setAbout("");
+    setOrderUrl("");
     setUploadedImages([]);
     setEditingItem(null);
   };
@@ -47,6 +49,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
     setDate(item.date);
     setPublisher(item.publisher || "");
     setAbout(item.about || "");
+    setOrderUrl(item.order_url || "");
     // Use public_ids if available, otherwise fall back to images (URLs)
     setUploadedImages(item.images_public_ids || item.images || []);
     setShowModal(true);
@@ -161,6 +164,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
             date,
             publisher,
             about,
+            order_url: orderUrl || null,
             images_public_ids: uploadedImages, // Store Cloudinary public_ids
             images: imageUrls, // Store URLs for backward compatibility
             updated_at: new Date().toISOString(),
@@ -183,6 +187,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
               date,
               publisher,
               about,
+              order_url: orderUrl || null,
               images_public_ids: uploadedImages, // Store Cloudinary public_ids
               images: imageUrls, // Store URLs for backward compatibility
             },
@@ -424,6 +429,20 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
                   rows={4}
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="Description of the oracle or project..."
+                />
+              </div>
+
+              {/* Order URL */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Order URL (optional)
+                </label>
+                <input
+                  type="url"
+                  value={orderUrl}
+                  onChange={(e) => setOrderUrl(e.target.value)}
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  placeholder="https://example.com/order"
                 />
               </div>
 

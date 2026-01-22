@@ -52,20 +52,22 @@ export default function AlchemyGallery({ artPieces }) {
                 </svg>
               </div>
             </div>
-            {available.map((piece, idx) => (
-              <div key={piece.slug || piece.id}>
-                <AlchemyArtPiece
-                  slug={piece.slug || piece.id}
-                  title={piece.name}
-                  mainImage={piece.images?.[0] || "/alchemy/placeholder.png"}
-                  status={piece.status || "available"}
-                  dimensions={piece.dimensions}
-                  palette={piece.palette}
-                  price={piece.price}
-                  index={idx}
-                />
-              </div>
-            ))}
+            <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 justify-items-center gap-x-4 sm:gap-x-6 lg:gap-x-6 gap-y-10 sm:gap-y-12">
+              {available.map((piece, idx) => (
+                <div key={piece.slug || piece.id}>
+                  <AlchemyArtPiece
+                    slug={piece.slug || piece.id}
+                    title={piece.name}
+                    mainImage={piece.images?.[0] || "/alchemy/placeholder.png"}
+                    status={piece.status || "available"}
+                    dimensions={piece.dimensions}
+                    palette={piece.palette}
+                    price={piece.price}
+                    index={idx}
+                  />
+                </div>
+              ))}
+            </div>
           </>
         )}
         {commission.length > 0 && (
@@ -95,20 +97,22 @@ export default function AlchemyGallery({ artPieces }) {
                 </div>
               </div>
             </div>
-            {commission.map((piece, idx) => (
-              <div key={piece.slug || piece.id}>
-                <AlchemyArtPiece
-                  slug={piece.slug || piece.id}
-                  title={piece.name}
-                  mainImage={piece.images?.[0] || "/alchemy/placeholder.png"}
-                  status={piece.status || "available"}
-                  dimensions={piece.dimensions}
-                  palette={piece.palette}
-                  price={piece.price}
-                  index={undefined}
-                />
-              </div>
-            ))}
+            <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 justify-items-center gap-x-4 sm:gap-x-6 lg:gap-x-6 gap-y-10 sm:gap-y-12">
+              {commission.map((piece, idx) => (
+                <div key={piece.slug || piece.id}>
+                  <AlchemyArtPiece
+                    slug={piece.slug || piece.id}
+                    title={piece.name}
+                    mainImage={piece.images?.[0] || "/alchemy/placeholder.png"}
+                    status={piece.status || "available"}
+                    dimensions={piece.dimensions}
+                    palette={piece.palette}
+                    price={piece.price}
+                    index={undefined}
+                  />
+                </div>
+              ))}
+            </div>
           </>
         )}
         {sold.length > 0 && (
@@ -138,20 +142,22 @@ export default function AlchemyGallery({ artPieces }) {
                 </div>
               </div>
             </div>
-            {sold.map((piece, idx) => (
-              <div key={piece.slug || piece.id}>
-                <AlchemyArtPiece
-                  slug={piece.slug || piece.id}
-                  title={piece.name}
-                  mainImage={piece.images?.[0] || "/alchemy/placeholder.png"}
-                  status={piece.status || "available"}
-                  dimensions={piece.dimensions}
-                  palette={piece.palette}
-                  price={piece.price}
-                  index={undefined}
-                />
-              </div>
-            ))}
+            <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 justify-items-center gap-x-4 sm:gap-x-6 lg:gap-x-6 gap-y-10 sm:gap-y-12">
+              {sold.map((piece, idx) => (
+                <div key={piece.slug || piece.id}>
+                  <AlchemyArtPiece
+                    slug={piece.slug || piece.id}
+                    title={piece.name}
+                    mainImage={piece.images?.[0] || "/alchemy/placeholder.png"}
+                    status={piece.status || "available"}
+                    dimensions={piece.dimensions}
+                    palette={piece.palette}
+                    price={piece.price}
+                    index={undefined}
+                  />
+                </div>
+              ))}
+            </div>
           </>
         )}
       </div>
