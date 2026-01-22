@@ -5,7 +5,6 @@ import RippleOverlay from "./RippleOverlay";
 import Menu from "./Menu";
 import TopBar from "./TopBar";
 import HamburgerMenu from "./HamburgerMenu";
-import CustomOrderNudge from "./CustomOrderNudge";
 
 export default function MenuShell() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,7 +22,6 @@ export default function MenuShell() {
       {/* Hamburger menu - always visible */}
       <HamburgerMenu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
       <Menu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
-      <CustomOrderNudge menuOpen={menuOpen} />
     </>
   );
 }

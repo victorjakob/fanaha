@@ -1,7 +1,6 @@
 import AlchemyHeader from "../alchemy/Header";
 import AltarGallery from "./AltarGallery";
 import { createServerSupabase } from "@/util/supabase/server";
-import Link from "next/link";
 
 // Revalidate every 60 seconds to ensure fresh content
 export const revalidate = 60;
@@ -74,27 +73,6 @@ export default async function AltarPage() {
             "Sacred altar pieces designed to elevate your spiritual space."
           }
         />
-        <div className="mt-5 sm:mt-7 flex justify-center">
-          <Link
-            href="/order"
-            className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full font-semibold tracking-widest transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.03]"
-          >
-            <span className="font-bold">CUSTOM ORDER</span>
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
-          </Link>
-        </div>
         <AltarGallery artworks={artworks || []} />
       </div>
     </main>
