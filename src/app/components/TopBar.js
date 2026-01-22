@@ -8,6 +8,7 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
   const [isHovered, setIsHovered] = useState(false);
   const [showClickOverlay, setShowClickOverlay] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     // Check if click overlay has been shown in this session
@@ -45,6 +46,14 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Track desktop viewport so we can tweak spacing only for large screens
+  useEffect(() => {
+    const update = () => setIsDesktop(window.innerWidth >= 1024); // lg breakpoint
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   // Detect touch device to disable hover effects on mobile
   useEffect(() => {
     const checkTouchDevice = () => {
@@ -60,13 +69,14 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
 
   return (
     <header
-      className="pt-12 fixed top-0 left-0 w-full flex justify-center items-center z-50"
+      className="pt-4 sm:pt-12 fixed top-0 left-0 w-full flex justify-center items-center z-50"
       style={{ height: 72, pointerEvents: "none" }}
     >
       <motion.button
         className="transition p-1 relative"
         style={{
-          marginTop: 12,
+          // Add extra breathing room only on large screens when logo is in "big" state
+          marginTop: !isScrolled && isDesktop ? 12 : 0,
           pointerEvents: "auto",
           outline: "none",
           border: "none",
@@ -112,7 +122,7 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
           className={`transition-all duration-700 ease-in-out ${
             isScrolled
               ? "w-12 h-12 sm:w-14 sm:h-14"
-              : "w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28"
+              : "w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28"
           }`}
           style={{
             willChange: "transform",

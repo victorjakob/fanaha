@@ -15,7 +15,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
 
   return (
     <motion.div
-      className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-3"
+      className="fixed top-4 left-4 right-4 sm:top-6 sm:left-auto sm:right-6 z-50 flex items-center justify-between sm:justify-end gap-3"
       initial={{ opacity: 0, scale: 0.9, y: -16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.32, ease: "easeOut" }}
@@ -28,7 +28,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
             if (e.key === "Enter" || e.key === " ") setOrderClicked(true);
           }}
           aria-busy={orderClicked}
-          className="relative inline-flex items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#191a2d_0%,#2a254d_55%,#865c95_130%)] hover:bg-[linear-gradient(135deg,#2a254d_0%,#191a2d_60%,#865c95_140%)] px-5 py-2.5 text-xs sm:text-sm tracking-widest text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.03] border border-[#865c95]/35 hover:border-[#865c95]/60"
+          className="relative inline-flex items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-xs sm:text-sm tracking-widest shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-[1.03] border bg-white/90 text-[#191a2d] border-[#865c95]/35 hover:border-[#865c95]/55 hover:bg-white sm:shadow-md sm:hover:shadow-lg sm:bg-[linear-gradient(135deg,#191a2d_0%,#2a254d_55%,#865c95_130%)] sm:hover:bg-[linear-gradient(135deg,#2a254d_0%,#191a2d_60%,#865c95_140%)] sm:text-white sm:border-[#865c95]/35 sm:hover:border-[#865c95]/60"
           style={{
             fontFamily: "var(--font-house-minimalist), sans-serif",
             fontWeight: 700,
@@ -37,8 +37,8 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
           {/* click feedback (covers slow navigations) */}
           {orderClicked && (
             <span className="pointer-events-none absolute inset-0">
-              <span className="absolute inset-0 opacity-30 animate-pulse bg-white/10" />
-              <span className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+              <span className="absolute inset-0 opacity-30 animate-pulse bg-black/5 sm:bg-white/10" />
+              <span className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-black/10 to-transparent sm:via-white/35" />
             </span>
           )}
 
