@@ -15,7 +15,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
 
   return (
     <motion.div
-      className="fixed top-4 left-4 right-4 sm:top-6 sm:left-auto sm:right-6 z-50 flex items-center justify-between sm:justify-end gap-3"
+      className="fixed top-4 left-4 right-4 sm:top-6 sm:left-auto sm:right-6 z-50 flex items-start sm:items-center justify-between sm:justify-end gap-3"
       initial={{ opacity: 0, scale: 0.9, y: -16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.32, ease: "easeOut" }}
@@ -43,7 +43,12 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
           )}
 
           <span className={`relative ${orderClicked ? "opacity-95" : ""}`}>
-            Custom Order
+            <span className="sm:hidden inline-flex flex-col items-center leading-none text-center">
+              Custom
+              <br />
+              Order
+            </span>
+            <span className="hidden sm:inline">Custom Order</span>
           </span>
         </Link>
 
