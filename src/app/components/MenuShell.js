@@ -20,7 +20,9 @@ export default function MenuShell() {
         <TopBar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       )}
       {/* Hamburger menu - always visible */}
-      <HamburgerMenu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
+      {!isHome && (
+        <HamburgerMenu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
+      )}
       <Menu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
     </>
   );
