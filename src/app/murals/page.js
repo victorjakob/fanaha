@@ -19,8 +19,8 @@ export default async function MuralsPage() {
   const { data: murals, error } = await supabase
     .from("fanaha_murals")
     .select("*")
-    .order("year", { ascending: false })
-    .order("display_order", { ascending: true });
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: false });
 
   return (
     <main className="relative flex flex-col items-center w-full min-h-screen pt-32 sm:pt-40 py-6 sm:py-12 px-2 sm:px-8 overflow-hidden">
@@ -69,6 +69,9 @@ export default async function MuralsPage() {
             "Large-scale artworks bringing sacred imagery to public spaces."
           }
         />
+        <div className="w-full max-w-3xl px-4 sm:px-0 mt-6 sm:mt-8">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
+        </div>
         <MuralsGallery murals={murals || []} />
       </div>
     </main>

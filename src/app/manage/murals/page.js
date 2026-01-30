@@ -17,12 +17,8 @@ export default async function MuralsManagePage() {
   const { data: murals, error } = await supabase
     .from("fanaha_murals")
     .select("*")
-    .order("year", { ascending: false })
-    .order("display_order", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching murals:", error);
-  }
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: false });
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">

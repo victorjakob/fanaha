@@ -217,8 +217,6 @@ export default function BackgroundSlideshow({
   }, [scheduleNextAdvance, preloadIndex, reducedMotion, currentIndex]);
 
   const onCurrentError = useCallback(() => {
-    const id = slides?.[currentIndex]?.public_id;
-    console.error("Image load error:", id);
     setCurrentImageError(true);
 
     if (!firstRevealDoneRef.current) {

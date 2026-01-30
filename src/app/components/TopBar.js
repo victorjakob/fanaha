@@ -69,8 +69,8 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
 
   return (
     <header
-      className="pt-4 sm:pt-12 fixed top-0 left-0 w-full flex justify-center items-center z-50"
-      style={{ height: 72, pointerEvents: "none" }}
+      className="pt-4 sm:pt-12 fixed top-0 left-0 w-full flex justify-center items-center z-50 h-[96px] sm:h-[72px]"
+      style={{ pointerEvents: "none" }}
     >
       <motion.button
         className="transition p-1 relative"
@@ -121,8 +121,8 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
         <div
           className={`transition-all duration-700 ease-in-out ${
             isScrolled
-              ? "w-12 h-12 sm:w-14 sm:h-14"
-              : "w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28"
+              ? "w-[64px] h-[64px] sm:w-14 sm:h-14"
+              : "w-[80px] h-[80px] sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28"
           }`}
           style={{
             willChange: "transform",

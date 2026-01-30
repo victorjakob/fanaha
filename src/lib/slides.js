@@ -10,7 +10,6 @@ export async function getSlides() {
     .order("sort", { ascending: true });
 
   if (error) {
-    console.error("Error fetching slides:", error);
     return {
       desktop: [],
       mobile: [],

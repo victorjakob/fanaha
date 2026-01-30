@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   motion,
   AnimatePresence,
@@ -13,6 +14,8 @@ export default function AlchemyArtPieceGallery({ images, name }) {
   // Hooks must be called before any early returns
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [[page, direction], setPage] = useState([0, 0]);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Early return check - but must be after all hooks
   const shouldRender = images && images.length >= 2;
@@ -171,16 +174,19 @@ export default function AlchemyArtPieceGallery({ images, name }) {
           </motion.button>
         ))}
       </div>
-      {/* Lightbox Modal */}
-      <AnimatePresence>
-        {lightboxIdx !== null && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeLightbox}
-          >
+      {/* Lightbox Modal - portaled to body so it appears above TopBar */}
+      {mounted &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {lightboxIdx !== null && (
+              <motion.div
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeLightbox}
+              >
             {/* Close button */}
             <button
               onClick={closeLightbox}
@@ -329,9 +335,11 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                 Swipe to navigate
               </div>
             )}
-          </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </motion.section>
   );
 }

@@ -80,13 +80,6 @@ export async function DELETE(req, { params }) {
         : `fanaha/bg/${row.public_id}`;
       await cloudinary.api.delete_resources([fullPublicId]);
     } catch (error) {
-      console.error("Failed to delete from Cloudinary:", error);
-      // Log specific error for debugging
-      if (error.error?.message === "api_secret mismatch") {
-        console.error(
-          "Cloudinary API secret mismatch. Please verify CLOUDINARY_API_SECRET in your environment variables matches your Cloudinary dashboard."
-        );
-      }
       // Continue with Supabase deletion even if Cloudinary fails
     }
   }

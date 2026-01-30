@@ -19,10 +19,8 @@ export default function MenuShell() {
       {!menuOpen && !isHome && (
         <TopBar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       )}
-      {/* Hamburger menu - always visible */}
-      {!isHome && (
-        <HamburgerMenu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
-      )}
+      {/* Hamburger menu - always visible (including on home so mobile users see it) */}
+      <HamburgerMenu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
       <Menu menuOpen={menuOpen} onMenuToggle={setMenuOpen} />
     </>
   );

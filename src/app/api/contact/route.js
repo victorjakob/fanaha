@@ -32,7 +32,6 @@ export async function POST(request) {
       ]);
 
     if (dbError) {
-      console.error("Error saving contact submission to Supabase:", dbError);
       // Continue with email even if DB save fails
     }
 
@@ -65,18 +64,15 @@ export async function POST(request) {
         });
 
         if (error) {
-          console.error("Resend error:", error);
           // Continue even if email fails - submission is saved in DB
         }
       } catch (emailError) {
-        console.error("Error sending email:", emailError);
         // Continue even if email fails - submission is saved in DB
       }
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error("Contact form error:", error);
     return NextResponse.json(
       { error: "Failed to send message" },
       { status: 500 }

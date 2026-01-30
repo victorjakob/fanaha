@@ -35,7 +35,6 @@ export async function POST(request) {
       .single();
 
     if (dbError) {
-      console.error("Error saving order to Supabase:", dbError);
       // Continue with email even if DB save fails
     }
 
@@ -81,7 +80,6 @@ This order request was submitted from your website.
           `,
         });
       } catch (emailError) {
-        console.error("Error sending email:", emailError);
         // Continue even if email fails - order is saved in DB
       }
     }
@@ -91,7 +89,6 @@ This order request was submitted from your website.
       { status: 200 }
     );
   } catch (error) {
-    console.error("Order API error:", error);
     return NextResponse.json(
       { error: "Failed to process order request" },
       { status: 500 }

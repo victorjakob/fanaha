@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
-import { Plus, Trash2, Upload, X, Edit2 } from "lucide-react";
+import { Plus, Trash2, Upload, X, Edit2, ChevronUp, ChevronDown } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 
@@ -15,6 +15,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
   const [editingItem, setEditingItem] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [reordering, setReordering] = useState(false);
 
   // Form state
   const [name, setName] = useState("");
@@ -67,14 +68,13 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
       const publicIds = await uploadMultipleToCloudinary(
         files,
         "fanaha/oracles-projects",
-        (progress) => console.log(`Upload progress: ${Math.round(progress * 100)}%`),
+        undefined,
         { alwaysCompress: true }
       );
 
       // Store public_ids
       setUploadedImages([...uploadedImages, ...publicIds]);
     } catch (err) {
-      console.error("Upload error:", err);
       setToast({ message: "Failed to upload images", type: "error" });
     } finally {
       setUploading(false);
@@ -178,6 +178,17 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
         setItems(items.map((i) => (i.id === editingItem.id ? data : i)));
         setToast({ message: "Item updated successfully!", type: "success" });
       } else {
+        // Shift existing items down so new one appears first
+        const shifted = items.map((item) => ({
+          ...item,
+          display_order: (item.display_order || 0) + 1,
+        }));
+        if (shifted.length > 0) {
+          setReordering(true);
+          await updateDisplayOrder(shifted);
+          setItems(shifted);
+        }
+
         // Create new item
         const { data, error } = await supabase
           .from("fanaha_oracles_projects")
@@ -190,6 +201,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
               order_url: orderUrl || null,
               images_public_ids: uploadedImages, // Store Cloudinary public_ids
               images: imageUrls, // Store URLs for backward compatibility
+              display_order: 1,
             },
           ])
           .select()
@@ -197,7 +209,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
 
         if (error) throw error;
 
-        setItems([data, ...items]);
+        setItems([data, ...shifted]);
         setToast({ message: "Item created successfully!", type: "success" });
       }
 
@@ -205,10 +217,48 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
       resetForm();
       router.refresh();
     } catch (err) {
-      console.error("Save error:", err);
       setToast({ message: "Failed to save item", type: "error" });
     } finally {
       setUploading(false);
+      setReordering(false);
+    }
+  };
+
+  const updateDisplayOrder = async (orderedItems) => {
+    const updates = orderedItems.map((item, index) =>
+      supabase
+        .from("fanaha_oracles_projects")
+        .update({ display_order: index + 1 })
+        .eq("id", item.id)
+    );
+
+    const results = await Promise.all(updates);
+    const hasError = results.some((result) => result.error);
+    if (hasError) {
+      throw new Error("Failed to update order");
+    }
+  };
+
+  const moveItem = async (index, direction) => {
+    if (reordering) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= items.length) return;
+
+    const reordered = [...items];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    setItems(reordered);
+    setReordering(true);
+    try {
+      await updateDisplayOrder(reordered);
+      setToast({ message: "Order updated successfully!", type: "success" });
+      router.refresh();
+    } catch (err) {
+      setToast({ message: "Failed to update order", type: "error" });
+      router.refresh();
+    } finally {
+      setReordering(false);
     }
   };
 
@@ -231,7 +281,6 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
       setToast({ message: "Item deleted successfully!", type: "success" });
       router.refresh();
     } catch (err) {
-      console.error("Delete error:", err);
       setItems(previousItems);
       setToast({ message: "Failed to delete item", type: "error" });
     } finally {
@@ -277,26 +326,51 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
             No items yet. Click &quot;Add Item&quot; to create one.
           </div>
         ) : (
-          items.map((item) => (
+          items.map((item, index) => (
             <div
               key={item.id}
               className="border border-zinc-200 rounded-lg p-6 space-y-4"
             >
               {/* Header */}
               <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold text-zinc-900">
-                    {item.name}
-                  </h3>
-                  <p className="text-sm text-zinc-600">
-                    {item.date}
-                    {item.publisher && ` • ${item.publisher}`}
-                  </p>
-                  {item.about && (
-                    <p className="text-sm text-zinc-700 mt-2 line-clamp-2">
-                      {item.about}
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <button
+                      onClick={() => moveItem(index, -1)}
+                      disabled={index === 0 || reordering}
+                      className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Move up"
+                      aria-label="Move up"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-semibold text-zinc-500 min-w-[1.5rem] text-center">
+                      {index + 1}
+                    </span>
+                    <button
+                      onClick={() => moveItem(index, 1)}
+                      disabled={index === items.length - 1 || reordering}
+                      className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Move down"
+                      aria-label="Move down"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-zinc-900">
+                      {item.name}
+                    </h3>
+                    <p className="text-sm text-zinc-600">
+                      {item.date}
+                      {item.publisher && ` • ${item.publisher}`}
                     </p>
-                  )}
+                    {item.about && (
+                      <p className="text-sm text-zinc-700 mt-2 line-clamp-2">
+                        {item.about}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button

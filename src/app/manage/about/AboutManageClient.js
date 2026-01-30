@@ -80,7 +80,6 @@ export default function AboutManageClient({ content: initialContent }) {
       
       router.refresh();
     } catch (err) {
-      console.error("Save error:", err);
       setToast({ message: "Failed to save content", type: "error" });
     } finally {
       setSaving(false);

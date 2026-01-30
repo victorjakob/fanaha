@@ -42,7 +42,6 @@ export default function ManageNav({ sections }) {
       await router.push(href);
       // Loading state will be cleared by useEffect when pathname matches targetPath
     } catch (error) {
-      console.error("Navigation error:", error);
       setLoadingItem(null); // Clear on error
       setTargetPath(null);
     }

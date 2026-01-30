@@ -63,12 +63,11 @@ export default function ReviewsManageClient({ initialReviews }) {
       const publicIds = await uploadMultipleToCloudinary(
         files,
         "fanaha/reviews",
-        (progress) => console.log(`Upload progress: ${Math.round(progress * 100)}%`),
+        undefined,
         { alwaysCompress: true }
       );
       setUploadedImages([...uploadedImages, ...publicIds]);
     } catch (err) {
-      console.error("Upload error:", err);
       setToast({ message: "Failed to upload images", type: "error" });
     } finally {
       setUploadingImages(false);
@@ -208,7 +207,6 @@ export default function ReviewsManageClient({ initialReviews }) {
       resetForm();
       router.refresh();
     } catch (err) {
-      console.error("Save error:", err);
       setToast({ message: "Failed to save review", type: "error" });
     } finally {
       setSaving(false);
@@ -238,7 +236,6 @@ export default function ReviewsManageClient({ initialReviews }) {
       setSelectedReview(null);
       router.refresh();
     } catch (err) {
-      console.error("Delete error:", err);
       setToast({ message: "Failed to delete review", type: "error" });
     } finally {
       setDeleting(null);
@@ -282,7 +279,6 @@ export default function ReviewsManageClient({ initialReviews }) {
       setReviews(newReviews);
       router.refresh();
     } catch (err) {
-      console.error("Reorder error:", err);
       setToast({ message: "Failed to reorder review", type: "error" });
     } finally {
       setReordering(false);
@@ -336,7 +332,6 @@ export default function ReviewsManageClient({ initialReviews }) {
       setReviews(newReviews);
       router.refresh();
     } catch (err) {
-      console.error("Reorder error:", err);
       setToast({ message: "Failed to reorder review", type: "error" });
     } finally {
       setDraggedIndex(null);

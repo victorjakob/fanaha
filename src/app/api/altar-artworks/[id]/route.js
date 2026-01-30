@@ -47,7 +47,6 @@ export async function DELETE(req, { params }) {
     try {
       await cloudinary.api.delete_resources([row.image_public_id]);
     } catch (error) {
-      console.error("Failed to delete from Cloudinary:", error);
       // Continue with Supabase deletion even if Cloudinary fails
     }
   }

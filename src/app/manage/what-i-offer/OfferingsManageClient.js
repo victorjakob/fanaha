@@ -85,7 +85,6 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       setImageUrl(publicId);
       setToast({ message: "Image uploaded successfully!", type: "success" });
     } catch (err) {
-      console.error("Upload error:", err);
       setToast({ message: "Failed to upload image", type: "error" });
     } finally {
       setUploading(false);
@@ -174,7 +173,6 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       resetForm();
       router.refresh();
     } catch (err) {
-      console.error("Save error:", err);
       setToast({ message: "Failed to save offering", type: "error" });
     } finally {
       setUploading(false);
@@ -200,7 +198,6 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       setToast({ message: "Offering deleted successfully!", type: "success" });
       router.refresh();
     } catch (err) {
-      console.error("Delete error:", err);
       setOfferings(previousOfferings);
       setToast({ message: "Failed to delete offering", type: "error" });
     } finally {
@@ -225,7 +222,6 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       );
       router.refresh();
     } catch (err) {
-      console.error("Error toggling status:", err);
       setToast({ message: "Failed to update status", type: "error" });
     }
   };
@@ -293,15 +289,12 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       // Check for errors
       const hasError = results.some((result) => result.error);
       if (hasError) {
-        const errors = results.filter((result) => result.error);
-        console.error("Error updating order:", errors);
         throw new Error("Failed to update order in database");
       }
 
       setToast({ message: "Order updated successfully!", type: "success" });
       router.refresh();
     } catch (err) {
-      console.error("Error updating order:", err);
       setToast({ message: "Failed to update order", type: "error" });
       // Revert on error
       setOfferings(offerings);
@@ -349,15 +342,12 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       // Check for errors
       const hasError = results.some((result) => result.error);
       if (hasError) {
-        const errors = results.filter((result) => result.error);
-        console.error("Error updating order:", errors);
         throw new Error("Failed to update order in database");
       }
 
       setToast({ message: "Order updated successfully!", type: "success" });
       router.refresh();
     } catch (err) {
-      console.error("Error updating order:", err);
       setToast({ message: "Failed to update order", type: "error" });
       // Revert on error
       setOfferings(offerings);

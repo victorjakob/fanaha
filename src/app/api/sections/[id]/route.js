@@ -22,7 +22,6 @@ export async function PATCH(req, { params }) {
     .single();
 
   if (error) {
-    console.error("Error updating section:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

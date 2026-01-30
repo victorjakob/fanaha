@@ -30,7 +30,6 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
     try {
       await onCropComplete(croppedAreaPixels);
     } catch (error) {
-      console.error("Crop error:", error);
       setIsProcessing(false);
     }
   };

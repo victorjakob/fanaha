@@ -12,10 +12,6 @@ export default async function AboutManagePage() {
     .select("*")
     .single();
 
-  if (error) {
-    console.error("Error fetching about content:", error);
-  }
-
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       <AboutManageClient content={content || {}} />

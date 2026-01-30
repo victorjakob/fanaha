@@ -15,7 +15,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
 
   return (
     <motion.div
-      className="fixed top-4 left-4 right-4 sm:top-6 sm:left-auto sm:right-6 z-50 flex items-start sm:items-center justify-between sm:justify-end gap-3"
+      className="fixed top-4 left-4 right-4 sm:top-6 sm:left-auto sm:right-6 z-[99] flex items-start sm:items-center justify-between sm:justify-end gap-3 pointer-events-none"
       initial={{ opacity: 0, scale: 0.9, y: -16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.32, ease: "easeOut" }}
@@ -28,7 +28,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
             if (e.key === "Enter" || e.key === " ") setOrderClicked(true);
           }}
           aria-busy={orderClicked}
-          className="relative inline-flex items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-xs sm:text-sm tracking-widest shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-[1.03] border bg-white/90 text-[#191a2d] border-[#865c95]/35 hover:border-[#865c95]/55 hover:bg-white sm:shadow-md sm:hover:shadow-lg sm:bg-[linear-gradient(135deg,#191a2d_0%,#2a254d_55%,#865c95_130%)] sm:hover:bg-[linear-gradient(135deg,#2a254d_0%,#191a2d_60%,#865c95_140%)] sm:text-white sm:border-[#865c95]/35 sm:hover:border-[#865c95]/60"
+          className="pointer-events-auto relative inline-flex items-center justify-center overflow-hidden rounded-full px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm tracking-widest shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-[1.03] border bg-white/90 text-[#191a2d] border-[#865c95]/35 hover:border-[#865c95]/55 hover:bg-white sm:shadow-md sm:hover:shadow-lg sm:bg-[linear-gradient(135deg,#191a2d_0%,#2a254d_55%,#865c95_130%)] sm:hover:bg-[linear-gradient(135deg,#2a254d_0%,#191a2d_60%,#865c95_140%)] sm:text-white sm:border-[#865c95]/35 sm:hover:border-[#865c95]/60"
           style={{
             fontFamily: "var(--font-house-minimalist), sans-serif",
             fontWeight: 700,
@@ -53,7 +53,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
         </Link>
 
       <motion.button
-        className="p-2.5 sm:p-3 rounded-full bg-[linear-gradient(135deg,#191a2d_0%,#2a254d_65%)] backdrop-blur-md border border-[#865c95]/25 shadow-md hover:shadow-lg hover:bg-[linear-gradient(135deg,#2a254d_0%,#191a2d_70%)] transition-all duration-300 group"
+        className="pointer-events-auto p-2.5 sm:p-3 rounded-full bg-[linear-gradient(135deg,#191a2d_0%,#2a254d_65%)] backdrop-blur-md border border-[#865c95]/25 shadow-md hover:shadow-lg hover:bg-[linear-gradient(135deg,#2a254d_0%,#191a2d_70%)] transition-all duration-300 group"
         onClick={() => onMenuToggle(!menuOpen)}
         aria-label={menuOpen ? "Close menu" : "Open menu"}
         initial={false}
@@ -74,7 +74,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
             animate={{
               rotate: menuOpen ? 45 : 0,
               y: menuOpen ? 6 : 0,
-              backgroundColor: menuOpen ? "rgb(134, 92, 149)" : "white",
+              backgroundColor: menuOpen ? "rgb(134, 92, 149)" : "rgb(255, 255, 255)",
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           />
@@ -95,7 +95,7 @@ export default function HamburgerMenu({ menuOpen, onMenuToggle }) {
             animate={{
               rotate: menuOpen ? -45 : 0,
               y: menuOpen ? -6 : 0,
-              backgroundColor: menuOpen ? "rgb(134, 92, 149)" : "white",
+              backgroundColor: menuOpen ? "rgb(134, 92, 149)" : "rgb(255, 255, 255)",
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           />

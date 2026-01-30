@@ -4,15 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { isCloudinaryId } from "@/lib/cloudinary";
-import { cldUrlEnhanced } from "@/lib/cloudinary";
 
 export default function AltarGallery({ artworks }) {
   const [imageErrors, setImageErrors] = useState(new Set());
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [[page, direction], setPage] = useState([0, 0]);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const handleImageError = (artworkId) => {
     setImageErrors((prev) => new Set(prev).add(artworkId));
@@ -58,18 +60,20 @@ export default function AltarGallery({ artworks }) {
     if (typeof window === "undefined" || typeof document === "undefined")
       return;
 
-    const preloadImage = (publicId) => {
-      if (!publicId) return;
-
-      let imageUrl;
+    // Use same URL as lightbox display so preload cache is used
+    const getImageUrl = (publicId) => {
+      if (!publicId) return null;
       if (isCloudinaryId(publicId)) {
         const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-        if (!cloudName) return;
-        // Preload full-size image for lightbox (600px max display, but request larger for quality)
-        imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto,w_1200/${publicId}`;
-      } else {
-        imageUrl = publicId;
+        if (!cloudName) return null;
+        return `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto/${publicId}`;
       }
+      return publicId;
+    };
+
+    const preloadImage = (publicId) => {
+      const imageUrl = getImageUrl(publicId);
+      if (!imageUrl) return;
 
       // Check if already preloaded
       const existingLink = document.querySelector(
@@ -85,7 +89,7 @@ export default function AltarGallery({ artworks }) {
       link.setAttribute("data-preload", "lightbox");
       document.head.appendChild(link);
 
-      // Also preload using Image object as fallback for better browser support
+      // Load via Image so browser caches; same URL as display = instant show on next
       const img = new window.Image();
       img.src = imageUrl;
     };
@@ -95,18 +99,24 @@ export default function AltarGallery({ artworks }) {
       (artwork) => artwork.image_public_id || artwork.image_url
     );
 
-    // Preload current image at higher quality
+    // Preload current
     if (imageSources[currentIndex]) {
       preloadImage(imageSources[currentIndex]);
     }
 
-    // Preload next image
+    // Preload next (main one for smooth "next" click)
     const nextIdx = (currentIndex + 1) % artworks.length;
     if (imageSources[nextIdx] && nextIdx !== currentIndex) {
       preloadImage(imageSources[nextIdx]);
     }
 
-    // Preload previous image
+    // Preload next+1 for double-tap next
+    const nextNextIdx = (currentIndex + 2) % artworks.length;
+    if (artworks.length > 2 && imageSources[nextNextIdx] && nextNextIdx !== currentIndex && nextNextIdx !== nextIdx) {
+      preloadImage(imageSources[nextNextIdx]);
+    }
+
+    // Preload previous
     const prevIdx = currentIndex === 0 ? artworks.length - 1 : currentIndex - 1;
     if (imageSources[prevIdx] && prevIdx !== currentIndex) {
       preloadImage(imageSources[prevIdx]);
@@ -186,16 +196,19 @@ export default function AltarGallery({ artworks }) {
         </div>
       </section>
 
-      {/* Carousel Lightbox */}
-      <AnimatePresence>
-        {lightboxOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center"
-            onClick={closeLightbox}
-          >
+      {/* Carousel Lightbox - portaled to body so it appears above TopBar */}
+      {mounted &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {lightboxOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[100] flex items-center justify-center"
+                onClick={closeLightbox}
+              >
             {/* Close button */}
             <button
               onClick={closeLightbox}
@@ -334,9 +347,11 @@ export default function AltarGallery({ artworks }) {
                 Swipe to navigate
               </div>
             )}
-          </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </>
   );
 }

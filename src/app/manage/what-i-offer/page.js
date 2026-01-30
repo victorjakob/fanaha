@@ -20,10 +20,6 @@ export default async function OfferingsManagePage() {
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: true });
 
-  if (error) {
-    console.error("Error fetching offerings:", error);
-  }
-
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       <OfferingsManageClient

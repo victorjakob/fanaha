@@ -113,43 +113,16 @@ export default function SlidesManageClient() {
         // Compress files larger than 8MB to ensure they stay under 10MB limit
         let fileToUpload = file;
         if (file.size > 8 * 1024 * 1024) {
-          console.log(
-            `Compressing ${file.name}: ${(file.size / 1024 / 1024).toFixed(
-              1
-            )}MB`
-          );
-
           // First attempt: resize to 2560px max width with 92% quality
           fileToUpload = await resizeImage(file, 2560, 0.92);
-          console.log(
-            `After first compression: ${(
-              fileToUpload.size /
-              1024 /
-              1024
-            ).toFixed(1)}MB`
-          );
 
           // If still too large, compress more aggressively
           if (fileToUpload.size > 9.5 * 1024 * 1024) {
             fileToUpload = await resizeImage(file, 1920, 0.85);
-            console.log(
-              `After second compression: ${(
-                fileToUpload.size /
-                1024 /
-                1024
-              ).toFixed(1)}MB`
-            );
 
             // Final fallback for extremely large files
             if (fileToUpload.size > 9.8 * 1024 * 1024) {
               fileToUpload = await resizeImage(file, 1600, 0.8);
-              console.log(
-                `After final compression: ${(
-                  fileToUpload.size /
-                  1024 /
-                  1024
-                ).toFixed(1)}MB`
-              );
             }
           }
         }

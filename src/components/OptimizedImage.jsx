@@ -31,7 +31,6 @@ export function OptimizedImage({
   const imageSource = src || publicId;
 
   if (!imageSource) {
-    console.warn("OptimizedImage: No src or publicId provided");
     return null;
   }
 

@@ -4,11 +4,13 @@ import { motion } from "framer-motion";
 
 export default function RippleOverlay({ onOpenMenu }) {
   const [ripples, setRipples] = useState([]);
+  const [cursor, setCursor] = useState({ x: -100, y: -100 });
   const rippleId = useRef(0);
 
   function handleMouseMove(e) {
     const x = e.clientX;
     const y = e.clientY;
+    setCursor({ x, y });
     const id = rippleId.current++;
     setRipples((prev) => [...prev, { id, x, y }]);
   }
@@ -16,9 +18,6 @@ export default function RippleOverlay({ onOpenMenu }) {
   function handleRippleComplete(id) {
     setRipples((prev) => prev.filter((r) => r.id !== id));
   }
-
-  // Reset ripples when menu opens (optional: can be controlled from parent)
-  // useEffect(() => { if (menuOpen) setRipples([]); }, [menuOpen]);
 
   return (
     <div
@@ -28,11 +27,27 @@ export default function RippleOverlay({ onOpenMenu }) {
         width: "100vw",
         height: "100vh",
         zIndex: 98,
-        cursor: "crosshair",
+        cursor: "none",
       }}
       onClick={onOpenMenu}
       onMouseMove={handleMouseMove}
     >
+      {/* Custom circle cursor */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          left: cursor.x,
+          top: cursor.y,
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: "rgba(134, 92, 149, 0.85)",
+          pointerEvents: "none",
+          zIndex: 102,
+          transform: "translate(-50%, -50%)",
+        }}
+      />
       {ripples.map((ripple) => (
         <motion.div
           key={ripple.id}

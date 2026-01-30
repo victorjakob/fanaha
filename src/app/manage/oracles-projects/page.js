@@ -20,10 +20,6 @@ export default async function OraclesProjectsManagePage() {
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching oracles & projects:", error);
-  }
-
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       <OraclesProjectsManageClient

@@ -69,6 +69,9 @@ export default async function OraclesProjectsPage() {
             "Mystical oracles and collaborative creative projects."
           }
         />
+        <div className="w-full max-w-3xl px-4 sm:px-0 mt-6 sm:mt-8">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
+        </div>
         <OraclesProjectsGallery items={items || []} />
       </div>
     </main>

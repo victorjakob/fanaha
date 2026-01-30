@@ -17,9 +17,6 @@ export default async function AlchemyArtPieceDetail({ params }) {
     .single();
 
   if (!piece || error) {
-    if (error) {
-      console.error("Error fetching art piece:", error);
-    }
     return notFound();
   }
 

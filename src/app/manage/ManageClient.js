@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/util/supabase/supabaseClient";
 import {
   Plus,
   Pencil,
@@ -25,10 +26,38 @@ export default function ManageClient({ initialPieces, section }) {
   const [filterStatus, setFilterStatus] = useState("all"); // all, available, sold, commission
   const [sortBy, setSortBy] = useState("created_at"); // created_at, name, price
   const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
+  const [reordering, setReordering] = useState(false);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState(null);
   const [toast, setToast] = useState(null);
+
+  const isAlchemyArtPiecesSection = section?.slug === "alchemical-art-pieces";
+
+  const statusRank = (status) => {
+    const s = status || "available";
+    if (s === "available") return 0;
+    if (s === "commission") return 1;
+    if (s === "sold") return 2;
+    return 9;
+  };
+
+  const getStatusPieces = (status) => {
+    return pieces
+      .filter((p) => (p.status || "available") === status)
+      .slice()
+      .sort((a, b) => {
+        const orderA = a.display_order ?? null;
+        const orderB = b.display_order ?? null;
+        if (orderA !== null && orderB !== null && orderA !== orderB) {
+          return orderA - orderB;
+        }
+        const yearA = a.year || new Date(a.created_at).getFullYear();
+        const yearB = b.year || new Date(b.created_at).getFullYear();
+        if (yearB !== yearA) return yearB - yearA;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+  };
 
   // Filter and sort pieces
   const filteredAndSortedPieces = pieces
@@ -48,6 +77,24 @@ export default function ManageClient({ initialPieces, section }) {
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
+      if (isAlchemyArtPiecesSection) {
+        const rankA = statusRank(a.status);
+        const rankB = statusRank(b.status);
+        if (rankA !== rankB) return rankA - rankB;
+
+        const orderA = a.display_order ?? null;
+        const orderB = b.display_order ?? null;
+        if (orderA !== null && orderB !== null && orderA !== orderB) {
+          return orderA - orderB;
+        }
+
+        // Fallback (stable-ish): year desc then created_at desc
+        const yearA = a.year || new Date(a.created_at).getFullYear();
+        const yearB = b.year || new Date(b.created_at).getFullYear();
+        if (yearB !== yearA) return yearB - yearA;
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+
       let compareValue = 0;
 
       if (sortBy === "created_at") {
@@ -96,6 +143,7 @@ export default function ManageClient({ initialPieces, section }) {
   };
 
   const toggleSort = (field) => {
+    if (isAlchemyArtPiecesSection) return;
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
@@ -111,6 +159,71 @@ export default function ManageClient({ initialPieces, section }) {
     ) : (
       <ChevronDown className="w-4 h-4 inline ml-1" />
     );
+  };
+
+  const movePieceWithinStatus = async (pieceId, direction) => {
+    if (!isAlchemyArtPiecesSection) return;
+    if (reordering) return;
+
+    const currentPiece = pieces.find((p) => p.id === pieceId);
+    if (!currentPiece) return;
+    const currentStatus = currentPiece.status || "available";
+
+    const statusPieces = getStatusPieces(currentStatus);
+    const currentIndex = statusPieces.findIndex((p) => p.id === pieceId);
+    if (currentIndex === -1) return;
+
+    const newIndex = currentIndex + direction;
+    if (newIndex < 0 || newIndex >= statusPieces.length) return;
+
+    const reordered = [...statusPieces];
+    const [moved] = reordered.splice(currentIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    const updatedStatusPieces = reordered.map((p, idx) => ({
+      ...p,
+      display_order: idx,
+    }));
+
+    // Optimistic UI update for the whole status group
+    setPieces((prev) =>
+      prev.map((p) => {
+        const updated = updatedStatusPieces.find((u) => u.id === p.id);
+        return updated ? { ...p, display_order: updated.display_order } : p;
+      })
+    );
+
+    setReordering(true);
+    try {
+      const updates = updatedStatusPieces.map((p) =>
+        supabase
+          .from("fanaha_alchemy_pieces")
+          .update({ display_order: p.display_order })
+          .eq("id", p.id)
+      );
+      const results = await Promise.all(updates);
+      const hasError = results.some((r) => r.error);
+      if (hasError) {
+        throw new Error("Failed to update order");
+      }
+
+      setToast({ message: "Order updated successfully!", type: "success" });
+      router.refresh();
+    } catch (err) {
+      setToast({ message: "Failed to update order", type: "error" });
+      // Revert by refreshing from server state
+      router.refresh();
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const getDisplayOrderLabel = (piece) => {
+    if (!isAlchemyArtPiecesSection) return "";
+    const status = piece.status || "available";
+    const statusPieces = getStatusPieces(status);
+    const index = statusPieces.findIndex((p) => p.id === piece.id);
+    return index === -1 ? "" : `${index + 1}`;
   };
 
   return (
@@ -179,6 +292,13 @@ export default function ManageClient({ initialPieces, section }) {
         Showing {filteredAndSortedPieces.length} of {pieces.length} pieces
       </div>
 
+      {isAlchemyArtPiecesSection && (
+        <div className="mb-4 text-sm text-zinc-500">
+          Order is controlled by the up/down arrows inside each status section
+          (Available → Commission → Sold).
+        </div>
+      )}
+
       {/* Desktop Table / Mobile Cards */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         {/* Desktop Table View */}
@@ -186,12 +306,23 @@ export default function ManageClient({ initialPieces, section }) {
           <table className="w-full">
             <thead className="bg-zinc-50 border-b border-zinc-200">
               <tr>
+                {isAlchemyArtPiecesSection && (
+                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                    Order
+                  </th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   Image
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-700"
-                  onClick={() => toggleSort("name")}
+                  className={`px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider ${
+                    isAlchemyArtPiecesSection
+                      ? ""
+                      : "cursor-pointer hover:text-zinc-700"
+                  }`}
+                  onClick={
+                    isAlchemyArtPiecesSection ? undefined : () => toggleSort("name")
+                  }
                 >
                   Name <SortIcon field="name" />
                 </th>
@@ -199,8 +330,14 @@ export default function ManageClient({ initialPieces, section }) {
                   Status
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-700"
-                  onClick={() => toggleSort("price")}
+                  className={`px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider ${
+                    isAlchemyArtPiecesSection
+                      ? ""
+                      : "cursor-pointer hover:text-zinc-700"
+                  }`}
+                  onClick={
+                    isAlchemyArtPiecesSection ? undefined : () => toggleSort("price")
+                  }
                 >
                   Price (ISK) <SortIcon field="price" />
                 </th>
@@ -208,14 +345,28 @@ export default function ManageClient({ initialPieces, section }) {
                   Dimensions
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-700"
-                  onClick={() => toggleSort("year")}
+                  className={`px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider ${
+                    isAlchemyArtPiecesSection
+                      ? ""
+                      : "cursor-pointer hover:text-zinc-700"
+                  }`}
+                  onClick={
+                    isAlchemyArtPiecesSection ? undefined : () => toggleSort("year")
+                  }
                 >
                   Year <SortIcon field="year" />
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-700"
-                  onClick={() => toggleSort("created_at")}
+                  className={`px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider ${
+                    isAlchemyArtPiecesSection
+                      ? ""
+                      : "cursor-pointer hover:text-zinc-700"
+                  }`}
+                  onClick={
+                    isAlchemyArtPiecesSection
+                      ? undefined
+                      : () => toggleSort("created_at")
+                  }
                 >
                   Created <SortIcon field="created_at" />
                 </th>
@@ -228,7 +379,7 @@ export default function ManageClient({ initialPieces, section }) {
               {filteredAndSortedPieces.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan={isAlchemyArtPiecesSection ? "8" : "7"}
                     className="px-6 py-12 text-center text-zinc-500"
                   >
                     No pieces found
@@ -240,6 +391,33 @@ export default function ManageClient({ initialPieces, section }) {
                     key={piece.id}
                     className="hover:bg-zinc-50 transition-colors"
                   >
+                    {isAlchemyArtPiecesSection && (
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex flex-col items-center gap-0.5">
+                          <button
+                            onClick={() => movePieceWithinStatus(piece.id, -1)}
+                            disabled={reordering}
+                            className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Move up (within status)"
+                            aria-label="Move up (within status)"
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </button>
+                          <span className="text-xs font-semibold text-zinc-500 min-w-[1.5rem] text-center">
+                          {getDisplayOrderLabel(piece)}
+                          </span>
+                          <button
+                            onClick={() => movePieceWithinStatus(piece.id, 1)}
+                            disabled={reordering}
+                            className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Move down (within status)"
+                            aria-label="Move down (within status)"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-100">
                         {piece.images?.[0] && (
@@ -372,6 +550,11 @@ export default function ManageClient({ initialPieces, section }) {
                           ? "Commission"
                           : "Sold"}
                       </span>
+                      {isAlchemyArtPiecesSection && (
+                        <span className="text-xs text-zinc-600 bg-zinc-100 px-2 py-1 rounded-full">
+                          #{getDisplayOrderLabel(piece)}
+                        </span>
+                      )}
                       {piece.price && (
                         <span className="text-xs text-zinc-600 bg-zinc-100 px-2 py-1 rounded-full">
                           {formatISK(piece.price)}
@@ -388,6 +571,31 @@ export default function ManageClient({ initialPieces, section }) {
                       <p className="text-xs text-zinc-500 mb-2">
                         {piece.dimensions}
                       </p>
+                    )}
+
+                    {isAlchemyArtPiecesSection && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => movePieceWithinStatus(piece.id, -1)}
+                          disabled={reordering}
+                          className="text-xs px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1"
+                          aria-label="Move up (within status)"
+                          title="Move up (within status)"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                          Up
+                        </button>
+                        <button
+                          onClick={() => movePieceWithinStatus(piece.id, 1)}
+                          disabled={reordering}
+                          className="text-xs px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1"
+                          aria-label="Move down (within status)"
+                          title="Move down (within status)"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                          Down
+                        </button>
+                      </div>
                     )}
 
                     {/* Actions */}

@@ -99,7 +99,6 @@ export default function CreateEditModal({ piece, onClose, onSuccess }) {
 
       onSuccess();
     } catch (err) {
-      console.error("Error saving piece:", err);
       setError(err.message || "Failed to save piece");
     } finally {
       setIsSubmitting(false);

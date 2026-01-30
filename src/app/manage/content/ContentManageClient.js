@@ -52,7 +52,6 @@ export default function ContentManageClient({ sections: initialSections }) {
       setEditForm({});
       router.refresh();
     } catch (err) {
-      console.error("Error saving:", err);
       alert(err.message || "Failed to save changes");
     } finally {
       setSaving(false);

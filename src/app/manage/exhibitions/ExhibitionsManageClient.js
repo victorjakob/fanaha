@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
-import { Plus, Trash2, Upload, X, Edit2 } from "lucide-react";
+import { Plus, Trash2, Upload, X, Edit2, ChevronUp, ChevronDown } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 
@@ -18,6 +18,7 @@ export default function ExhibitionsManageClient({
   const [editingExhibition, setEditingExhibition] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [reordering, setReordering] = useState(false);
 
   // Form state
   const [gallery, setGallery] = useState("");
@@ -66,14 +67,13 @@ export default function ExhibitionsManageClient({
       const publicIds = await uploadMultipleToCloudinary(
         files,
         "fanaha/exhibitions",
-        (progress) => console.log(`Upload progress: ${Math.round(progress * 100)}%`),
+        undefined,
         { alwaysCompress: true }
       );
 
       // Store public_ids
       setUploadedImages([...uploadedImages, ...publicIds]);
     } catch (err) {
-      console.error("Upload error:", err);
       setToast({ message: "Failed to upload images", type: "error" });
     } finally {
       setUploading(false);
@@ -203,6 +203,17 @@ export default function ExhibitionsManageClient({
           type: "success",
         });
       } else {
+        // Shift existing exhibitions down so new one appears first
+        const shifted = exhibitions.map((exhibition) => ({
+          ...exhibition,
+          display_order: (exhibition.display_order || 0) + 1,
+        }));
+        if (shifted.length > 0) {
+          setReordering(true);
+          await updateDisplayOrder(shifted);
+          setExhibitions(shifted);
+        }
+
         // Generate URLs for backward compatibility
         const { cldUrlEnhanced } = await import("@/lib/cloudinary");
         const imageUrls = uploadedImages.map((img) => {
@@ -231,6 +242,7 @@ export default function ExhibitionsManageClient({
               about,
               images_public_ids: uploadedImages, // Store Cloudinary public_ids
               images: imageUrls, // Store URLs for backward compatibility
+              display_order: 1,
             },
           ])
           .select()
@@ -238,7 +250,7 @@ export default function ExhibitionsManageClient({
 
         if (error) throw error;
 
-        setExhibitions([data, ...exhibitions]);
+        setExhibitions([data, ...shifted]);
         setToast({
           message: "Exhibition created successfully!",
           type: "success",
@@ -249,17 +261,49 @@ export default function ExhibitionsManageClient({
       resetForm();
       router.refresh();
     } catch (err) {
-      console.error("Save error:", err);
-      console.error("Error details:", {
-        message: err.message,
-        details: err.details,
-        hint: err.hint,
-        code: err.code,
-      });
       const errorMessage = err.message || "Failed to save exhibition";
       setToast({ message: errorMessage, type: "error" });
     } finally {
       setUploading(false);
+      setReordering(false);
+    }
+  };
+
+  const updateDisplayOrder = async (orderedExhibitions) => {
+    const updates = orderedExhibitions.map((exhibition, index) =>
+      supabase
+        .from("fanaha_exhibitions")
+        .update({ display_order: index + 1 })
+        .eq("id", exhibition.id)
+    );
+
+    const results = await Promise.all(updates);
+    const hasError = results.some((result) => result.error);
+    if (hasError) {
+      throw new Error("Failed to update order");
+    }
+  };
+
+  const moveExhibition = async (index, direction) => {
+    if (reordering) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= exhibitions.length) return;
+
+    const reordered = [...exhibitions];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    setExhibitions(reordered);
+    setReordering(true);
+    try {
+      await updateDisplayOrder(reordered);
+      setToast({ message: "Order updated successfully!", type: "success" });
+      router.refresh();
+    } catch (err) {
+      setToast({ message: "Failed to update order", type: "error" });
+      router.refresh();
+    } finally {
+      setReordering(false);
     }
   };
 
@@ -291,7 +335,6 @@ export default function ExhibitionsManageClient({
       });
       router.refresh();
     } catch (err) {
-      console.error("Delete error:", err);
       // Revert on error
       setExhibitions(previousExhibitions);
       setToast({ message: "Failed to delete exhibition", type: "error" });
@@ -338,25 +381,50 @@ export default function ExhibitionsManageClient({
             No exhibitions yet. Click &quot;Add Exhibition&quot; to create one.
           </div>
         ) : (
-          exhibitions.map((exhibition) => (
+          exhibitions.map((exhibition, index) => (
             <div
               key={exhibition.id}
               className="border border-zinc-200 rounded-lg p-6 space-y-4"
             >
               {/* Header */}
               <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold text-zinc-900">
-                    {exhibition.gallery}
-                  </h3>
-                  <p className="text-sm text-zinc-600 mt-1">
-                    {exhibition.year} • {exhibition.city}, {exhibition.country}
-                  </p>
-                  {exhibition.about && (
-                    <p className="text-sm text-zinc-700 mt-2 whitespace-pre-wrap">
-                      {exhibition.about}
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <button
+                      onClick={() => moveExhibition(index, -1)}
+                      disabled={index === 0 || reordering}
+                      className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Move up"
+                      aria-label="Move up"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-semibold text-zinc-500 min-w-[1.5rem] text-center">
+                      {index + 1}
+                    </span>
+                    <button
+                      onClick={() => moveExhibition(index, 1)}
+                      disabled={index === exhibitions.length - 1 || reordering}
+                      className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Move down"
+                      aria-label="Move down"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-zinc-900">
+                      {exhibition.gallery}
+                    </h3>
+                    <p className="text-sm text-zinc-600 mt-1">
+                      {exhibition.year} • {exhibition.city}, {exhibition.country}
                     </p>
-                  )}
+                    {exhibition.about && (
+                      <p className="text-sm text-zinc-700 mt-2 whitespace-pre-wrap">
+                        {exhibition.about}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
-import { Plus, Trash2, Upload, X, Edit2 } from "lucide-react";
+import { Plus, Trash2, Upload, X, Edit2, ChevronUp, ChevronDown } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 
@@ -15,6 +15,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
   const [editingMural, setEditingMural] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [reordering, setReordering] = useState(false);
 
   // Form state
   const [location, setLocation] = useState("");
@@ -55,7 +56,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
       const publicIds = await uploadMultipleToCloudinary(
         files,
         "fanaha/murals",
-        (progress) => console.log(`Upload progress: ${Math.round(progress * 100)}%`),
+        undefined,
         { alwaysCompress: true }
       );
 
@@ -73,7 +74,6 @@ export default function MuralsManageClient({ initialMurals, section }) {
       // Store public_ids (these can be used as URLs too since OptimizedImage handles both)
       setUploadedImages([...uploadedImages, ...publicIds]);
     } catch (err) {
-      console.error("Upload error:", err);
       setToast({ message: "Failed to upload images", type: "error" });
     } finally {
       setUploading(false);
@@ -185,6 +185,17 @@ export default function MuralsManageClient({ initialMurals, section }) {
         setMurals(murals.map((m) => (m.id === editingMural.id ? data : m)));
         setToast({ message: "Mural updated successfully!", type: "success" });
       } else {
+        // Shift existing murals down so new one appears first
+        const shifted = murals.map((mural) => ({
+          ...mural,
+          display_order: (mural.display_order || 0) + 1,
+        }));
+        if (shifted.length > 0) {
+          setReordering(true);
+          await updateDisplayOrder(shifted);
+          setMurals(shifted);
+        }
+
         // Create new mural
         const { data, error } = await supabase
           .from("fanaha_murals")
@@ -194,6 +205,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
               year,
               images_public_ids: uploadedImages, // Store Cloudinary public_ids
               images: imageUrls, // Store URLs for backward compatibility
+              display_order: 1,
             },
           ])
           .select()
@@ -201,7 +213,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
 
         if (error) throw error;
 
-        setMurals([data, ...murals]);
+        setMurals([data, ...shifted]);
         setToast({ message: "Mural created successfully!", type: "success" });
       }
 
@@ -209,10 +221,48 @@ export default function MuralsManageClient({ initialMurals, section }) {
       resetForm();
       router.refresh();
     } catch (err) {
-      console.error("Save error:", err);
       setToast({ message: "Failed to save mural", type: "error" });
     } finally {
       setUploading(false);
+      setReordering(false);
+    }
+  };
+
+  const updateDisplayOrder = async (orderedMurals) => {
+    const updates = orderedMurals.map((mural, index) =>
+      supabase
+        .from("fanaha_murals")
+        .update({ display_order: index + 1 })
+        .eq("id", mural.id)
+    );
+
+    const results = await Promise.all(updates);
+    const hasError = results.some((result) => result.error);
+    if (hasError) {
+      throw new Error("Failed to update order");
+    }
+  };
+
+  const moveMural = async (index, direction) => {
+    if (reordering) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= murals.length) return;
+
+    const reordered = [...murals];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    setMurals(reordered);
+    setReordering(true);
+    try {
+      await updateDisplayOrder(reordered);
+      setToast({ message: "Order updated successfully!", type: "success" });
+      router.refresh();
+    } catch (err) {
+      setToast({ message: "Failed to update order", type: "error" });
+      router.refresh();
+    } finally {
+      setReordering(false);
     }
   };
 
@@ -236,7 +286,6 @@ export default function MuralsManageClient({ initialMurals, section }) {
       setToast({ message: "Mural deleted successfully!", type: "success" });
       router.refresh();
     } catch (err) {
-      console.error("Delete error:", err);
       // Revert on error
       setMurals(previousMurals);
       setToast({ message: "Failed to delete mural", type: "error" });
@@ -283,18 +332,43 @@ export default function MuralsManageClient({ initialMurals, section }) {
             No murals yet. Click &quot;Add Mural&quot; to create one.
           </div>
         ) : (
-          murals.map((mural) => (
+          murals.map((mural, index) => (
             <div
               key={mural.id}
               className="border border-zinc-200 rounded-lg p-6 space-y-4"
             >
               {/* Header */}
               <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold text-zinc-900">
-                    {mural.location}
-                  </h3>
-                  <p className="text-sm text-zinc-600">{mural.year}</p>
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <button
+                      onClick={() => moveMural(index, -1)}
+                      disabled={index === 0 || reordering}
+                      className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Move up"
+                      aria-label="Move up"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-semibold text-zinc-500 min-w-[1.5rem] text-center">
+                      {index + 1}
+                    </span>
+                    <button
+                      onClick={() => moveMural(index, 1)}
+                      disabled={index === murals.length - 1 || reordering}
+                      className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Move down"
+                      aria-label="Move down"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-zinc-900">
+                      {mural.location}
+                    </h3>
+                    <p className="text-sm text-zinc-600">{mural.year}</p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button

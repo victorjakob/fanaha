@@ -25,7 +25,6 @@ export default function DeleteConfirmModal({ piece, onClose, onSuccess }) {
       // Success - pass the deleted piece ID for optimistic update
       onSuccess(piece.id);
     } catch (err) {
-      console.error("Error deleting piece:", err);
       setError(err.message || "Failed to delete piece");
       setIsDeleting(false);
     }

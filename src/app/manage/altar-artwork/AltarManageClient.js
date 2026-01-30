@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Plus, Trash2, Upload, ChevronUp, ChevronDown } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 import ImageCropper from "@/app/alchemy/create/ImageCropper";
 import { getCroppedImg } from "@/app/alchemy/create/cropImage";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+import { supabase } from "@/util/supabase/supabaseClient";
 
 export default function AltarManageClient({ initialArtworks, section }) {
   const router = useRouter();
@@ -19,6 +20,45 @@ export default function AltarManageClient({ initialArtworks, section }) {
   const [tempImageSrc, setTempImageSrc] = useState(null);
   const [tempFileName, setTempFileName] = useState("");
   const [artworkToDelete, setArtworkToDelete] = useState(null);
+  const [reordering, setReordering] = useState(false);
+
+  const updateDisplayOrder = async (orderedArtworks) => {
+    const updates = orderedArtworks.map((artwork, index) =>
+      supabase
+        .from("fanaha_altar_artworks")
+        .update({ display_order: index + 1 })
+        .eq("id", artwork.id)
+    );
+
+    const results = await Promise.all(updates);
+    const hasError = results.some((result) => result.error);
+    if (hasError) {
+      throw new Error("Failed to update order");
+    }
+  };
+
+  const moveArtwork = async (index, direction) => {
+    if (reordering) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= artworks.length) return;
+
+    const reordered = [...artworks];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    setArtworks(reordered);
+    setReordering(true);
+    try {
+      await updateDisplayOrder(reordered);
+      setToast({ message: "Order updated successfully!", type: "success" });
+      router.refresh();
+    } catch (err) {
+      setToast({ message: "Failed to update order", type: "error" });
+      router.refresh();
+    } finally {
+      setReordering(false);
+    }
+  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
@@ -65,13 +105,25 @@ export default function AltarManageClient({ initialArtworks, section }) {
         crop: "fill",
       });
 
+      // Move existing artworks down so the new one appears first
+      if (artworks.length > 0) {
+        setReordering(true);
+        const shifted = artworks.map((art) => ({
+          ...art,
+          display_order: (art.display_order || 0) + 1,
+        }));
+        await updateDisplayOrder(shifted);
+        setArtworks(shifted);
+      }
+
       // Insert into database via API route (uses server-side Supabase with service role key)
       const response = await fetch("/api/altar-artworks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           image_public_id: publicId,
-          image_url: imageUrl // backward compatibility
+          image_url: imageUrl, // backward compatibility
+          display_order: 1,
         }),
       });
 
@@ -86,8 +138,6 @@ export default function AltarManageClient({ initialArtworks, section }) {
         throw new Error("Insert succeeded but no data returned");
       }
 
-      console.log("Successfully inserted artwork:", newArtwork);
-
       setArtworks([newArtwork, ...artworks]);
       setToast({ message: "Artwork added successfully!", type: "success" });
 
@@ -98,14 +148,6 @@ export default function AltarManageClient({ initialArtworks, section }) {
 
       router.refresh();
     } catch (err) {
-      console.error("Upload error:", err);
-      console.error("Error details:", {
-        message: err.message,
-        details: err.details,
-        hint: err.hint,
-        code: err.code,
-        stack: err.stack,
-      });
       setToast({ 
         message: err.message || "Failed to upload artwork", 
         type: "error" 
@@ -116,6 +158,7 @@ export default function AltarManageClient({ initialArtworks, section }) {
       setTempFileName("");
     } finally {
       setUploading(false);
+      setReordering(false);
     }
   };
 
@@ -154,7 +197,6 @@ export default function AltarManageClient({ initialArtworks, section }) {
       setToast({ message: "Artwork deleted successfully!", type: "success" });
       router.refresh();
     } catch (err) {
-      console.error("Delete error:", err);
       // Revert on error
       setArtworks(previousArtworks);
       setToast({ message: "Failed to delete artwork", type: "error" });
@@ -228,7 +270,7 @@ export default function AltarManageClient({ initialArtworks, section }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-            {artworks.map((artwork) => (
+            {artworks.map((artwork, index) => (
               <div key={artwork.id} className="relative">
                 <div className="aspect-square rounded-full overflow-hidden">
                   <OptimizedImage
@@ -251,6 +293,31 @@ export default function AltarManageClient({ initialArtworks, section }) {
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
+
+                {/* Order controls */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white/90 rounded-full shadow-sm border border-zinc-200 px-2 py-1">
+                  <button
+                    onClick={() => moveArtwork(index, -1)}
+                    disabled={index === 0 || reordering}
+                    className="p-1 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-full disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Move up"
+                    title="Move up"
+                  >
+                    <ChevronUp className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs font-semibold text-zinc-500 min-w-[1.25rem] text-center">
+                    {index + 1}
+                  </span>
+                  <button
+                    onClick={() => moveArtwork(index, 1)}
+                    disabled={index === artworks.length - 1 || reordering}
+                    className="p-1 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-full disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Move down"
+                    title="Move down"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

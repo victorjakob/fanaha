@@ -111,7 +111,6 @@ export default function EditForm({ piece }) {
       setShowCropper(false);
       setTempImageSrc(null);
     } catch (e) {
-      console.error(e);
       setError("Failed to crop image");
     }
   }
@@ -139,14 +138,12 @@ export default function EditForm({ piece }) {
           const paletteArr = colors.map((c) => `rgb(${c[0]},${c[1]},${c[2]})`);
           resolve(paletteArr);
         } catch (err) {
-          console.error("Palette extraction error:", err);
           resolve([]);
         } finally {
           URL.revokeObjectURL(url);
         }
       };
-      img.onerror = (e) => {
-        console.error("Image load error:", e);
+      img.onerror = () => {
         URL.revokeObjectURL(url);
         resolve([]);
       };

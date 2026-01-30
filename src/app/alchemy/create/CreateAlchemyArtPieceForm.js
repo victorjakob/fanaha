@@ -138,7 +138,6 @@ export default function CreateAlchemyArtPieceForm() {
       setShowCropper(false);
       setTempImageSrc(null);
     } catch (e) {
-      console.error(e);
       setError("Failed to crop image");
     }
   }
@@ -185,17 +184,14 @@ export default function CreateAlchemyArtPieceForm() {
           const colorThief = new ColorThief();
           const colors = colorThief.getPalette(img, 5);
           const paletteArr = colors.map((c) => `rgb(${c[0]},${c[1]},${c[2]})`);
-          console.log("Extracted palette:", paletteArr);
           resolve(paletteArr);
         } catch (err) {
-          console.error("Palette extraction error:", err);
           resolve([]);
         } finally {
           URL.revokeObjectURL(url);
         }
       };
-      img.onerror = (e) => {
-        console.error("Image load error:", e);
+      img.onerror = () => {
         URL.revokeObjectURL(url);
         resolve([]);
       };
@@ -214,9 +210,7 @@ export default function CreateAlchemyArtPieceForm() {
       // Ensure slug is unique
       const uniqueSlug = await generateUniqueSlug(form.slug, supabase);
       if (uniqueSlug !== form.slug) {
-        // Update form with unique slug
         setForm((f) => ({ ...f, slug: uniqueSlug }));
-        console.log(`Slug updated to: ${uniqueSlug} (original was taken)`);
       }
 
       // Extract palette from main image
@@ -239,10 +233,7 @@ export default function CreateAlchemyArtPieceForm() {
           ? await uploadMultipleToCloudinary(
               form.images,
               `fanaha/alchemy/${finalSlug}/gallery`,
-              (progress) => {
-                // Optional: Update progress indicator
-                console.log(`Upload progress: ${Math.round(progress * 100)}%`);
-              },
+              undefined,
               { alwaysCompress: true }
             )
           : [];
@@ -277,6 +268,34 @@ export default function CreateAlchemyArtPieceForm() {
         .eq("slug", "alchemical-art-pieces")
         .single();
 
+      // Place new piece first within its status by shifting existing items down.
+      // This keeps `/alchemy` and `/manage/alchemical-art-pieces` ordering predictable.
+      const statusForOrder = form.status || "available";
+      if (section?.id) {
+        const { data: siblings, error: siblingsError } = await supabase
+          .from("fanaha_alchemy_pieces")
+          .select("id, display_order")
+          .eq("section_id", section.id)
+          .eq("status", statusForOrder)
+          .order("display_order", { ascending: true });
+
+        if (siblingsError) throw siblingsError;
+
+        if (siblings && siblings.length > 0) {
+          const updates = siblings.map((p) =>
+            supabase
+              .from("fanaha_alchemy_pieces")
+              .update({ display_order: (p.display_order || 0) + 1 })
+              .eq("id", p.id)
+          );
+          const results = await Promise.all(updates);
+          const hasError = results.some((r) => r.error);
+          if (hasError) {
+            throw new Error("Failed to update ordering for existing pieces");
+          }
+        }
+      }
+
       // Insert into DB with both public_ids (new) and URLs (backward compatibility)
       const { error: dbError } = await supabase
         .from("fanaha_alchemy_pieces")
@@ -288,9 +307,10 @@ export default function CreateAlchemyArtPieceForm() {
             dimensions: form.dimension,
             price: form.price ? parseFloat(form.price) : null,
             year: form.year ? parseInt(form.year) : null,
-            status: form.status,
+            status: statusForOrder,
             video_url: form.videoUrl || null,
             section_id: section?.id || null, // Link to section for manage page
+            display_order: 0,
             // New: Store Cloudinary public_ids
             main_image_public_id: mainImagePublicId,
             images_public_ids: allPublicIds,
@@ -306,7 +326,6 @@ export default function CreateAlchemyArtPieceForm() {
       setLoading(false);
       router.push(`/manage/alchemical-art-pieces`);
     } catch (err) {
-      console.error("Upload error:", err);
       setError(err.message || "An error occurred");
       setLoading(false);
     }

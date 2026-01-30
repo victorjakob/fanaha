@@ -13,7 +13,6 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching altar artworks:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -34,7 +33,6 @@ export async function POST(req) {
     .single();
 
   if (error) {
-    console.error("Error inserting altar artwork:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

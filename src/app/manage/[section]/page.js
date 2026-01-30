@@ -31,10 +31,6 @@ export default async function SectionManagePage({ params }) {
     .eq("section_id", section.id)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching art pieces:", error);
-  }
-
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       <ManageClient 

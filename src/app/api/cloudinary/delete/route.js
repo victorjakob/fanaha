@@ -37,7 +37,6 @@ export async function POST(req) {
 
   // Verify API secret is not truncated or empty
   if (CLOUDINARY_API_SECRET.length < 20) {
-    console.error("CLOUDINARY_API_SECRET appears to be invalid (too short)");
     return NextResponse.json(
       {
         error:
@@ -67,8 +66,6 @@ export async function POST(req) {
     const result = await cloudinary.api.delete_resources([fullPublicId]);
     return NextResponse.json({ result });
   } catch (error) {
-    console.error("Cloudinary delete error:", error);
-    
     // Provide more helpful error message
     if (error.error?.message === "api_secret mismatch") {
       return NextResponse.json(

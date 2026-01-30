@@ -60,7 +60,6 @@ export default function AlchemyArtPiece({
         }
       } catch (error) {
         // Silently fail if document manipulation fails
-        console.warn("Failed to preload image:", error);
       }
     }
   };

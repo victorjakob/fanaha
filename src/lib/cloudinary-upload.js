@@ -47,11 +47,7 @@ export async function uploadToCloudinary(
   if (file.size > 1024 * 1024 || options.alwaysCompress) {
     try {
       fileToUpload = await imageCompression(file, compressionOptions);
-      console.log(
-        `Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`
-      );
   } catch (error) {
-      console.warn("Compression failed, using original file:", error);
       // Continue with original file if compression fails
   }
 }
@@ -125,7 +121,6 @@ export async function uploadMultipleToCloudinary(
 
       return publicId;
     } catch (error) {
-      console.error(`Failed to upload file ${index + 1}:`, error);
       throw error;
     }
   });
@@ -171,7 +166,7 @@ export async function uploadToCloudinaryWithId(
     try {
       fileToUpload = await imageCompression(file, compressionOptions);
     } catch (error) {
-      console.warn("Compression failed, using original:", error);
+      // Use original file if compression fails
     }
   }
 

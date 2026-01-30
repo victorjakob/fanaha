@@ -17,12 +17,8 @@ export default async function ExhibitionsManagePage() {
   const { data: exhibitions, error } = await supabase
     .from("fanaha_exhibitions")
     .select("*")
-    .order("year", { ascending: false })
+    .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching exhibitions:", error);
-  }
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">

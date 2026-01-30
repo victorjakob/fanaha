@@ -70,6 +70,9 @@ export default async function WhatIOfferPage() {
             "Sacred offerings and creative services to support your journey."
           }
         />
+        <div className="w-full max-w-3xl px-4 sm:px-0 mt-6 sm:mt-8">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
+        </div>
         <OfferingsSection offerings={offerings || []} />
       </div>
     </main>

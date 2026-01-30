@@ -22,10 +22,6 @@ export default async function AltarPage() {
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching altar artworks:", error);
-  }
-
   return (
     <main className="relative flex flex-col items-center w-full min-h-screen pt-32 sm:pt-40 py-6 sm:py-12 px-2 sm:px-8 overflow-hidden">
       {/* Full-screen runes background */}
@@ -73,6 +69,9 @@ export default async function AltarPage() {
             "Sacred altar pieces designed to elevate your spiritual space."
           }
         />
+        <div className="w-full max-w-3xl px-4 sm:px-0 mt-6 sm:mt-8">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
+        </div>
         <AltarGallery artworks={artworks || []} />
       </div>
     </main>
