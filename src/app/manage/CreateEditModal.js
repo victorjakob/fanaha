@@ -13,6 +13,7 @@ export default function CreateEditModal({ piece, onClose, onSuccess }) {
     dimensions: piece?.dimensions || "",
     available: piece?.available ?? true,
     price: piece?.price || "",
+    priceEur: piece?.price_eur || "",
     palette: piece?.palette?.join(", ") || "",
     images: piece?.images || [],
   });
@@ -76,6 +77,7 @@ export default function CreateEditModal({ piece, onClose, onSuccess }) {
         dimensions: formData.dimensions,
         available: formData.available,
         price: formData.price ? parseFloat(formData.price) : null,
+        price_eur: formData.priceEur ? parseFloat(formData.priceEur) : null,
         palette,
         images: formData.images,
       };
@@ -177,6 +179,22 @@ export default function CreateEditModal({ piece, onClose, onSuccess }) {
                 min="0"
                 className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                 placeholder="0"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Price (EUR)
+              </label>
+              <input
+                type="number"
+                name="priceEur"
+                value={formData.priceEur}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                placeholder="0.00"
               />
             </div>
           </div>

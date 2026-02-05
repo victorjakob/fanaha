@@ -1,27 +1,28 @@
 import AlchemyHeader from "./Header";
 import AlchemyGallery from "./Gallery";
 import { createServerSupabase } from "@/util/supabase/server";
-import Image from "next/image";
+import { getLocale, getTranslations } from "next-intl/server";
+import { pickLocalizedText } from "@/lib/db-i18n";
 
 // Revalidate every 60 seconds to ensure fresh content
 export const revalidate = 60;
 
 export default async function AlchemyPage() {
+  const t = await getTranslations();
+  const locale = await getLocale();
   const supabase = createServerSupabase();
 
   // Fetch section content
   const { data: sectionContent } = await supabase
     .from("fanaha_sections")
-    .select("title, description")
+    .select("*")
     .eq("slug", "alchemical-art-pieces")
     .single();
 
   // Fetch art pieces
   const { data: artPieces, error } = await supabase
     .from("fanaha_alchemy_pieces")
-    .select(
-      "id, slug, name, images, created_at, dimensions, palette, price, status, year, display_order"
-    )
+    .select("*")
     .order("created_at", { ascending: false });
 
   // Sort: available first, then commission, then sold, all by display_order (asc).
@@ -112,15 +113,27 @@ export default async function AlchemyPage() {
       {/* Content */}
       <div className="relative z-10 w-full flex flex-col items-center">
         <AlchemyHeader
-          title="Alchemical Art Pieces"
+          title={
+            (sectionContent &&
+              pickLocalizedText(sectionContent, "title", locale)) ||
+            t("pages.alchemy.title")
+          }
           description={
-            "Explore a collection of unique, mystical alchemical artworks. Each piece is crafted with intention, blending ancient symbolism, modern technique, and a touch of the divine. Discover the story, details, and visual journey behind every creation."
+            (sectionContent &&
+              pickLocalizedText(sectionContent, "description", locale)) ||
+            t("pages.alchemy.intro")
           }
         />
         <div className="w-full max-w-3xl px-4 sm:px-0 mt-6 sm:mt-8">
           <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
         </div>
-        <AlchemyGallery artPieces={sorted} />
+        <AlchemyGallery
+          artPieces={sorted.map((p) => ({
+            ...p,
+            name: pickLocalizedText(p, "name", locale),
+            dimensions: pickLocalizedText(p, "dimensions", locale),
+          }))}
+        />
       </div>
     </main>
   );

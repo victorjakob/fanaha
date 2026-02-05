@@ -1,17 +1,20 @@
 import AlchemyHeader from "../alchemy/Header";
 import OraclesProjectsGallery from "./OraclesProjectsGallery";
 import { createServerSupabase } from "@/util/supabase/server";
+import { getLocale } from "next-intl/server";
+import { pickLocalizedText } from "@/lib/db-i18n";
 
 // Revalidate every 60 seconds to ensure fresh content
 export const revalidate = 60;
 
 export default async function OraclesProjectsPage() {
+  const locale = await getLocale();
   const supabase = createServerSupabase();
 
   // Fetch section content
   const { data: sectionContent } = await supabase
     .from("fanaha_sections")
-    .select("title, description")
+    .select("*")
     .eq("slug", "oracles-projects")
     .single();
 
@@ -21,6 +24,21 @@ export default async function OraclesProjectsPage() {
     .select("*")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
+
+  const localizedSection = sectionContent
+    ? {
+        ...sectionContent,
+        title: pickLocalizedText(sectionContent, "title", locale),
+        description: pickLocalizedText(sectionContent, "description", locale),
+      }
+    : null;
+
+  const localizedItems = (items || []).map((i) => ({
+    ...i,
+    name: pickLocalizedText(i, "name", locale),
+    publisher: pickLocalizedText(i, "publisher", locale),
+    about: pickLocalizedText(i, "about", locale),
+  }));
 
   return (
     <main className="relative flex flex-col items-center w-full min-h-screen pt-32 sm:pt-40 py-6 sm:py-12 px-2 sm:px-8 overflow-hidden">
@@ -63,18 +81,17 @@ export default async function OraclesProjectsPage() {
       {/* Content */}
       <div className="relative z-10 w-full flex flex-col items-center">
         <AlchemyHeader
-          title={sectionContent?.title || "Oracles & Projects"}
+          title={localizedSection?.title || "Oracles & Projects"}
           description={
-            sectionContent?.description ||
+            localizedSection?.description ||
             "Mystical oracles and collaborative creative projects."
           }
         />
         <div className="w-full max-w-3xl px-4 sm:px-0 mt-6 sm:mt-8">
           <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
         </div>
-        <OraclesProjectsGallery items={items || []} />
+        <OraclesProjectsGallery items={localizedItems} />
       </div>
     </main>
   );
 }
-

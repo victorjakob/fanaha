@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/util/supabase/supabaseClient";
 import {
@@ -17,10 +17,12 @@ import {
 import Image from "next/image";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import Toast from "./Toast";
-import { formatISK } from "@/util/formatPrice";
+import { formatEUR, formatISK } from "@/util/formatPrice";
+import { isNeedsTranslation, NEEDS_TRANSLATION } from "@/lib/db-i18n";
 
 export default function ManageClient({ initialPieces, section }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [pieces, setPieces] = useState(initialPieces);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all"); // all, available, sold, commission
@@ -111,7 +113,10 @@ export default function ManageClient({ initialPieces, section }) {
     });
 
   const handleEdit = (piece) => {
-    router.push(`/alchemy/${piece.slug}/edit`);
+    const returnTo = encodeURIComponent(
+      pathname || "/manage/alchemical-art-pieces"
+    );
+    router.push(`/alchemy/${piece.slug}/edit?returnTo=${returnTo}`);
   };
 
   const handlePreview = (piece) => {
@@ -321,7 +326,9 @@ export default function ManageClient({ initialPieces, section }) {
                       : "cursor-pointer hover:text-zinc-700"
                   }`}
                   onClick={
-                    isAlchemyArtPiecesSection ? undefined : () => toggleSort("name")
+                    isAlchemyArtPiecesSection
+                      ? undefined
+                      : () => toggleSort("name")
                   }
                 >
                   Name <SortIcon field="name" />
@@ -336,10 +343,12 @@ export default function ManageClient({ initialPieces, section }) {
                       : "cursor-pointer hover:text-zinc-700"
                   }`}
                   onClick={
-                    isAlchemyArtPiecesSection ? undefined : () => toggleSort("price")
+                    isAlchemyArtPiecesSection
+                      ? undefined
+                      : () => toggleSort("price")
                   }
                 >
-                  Price (ISK) <SortIcon field="price" />
+                  Price (ISK / EUR) <SortIcon field="price" />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   Dimensions
@@ -351,7 +360,9 @@ export default function ManageClient({ initialPieces, section }) {
                       : "cursor-pointer hover:text-zinc-700"
                   }`}
                   onClick={
-                    isAlchemyArtPiecesSection ? undefined : () => toggleSort("year")
+                    isAlchemyArtPiecesSection
+                      ? undefined
+                      : () => toggleSort("year")
                   }
                 >
                   Year <SortIcon field="year" />
@@ -404,7 +415,7 @@ export default function ManageClient({ initialPieces, section }) {
                             <ChevronUp className="w-4 h-4" />
                           </button>
                           <span className="text-xs font-semibold text-zinc-500 min-w-[1.5rem] text-center">
-                          {getDisplayOrderLabel(piece)}
+                            {getDisplayOrderLabel(piece)}
                           </span>
                           <button
                             onClick={() => movePieceWithinStatus(piece.id, 1)}
@@ -435,6 +446,11 @@ export default function ManageClient({ initialPieces, section }) {
                       <div className="text-sm font-medium text-zinc-900">
                         {piece.name}
                       </div>
+                      <div className="text-sm text-zinc-600 italic">
+                        {piece.name_fr && !isNeedsTranslation(piece.name_fr)
+                          ? piece.name_fr
+                          : NEEDS_TRANSLATION}
+                      </div>
                       <div className="text-sm text-zinc-500">{piece.slug}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -455,7 +471,14 @@ export default function ManageClient({ initialPieces, section }) {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">
-                      {piece.price ? formatISK(piece.price) : "-"}
+                      {piece.price || piece.price_eur
+                        ? [
+                            piece.price ? formatISK(piece.price) : null,
+                            piece.price_eur ? formatEUR(piece.price_eur) : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" / ")
+                        : "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">
                       {piece.dimensions || "-"}
@@ -530,6 +553,11 @@ export default function ManageClient({ initialPieces, section }) {
                     <h3 className="font-semibold text-zinc-900 truncate mb-1">
                       {piece.name}
                     </h3>
+                    <p className="text-sm text-zinc-600 italic truncate mb-1">
+                      {piece.name_fr && !isNeedsTranslation(piece.name_fr)
+                        ? piece.name_fr
+                        : NEEDS_TRANSLATION}
+                    </p>
                     <p className="text-sm text-zinc-500 truncate mb-2">
                       {piece.slug}
                     </p>
@@ -555,9 +583,14 @@ export default function ManageClient({ initialPieces, section }) {
                           #{getDisplayOrderLabel(piece)}
                         </span>
                       )}
-                      {piece.price && (
+                      {(piece.price || piece.price_eur) && (
                         <span className="text-xs text-zinc-600 bg-zinc-100 px-2 py-1 rounded-full">
-                          {formatISK(piece.price)}
+                          {[
+                            piece.price ? formatISK(piece.price) : null,
+                            piece.price_eur ? formatEUR(piece.price_eur) : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" / ")}
                         </span>
                       )}
                       {piece.year && (

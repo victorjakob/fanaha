@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import { formatISK } from "@/util/formatPrice";
+import { formatEUR, formatISK } from "@/util/formatPrice";
 import OrderModal from "@/app/alchemy/[slug]/OrderModal";
 
 export default function AlchemyArtPieceDetailMain({ piece }) {
@@ -78,14 +78,17 @@ export default function AlchemyArtPieceDetailMain({ piece }) {
       </div>
 
       <div className="text-xl sm:text-2xl text-black font-semibold py-6 my-6 border-y border-black/20 text-center tracking-[0.15em]">
-        {piece.status === "available" && piece.price
-          ? formatISK(piece.price)
-          : piece.status === "sold"
+        {piece.status === "sold"
           ? "SOLD"
           : piece.status === "commission"
           ? "COMMISSION"
-          : piece.price
-          ? formatISK(piece.price)
+          : piece.price || piece.price_eur
+          ? [
+              piece.price ? formatISK(piece.price) : null,
+              piece.price_eur ? formatEUR(piece.price_eur) : null,
+            ]
+              .filter(Boolean)
+              .join(" / ")
           : "-"}
       </div>
 

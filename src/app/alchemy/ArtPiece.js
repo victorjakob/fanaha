@@ -6,6 +6,7 @@ import { OptimizedImage } from "@/components/OptimizedImage";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cldUrlEnhanced, isCloudinaryId } from "@/lib/cloudinary";
+import { useLocale } from "next-intl";
 
 export default function AlchemyArtPiece({
   slug,
@@ -17,9 +18,11 @@ export default function AlchemyArtPiece({
   index,
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const [isClicked, setIsClicked] = useState(false);
   const containerRef = useRef(null);
   const hasPreloadedRef = useRef(false);
+  const detailPath = locale ? `/${locale}/alchemy/${slug}` : `/alchemy/${slug}`;
 
   // Preload the detail page image on hover/touch/visibility for faster navigation
   const preloadDetailImage = () => {
@@ -33,7 +36,7 @@ export default function AlchemyArtPiece({
     hasPreloadedRef.current = true;
 
     // Prefetch the route (Next.js will prefetch the page)
-    router.prefetch(`/alchemy/${slug}`);
+    router.prefetch(detailPath);
 
     // Preload the larger image that will be used on the detail page
     if (isCloudinaryId(mainImage)) {
@@ -109,13 +112,13 @@ export default function AlchemyArtPiece({
 
   const handleClick = () => {
     setIsClicked(true);
-    router.push(`/alchemy/${slug}`);
+    router.push(detailPath);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       setIsClicked(true);
-      router.push(`/alchemy/${slug}`);
+      router.push(detailPath);
     }
   };
 

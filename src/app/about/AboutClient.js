@@ -1,18 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
+import { pickLocalizedJson, pickLocalizedText } from "@/lib/db-i18n";
 
 export default function AboutClient({ content }) {
+  const t = useTranslations();
+  const locale = useLocale();
   // Use content from database, or fall back to defaults
-  const title = content?.title || "About Fanaha";
+  const title =
+    (content && pickLocalizedText(content, "title", locale)) ||
+    t("profile.aboutFanaha");
   const subtitle =
-    content?.subtitle ||
+    (content && pickLocalizedText(content, "subtitle", locale)) ||
     "Visionary artist and weaver of soul‑story. Her work lives where Earth meets Ether— a devotion to beauty, breath, and belonging.";
-  const bioTitle = content?.bio_title || "A Living Prayer";
-  const bioParagraphs = content?.bio_paragraphs || [
-    "Fanaha is a conduit for subtle realms, composing experiences where sound, movement, image, and story braid into ritual. Rooted in nature and guided by the feminine, her creations invite you to remember what you already are: wild, tender, whole.",
-    "She works with voice and breath, with symbol and silence, with the body as altar and the everyday as sacred ground.",
-    "Rather than perform for an audience, she invites a circle—an ecology of presence—where art becomes a ceremony we enter together. In these threshold spaces, grief softens, joy ripens, and belonging returns.",
+  const bioTitle =
+    (content && pickLocalizedText(content, "bio_title", locale)) ||
+    t("profile.aLivingPrayer");
+  const bioParagraphs = (content &&
+    pickLocalizedJson(content, "bio_paragraphs", locale)) || [
+    t("profile.fanahaIsAConduit"),
+    t("profile.withVoiceAndBreath"),
+    t("profile.ratherThanPerform"),
   ];
 
   const socials = content?.socials || {
@@ -28,48 +38,52 @@ export default function AboutClient({ content }) {
     email_enabled: false,
   };
 
-  const pillars = content?.pillars || [
+  const pillars = (content &&
+    pickLocalizedJson(content, "pillars", locale)) || [
     {
-      title: "Nature",
-      body: "Earth as muse, breath as metronome. Every offering is a dialogue with wind, stone, tide, and fire.",
+      title: t("profile.nature"),
+      body: t("profile.earthAsMuse"),
     },
     {
-      title: "Feminine Wisdom",
-      body: "Art as sanctuary for the body to remember: softness is strength; sensitivity is intelligence; presence is power.",
+      title: t("profile.feminineWisdom"),
+      body: t("profile.artAsSanctuary"),
     },
     {
       title: "Ancestral Memory",
       body: "Songs and symbols that honor the ones before us, weaving lineage into modern ritual.",
     },
     {
-      title: "Transformation",
-      body: "Creation as alchemy—meeting shadow with devotion, turning experience into medicine and beauty.",
+      title: t("profile.transformation"),
+      body: t("profile.transformationBody"),
     },
   ];
 
-  const milestones = content?.milestones || [
+  const milestones = (content &&
+    pickLocalizedJson(content, "milestones", locale)) || [
     {
-      year: "Origins",
-      text: "The first spark: childlike dances in kitchens, humming to rivers, sketching constellations in notebooks.",
+      year: t("profile.origins"),
+      text: t("profile.theFirstSpark"),
     },
     {
-      year: "Becoming",
-      text: "Study, pilgrimage, experiment. Learning to trust the space between notes and the silence beneath movement.",
+      year: t("profile.becoming"),
+      text: t("profile.studyPilgrimageExperiment"),
     },
     {
-      year: "Offerings",
+      year: t("profile.offerings"),
       text: "Live performances, sound journeys, visual works, and intimate circles where art becomes a shared ceremony.",
     },
     {
-      year: "Now",
-      text: "Fanaha opens portals for remembrance—inviting you to breathe, feel, and belong to your own living myth.",
+      year: t("profile.now"),
+      text: t("profile.portalsForRemembrance"),
     },
   ];
 
   const quote =
-    content?.quote ||
+    (content && pickLocalizedText(content, "quote", locale)) ||
     "Art is how I remember what the body always knew— that love is a frequency, and presence is the doorway.";
-  const quoteAuthor = content?.quote_author || "— Fanaha";
+  const quoteAuthor =
+    (content && pickLocalizedText(content, "quote_author", locale)) ||
+    "— Fanaha";
 
   return (
     <main className="relative flex flex-col items-center w-full min-h-screen pt-32 sm:pt-40 py-6 sm:py-12 px-4 sm:px-8 overflow-hidden">
@@ -156,7 +170,7 @@ export default function AboutClient({ content }) {
           className="w-full mb-16"
         >
           <h2 className="text-2xl sm:text-3xl mb-8 text-center tracking-wide">
-            Pillars of Practice
+            {t("profile.pillarsOfPractice")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
             {pillars.map((pillar, index) => (
@@ -187,11 +201,10 @@ export default function AboutClient({ content }) {
           className="w-full mb-16"
         >
           <h2 className="text-2xl sm:text-3xl mb-8 text-center tracking-wide">
-            Path &amp; Becoming
+            {t("profile.pathAndBecoming")}
           </h2>
           <p className="text-base sm:text-lg text-zinc-700 leading-loose tracking-wide px-4 sm:px-8 text-center mb-12">
-            A journey from hush to hymn. These waypoints sketch a map, but the
-            real terrain is felt— in breath, in body, in the shared field.
+            {t("profile.pathIntro")}
           </p>
           <div className="space-y-8 max-w-2xl mx-auto">
             {milestones.map((milestone, index) => (
@@ -233,14 +246,20 @@ export default function AboutClient({ content }) {
         </motion.div>
 
         {/* Social Links */}
-        {(socials.instagram_enabled || socials.youtube_enabled || socials.spotify_enabled || socials.facebook_enabled || socials.email_enabled) && (
+        {(socials.instagram_enabled ||
+          socials.youtube_enabled ||
+          socials.spotify_enabled ||
+          socials.facebook_enabled ||
+          socials.email_enabled) && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
             className="w-full text-center mb-16"
           >
-            <h2 className="text-2xl sm:text-3xl mb-8 tracking-wide">Connect</h2>
+            <h2 className="text-2xl sm:text-3xl mb-8 tracking-wide">
+              {t("nav.connect")}
+            </h2>
             <div className="flex flex-wrap justify-center gap-4">
               {socials.instagram_enabled && socials.instagram && (
                 <a
@@ -249,7 +268,7 @@ export default function AboutClient({ content }) {
                   rel="noreferrer"
                   className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
                 >
-                  Instagram
+                  {t("nav.instagram")}
                 </a>
               )}
               {socials.youtube_enabled && socials.youtube && (
@@ -279,7 +298,7 @@ export default function AboutClient({ content }) {
                   rel="noreferrer"
                   className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
                 >
-                  Facebook
+                  {t("nav.facebook")}
                 </a>
               )}
               {socials.email_enabled && socials.email && (
@@ -287,7 +306,7 @@ export default function AboutClient({ content }) {
                   href={`mailto:${socials.email}`}
                   className="px-6 py-3 rounded-full border-2 border-zinc-400 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors tracking-wide"
                 >
-                  Email
+                  {t("contact.email")}
                 </a>
               )}
             </div>

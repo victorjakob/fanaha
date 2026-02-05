@@ -6,33 +6,12 @@ import { motion } from "framer-motion";
 export default function TopBar({ menuOpen, setMenuOpen }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [showClickOverlay, setShowClickOverlay] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    // Check if click overlay has been shown in this session
-    const hasShownClick = sessionStorage.getItem("clickOverlayShown");
-
-    if (!hasShownClick) {
-      setShowClickOverlay(true);
-      sessionStorage.setItem("clickOverlayShown", "true");
-
-      const timer = setTimeout(() => {
-        setShowClickOverlay(false);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
+    // (removed) one-time "click" onboarding overlay
   }, []);
-
-  useEffect(() => {
-    if (isHovered && showClickOverlay) {
-      const timer = setTimeout(() => {
-        setShowClickOverlay(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [isHovered, showClickOverlay]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,9 +38,9 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
     const checkTouchDevice = () => {
       setIsTouchDevice(
         "ontouchstart" in window ||
-        navigator.maxTouchPoints > 0 ||
-        // @ts-ignore
-        navigator.msMaxTouchPoints > 0
+          navigator.maxTouchPoints > 0 ||
+          // @ts-ignore
+          navigator.msMaxTouchPoints > 0
       );
     };
     checkTouchDevice();
@@ -186,50 +165,6 @@ export default function TopBar({ menuOpen, setMenuOpen }) {
             </div>
           </div>
         </div>
-        {showClickOverlay && (
-          <motion.div
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
-              zIndex: 10,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 1, 0] }}
-            transition={{
-              duration: 2.5,
-              times: [0, 0.15, 0.8, 1],
-              ease: "easeInOut",
-            }}
-          >
-            <motion.span
-              style={{
-                fontSize: "24px",
-                fontWeight: 700,
-                color: "white",
-                letterSpacing: "1.5px",
-                textShadow: "0 3px 12px rgba(0, 0, 0, 0.9)",
-              }}
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: [0, 1, 1, 1, 1, 1, 1, 1, 0],
-                scale: [1, 1, 1.15, 1, 1.15, 1, 0.9, 0.6, 0],
-              }}
-              transition={{
-                duration: 2.5,
-                times: [0, 0.15, 0.3, 0.4, 0.55, 0.65, 0.75, 0.9, 1],
-                ease: "easeInOut",
-              }}
-            >
-              click
-            </motion.span>
-          </motion.div>
-        )}
       </motion.button>
     </header>
   );

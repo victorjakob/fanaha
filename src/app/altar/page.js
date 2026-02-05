@@ -1,17 +1,20 @@
 import AlchemyHeader from "../alchemy/Header";
 import AltarGallery from "./AltarGallery";
 import { createServerSupabase } from "@/util/supabase/server";
+import { getLocale } from "next-intl/server";
+import { pickLocalizedText } from "@/lib/db-i18n";
 
 // Revalidate every 60 seconds to ensure fresh content
 export const revalidate = 60;
 
 export default async function AltarPage() {
+  const locale = await getLocale();
   const supabase = createServerSupabase();
 
   // Fetch section content
   const { data: sectionContent } = await supabase
     .from("fanaha_sections")
-    .select("title, description")
+    .select("*")
     .eq("slug", "altar-artwork")
     .single();
 
@@ -21,6 +24,14 @@ export default async function AltarPage() {
     .select("*")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
+
+  const localizedSection = sectionContent
+    ? {
+        ...sectionContent,
+        title: pickLocalizedText(sectionContent, "title", locale),
+        description: pickLocalizedText(sectionContent, "description", locale),
+      }
+    : null;
 
   return (
     <main className="relative flex flex-col items-center w-full min-h-screen pt-32 sm:pt-40 py-6 sm:py-12 px-2 sm:px-8 overflow-hidden">
@@ -63,9 +74,9 @@ export default async function AltarPage() {
       {/* Content */}
       <div className="relative z-10 w-full flex flex-col items-center">
         <AlchemyHeader
-          title={sectionContent?.title || "Altar Artwork"}
+          title={localizedSection?.title || "Altar Artwork"}
           description={
-            sectionContent?.description ||
+            localizedSection?.description ||
             "Sacred altar pieces designed to elevate your spiritual space."
           }
         />

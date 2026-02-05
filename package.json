@@ -15,11 +15,13 @@
     "browser-image-compression": "^2.0.2",
     "cloudinary": "^2.8.0",
     "color-thief-browser": "^2.0.2",
+    "country-flag-icons": "^1.6.12",
     "dotenv": "^17.2.3",
+    "form-data": "^4.0.0",
     "framer-motion": "^12.11.4",
     "lucide-react": "^0.511.0",
     "next": "^15.3.3",
-    "form-data": "^4.0.0",
+    "next-intl": "^4.8.2",
     "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -31,6 +33,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/react": "19.2.13",
     "eslint": "^9",
     "eslint-config-next": "^15.3.3",
     "tailwindcss": "^4"

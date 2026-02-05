@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
 import { Save, Plus, Trash2, X, CheckCircle2 } from "lucide-react";
 import Toast from "../Toast";
+import { coerceFrenchText, NEEDS_TRANSLATION } from "@/lib/db-i18n";
 
 export default function AboutManageClient({ content: initialContent }) {
   const router = useRouter();
@@ -15,42 +16,93 @@ export default function AboutManageClient({ content: initialContent }) {
 
   // Form state
   const [title, setTitle] = useState(content.title);
+  const [titleFr, setTitleFr] = useState(content.title_fr || "");
   const [subtitle, setSubtitle] = useState(content.subtitle || "");
+  const [subtitleFr, setSubtitleFr] = useState(content.subtitle_fr || "");
   const [bioTitle, setBioTitle] = useState(content.bio_title);
+  const [bioTitleFr, setBioTitleFr] = useState(content.bio_title_fr || "");
   const [bioParagraphs, setBioParagraphs] = useState(
     content.bio_paragraphs || []
   );
+  const [bioParagraphsFr, setBioParagraphsFr] = useState(
+    content.bio_paragraphs_fr || []
+  );
   const [pillars, setPillars] = useState(content.pillars || []);
+  const [pillarsFr, setPillarsFr] = useState(content.pillars_fr || []);
   const [milestones, setMilestones] = useState(content.milestones || []);
+  const [milestonesFr, setMilestonesFr] = useState(content.milestones_fr || []);
   const [quote, setQuote] = useState(content.quote || "");
+  const [quoteFr, setQuoteFr] = useState(content.quote_fr || "");
   const [quoteAuthor, setQuoteAuthor] = useState(
     content.quote_author || "— Fanaha"
   );
+  const [quoteAuthorFr, setQuoteAuthorFr] = useState(
+    content.quote_author_fr || ""
+  );
   const [instagram, setInstagram] = useState(content.socials?.instagram || "");
-  const [instagramEnabled, setInstagramEnabled] = useState(content.socials?.instagram_enabled ?? false);
+  const [instagramEnabled, setInstagramEnabled] = useState(
+    content.socials?.instagram_enabled ?? false
+  );
   const [youtube, setYoutube] = useState(content.socials?.youtube || "");
-  const [youtubeEnabled, setYoutubeEnabled] = useState(content.socials?.youtube_enabled ?? false);
+  const [youtubeEnabled, setYoutubeEnabled] = useState(
+    content.socials?.youtube_enabled ?? false
+  );
   const [spotify, setSpotify] = useState(content.socials?.spotify || "");
-  const [spotifyEnabled, setSpotifyEnabled] = useState(content.socials?.spotify_enabled ?? false);
+  const [spotifyEnabled, setSpotifyEnabled] = useState(
+    content.socials?.spotify_enabled ?? false
+  );
   const [facebook, setFacebook] = useState(content.socials?.facebook || "");
-  const [facebookEnabled, setFacebookEnabled] = useState(content.socials?.facebook_enabled ?? false);
+  const [facebookEnabled, setFacebookEnabled] = useState(
+    content.socials?.facebook_enabled ?? false
+  );
   const [email, setEmail] = useState(content.socials?.email || "");
-  const [emailEnabled, setEmailEnabled] = useState(content.socials?.email_enabled ?? false);
+  const [emailEnabled, setEmailEnabled] = useState(
+    content.socials?.email_enabled ?? false
+  );
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      const normalizedBioFr =
+        Array.isArray(bioParagraphsFr) && bioParagraphsFr.length > 0
+          ? bioParagraphsFr.map((p) => coerceFrenchText(p))
+          : [NEEDS_TRANSLATION];
+
+      const normalizedPillarsFr =
+        Array.isArray(pillarsFr) && pillarsFr.length > 0
+          ? pillarsFr.map((p) => ({
+              title: coerceFrenchText(p?.title),
+              body: coerceFrenchText(p?.body),
+            }))
+          : [{ title: NEEDS_TRANSLATION, body: NEEDS_TRANSLATION }];
+
+      const normalizedMilestonesFr =
+        Array.isArray(milestonesFr) && milestonesFr.length > 0
+          ? milestonesFr.map((m) => ({
+              year: coerceFrenchText(m?.year),
+              text: coerceFrenchText(m?.text),
+            }))
+          : [{ year: NEEDS_TRANSLATION, text: NEEDS_TRANSLATION }];
+
       const { error } = await supabase
         .from("fanaha_about_content")
         .update({
           title,
+          title_fr: coerceFrenchText(titleFr),
           subtitle,
+          subtitle_fr: coerceFrenchText(subtitleFr),
           bio_title: bioTitle,
+          bio_title_fr: coerceFrenchText(bioTitleFr),
           bio_paragraphs: bioParagraphs,
+          bio_paragraphs_fr: normalizedBioFr,
           pillars,
+          pillars_fr: normalizedPillarsFr,
           milestones,
+          milestones_fr: normalizedMilestonesFr,
           quote,
+          quote_fr: coerceFrenchText(quoteFr),
           quote_author: quoteAuthor,
+          quote_author_fr: coerceFrenchText(quoteAuthorFr),
           socials: {
             instagram,
             instagram_enabled: instagramEnabled,
@@ -74,10 +126,10 @@ export default function AboutManageClient({ content: initialContent }) {
         message: "About content saved successfully!",
         type: "success",
       });
-      
+
       // Reset saved state after 3 seconds
       setTimeout(() => setSaved(false), 3000);
-      
+
       router.refresh();
     } catch (err) {
       setToast({ message: "Failed to save content", type: "error" });
@@ -89,6 +141,7 @@ export default function AboutManageClient({ content: initialContent }) {
   // Bio paragraph helpers
   const addBioParagraph = () => {
     setBioParagraphs([...bioParagraphs, ""]);
+    setBioParagraphsFr([...(bioParagraphsFr || []), ""]);
   };
 
   const updateBioParagraph = (index, value) => {
@@ -97,13 +150,21 @@ export default function AboutManageClient({ content: initialContent }) {
     setBioParagraphs(newParagraphs);
   };
 
+  const updateBioParagraphFr = (index, value) => {
+    const next = [...(bioParagraphsFr || [])];
+    next[index] = value;
+    setBioParagraphsFr(next);
+  };
+
   const removeBioParagraph = (index) => {
     setBioParagraphs(bioParagraphs.filter((_, i) => i !== index));
+    setBioParagraphsFr((bioParagraphsFr || []).filter((_, i) => i !== index));
   };
 
   // Pillar helpers
   const addPillar = () => {
     setPillars([...pillars, { title: "", body: "" }]);
+    setPillarsFr([...(pillarsFr || []), { title: "", body: "" }]);
   };
 
   const updatePillar = (index, field, value) => {
@@ -112,13 +173,22 @@ export default function AboutManageClient({ content: initialContent }) {
     setPillars(newPillars);
   };
 
+  const updatePillarFr = (index, field, value) => {
+    const next = [...(pillarsFr || [])];
+    next[index] = next[index] || { title: "", body: "" };
+    next[index][field] = value;
+    setPillarsFr(next);
+  };
+
   const removePillar = (index) => {
     setPillars(pillars.filter((_, i) => i !== index));
+    setPillarsFr((pillarsFr || []).filter((_, i) => i !== index));
   };
 
   // Milestone helpers
   const addMilestone = () => {
     setMilestones([...milestones, { year: "", text: "" }]);
+    setMilestonesFr([...(milestonesFr || []), { year: "", text: "" }]);
   };
 
   const updateMilestone = (index, field, value) => {
@@ -127,8 +197,16 @@ export default function AboutManageClient({ content: initialContent }) {
     setMilestones(newMilestones);
   };
 
+  const updateMilestoneFr = (index, field, value) => {
+    const next = [...(milestonesFr || [])];
+    next[index] = next[index] || { year: "", text: "" };
+    next[index][field] = value;
+    setMilestonesFr(next);
+  };
+
   const removeMilestone = (index) => {
     setMilestones(milestones.filter((_, i) => i !== index));
+    setMilestonesFr((milestonesFr || []).filter((_, i) => i !== index));
   };
 
   return (
@@ -150,7 +228,7 @@ export default function AboutManageClient({ content: initialContent }) {
 
           <div>
             <label className="block text-sm font-medium text-zinc-700 mb-2">
-              Page Title
+              Page Title (EN)
             </label>
             <input
               type="text"
@@ -162,11 +240,37 @@ export default function AboutManageClient({ content: initialContent }) {
 
           <div>
             <label className="block text-sm font-medium text-zinc-700 mb-2">
-              Subtitle
+              Page Title (FR)
+            </label>
+            <input
+              type="text"
+              value={titleFr}
+              onChange={(e) => setTitleFr(e.target.value)}
+              placeholder="[NEEDS_TRANSLATION]"
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+              Subtitle (EN)
             </label>
             <textarea
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+              Subtitle (FR)
+            </label>
+            <textarea
+              value={subtitleFr}
+              onChange={(e) => setSubtitleFr(e.target.value)}
+              placeholder="[NEEDS_TRANSLATION]"
               rows={3}
               className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
             />
@@ -179,12 +283,25 @@ export default function AboutManageClient({ content: initialContent }) {
 
           <div>
             <label className="block text-sm font-medium text-zinc-700 mb-2">
-              Bio Section Title
+              Bio Section Title (EN)
             </label>
             <input
               type="text"
               value={bioTitle}
               onChange={(e) => setBioTitle(e.target.value)}
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+              Bio Section Title (FR)
+            </label>
+            <input
+              type="text"
+              value={bioTitleFr}
+              onChange={(e) => setBioTitleFr(e.target.value)}
+              placeholder="[NEEDS_TRANSLATION]"
               className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
@@ -205,13 +322,26 @@ export default function AboutManageClient({ content: initialContent }) {
             <div className="space-y-3">
               {bioParagraphs.map((paragraph, index) => (
                 <div key={index} className="relative">
-                  <textarea
-                    value={paragraph}
-                    onChange={(e) => updateBioParagraph(index, e.target.value)}
-                    rows={3}
-                    placeholder={`Paragraph ${index + 1}`}
-                    className="w-full px-4 py-2 pr-10 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <textarea
+                      value={paragraph}
+                      onChange={(e) =>
+                        updateBioParagraph(index, e.target.value)
+                      }
+                      rows={4}
+                      placeholder={`Paragraph ${index + 1} (EN)`}
+                      className="w-full px-4 py-2 pr-10 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                    />
+                    <textarea
+                      value={(bioParagraphsFr || [])[index] || ""}
+                      onChange={(e) =>
+                        updateBioParagraphFr(index, e.target.value)
+                      }
+                      rows={4}
+                      placeholder={`Paragraph ${index + 1} (FR)`}
+                      className="w-full px-4 py-2 pr-10 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                    />
+                  </div>
                   <button
                     onClick={() => removeBioParagraph(index)}
                     className="absolute top-2 right-2 text-red-500 hover:text-red-700"
@@ -250,24 +380,46 @@ export default function AboutManageClient({ content: initialContent }) {
                 </button>
 
                 <div className="space-y-3 pr-8">
-                  <input
-                    type="text"
-                    value={pillar.title}
-                    onChange={(e) =>
-                      updatePillar(index, "title", e.target.value)
-                    }
-                    placeholder="Pillar Title"
-                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                  <textarea
-                    value={pillar.body}
-                    onChange={(e) =>
-                      updatePillar(index, "body", e.target.value)
-                    }
-                    placeholder="Pillar Description"
-                    rows={3}
-                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={pillar.title}
+                      onChange={(e) =>
+                        updatePillar(index, "title", e.target.value)
+                      }
+                      placeholder="Pillar Title (EN)"
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={pillarsFr?.[index]?.title || ""}
+                      onChange={(e) =>
+                        updatePillarFr(index, "title", e.target.value)
+                      }
+                      placeholder="Pillar Title (FR)"
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <textarea
+                      value={pillar.body}
+                      onChange={(e) =>
+                        updatePillar(index, "body", e.target.value)
+                      }
+                      placeholder="Pillar Description (EN)"
+                      rows={3}
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                    />
+                    <textarea
+                      value={pillarsFr?.[index]?.body || ""}
+                      onChange={(e) =>
+                        updatePillarFr(index, "body", e.target.value)
+                      }
+                      placeholder="Pillar Description (FR)"
+                      rows={3}
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -300,24 +452,46 @@ export default function AboutManageClient({ content: initialContent }) {
                 </button>
 
                 <div className="space-y-3 pr-8">
-                  <input
-                    type="text"
-                    value={milestone.year}
-                    onChange={(e) =>
-                      updateMilestone(index, "year", e.target.value)
-                    }
-                    placeholder="Year/Period"
-                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                  <textarea
-                    value={milestone.text}
-                    onChange={(e) =>
-                      updateMilestone(index, "text", e.target.value)
-                    }
-                    placeholder="Description"
-                    rows={3}
-                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={milestone.year}
+                      onChange={(e) =>
+                        updateMilestone(index, "year", e.target.value)
+                      }
+                      placeholder="Year/Period (EN)"
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={milestonesFr?.[index]?.year || ""}
+                      onChange={(e) =>
+                        updateMilestoneFr(index, "year", e.target.value)
+                      }
+                      placeholder="Year/Period (FR)"
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <textarea
+                      value={milestone.text}
+                      onChange={(e) =>
+                        updateMilestone(index, "text", e.target.value)
+                      }
+                      placeholder="Description (EN)"
+                      rows={3}
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                    />
+                    <textarea
+                      value={milestonesFr?.[index]?.text || ""}
+                      onChange={(e) =>
+                        updateMilestoneFr(index, "text", e.target.value)
+                      }
+                      placeholder="Description (FR)"
+                      rows={3}
+                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -330,7 +504,7 @@ export default function AboutManageClient({ content: initialContent }) {
 
           <div>
             <label className="block text-sm font-medium text-zinc-700 mb-2">
-              Quote Text
+              Quote Text (EN)
             </label>
             <textarea
               value={quote}
@@ -342,12 +516,38 @@ export default function AboutManageClient({ content: initialContent }) {
 
           <div>
             <label className="block text-sm font-medium text-zinc-700 mb-2">
-              Quote Author
+              Quote Text (FR)
+            </label>
+            <textarea
+              value={quoteFr}
+              onChange={(e) => setQuoteFr(e.target.value)}
+              placeholder="[NEEDS_TRANSLATION]"
+              rows={3}
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+              Quote Author (EN)
             </label>
             <input
               type="text"
               value={quoteAuthor}
               onChange={(e) => setQuoteAuthor(e.target.value)}
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+              Quote Author (FR)
+            </label>
+            <input
+              type="text"
+              value={quoteAuthorFr}
+              onChange={(e) => setQuoteAuthorFr(e.target.value)}
+              placeholder="[NEEDS_TRANSLATION]"
               className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
@@ -368,7 +568,10 @@ export default function AboutManageClient({ content: initialContent }) {
                   onChange={(e) => setInstagramEnabled(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="instagram-enabled" className="text-sm font-semibold text-zinc-900">
+                <label
+                  htmlFor="instagram-enabled"
+                  className="text-sm font-semibold text-zinc-900"
+                >
                   Enable Instagram
                 </label>
               </div>
@@ -392,7 +595,10 @@ export default function AboutManageClient({ content: initialContent }) {
                   onChange={(e) => setYoutubeEnabled(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="youtube-enabled" className="text-sm font-semibold text-zinc-900">
+                <label
+                  htmlFor="youtube-enabled"
+                  className="text-sm font-semibold text-zinc-900"
+                >
                   Enable YouTube
                 </label>
               </div>
@@ -416,7 +622,10 @@ export default function AboutManageClient({ content: initialContent }) {
                   onChange={(e) => setSpotifyEnabled(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="spotify-enabled" className="text-sm font-semibold text-zinc-900">
+                <label
+                  htmlFor="spotify-enabled"
+                  className="text-sm font-semibold text-zinc-900"
+                >
                   Enable Spotify
                 </label>
               </div>
@@ -440,7 +649,10 @@ export default function AboutManageClient({ content: initialContent }) {
                   onChange={(e) => setFacebookEnabled(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="facebook-enabled" className="text-sm font-semibold text-zinc-900">
+                <label
+                  htmlFor="facebook-enabled"
+                  className="text-sm font-semibold text-zinc-900"
+                >
                   Enable Facebook
                 </label>
               </div>
@@ -464,7 +676,10 @@ export default function AboutManageClient({ content: initialContent }) {
                   onChange={(e) => setEmailEnabled(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-zinc-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="email-enabled" className="text-sm font-semibold text-zinc-900">
+                <label
+                  htmlFor="email-enabled"
+                  className="text-sm font-semibold text-zinc-900"
+                >
                   Enable Email
                 </label>
               </div>
@@ -479,7 +694,6 @@ export default function AboutManageClient({ content: initialContent }) {
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Floating Save Button */}
@@ -531,7 +745,7 @@ export default function AboutManageClient({ content: initialContent }) {
               <span className="text-sm font-semibold">Save</span>
             </>
           )}
-          
+
           {/* Success ripple effect */}
           {saved && (
             <>
@@ -553,4 +767,3 @@ export default function AboutManageClient({ content: initialContent }) {
     </div>
   );
 }
-

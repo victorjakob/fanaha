@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
+import { coerceFrenchText } from "@/lib/db-i18n";
 
 export default function OfferingsManageClient({ initialOfferings, section }) {
   const router = useRouter();
@@ -32,12 +33,16 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
 
   // Form state
   const [title, setTitle] = useState("");
+  const [titleFr, setTitleFr] = useState("");
   const [description, setDescription] = useState("");
+  const [descriptionFr, setDescriptionFr] = useState("");
   const [imageUrl, setImageUrl] = useState("");
 
   const resetForm = () => {
     setTitle("");
+    setTitleFr("");
     setDescription("");
+    setDescriptionFr("");
     setImageUrl("");
     setEditingOffering(null);
   };
@@ -50,7 +55,9 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
   const handleEdit = (offering) => {
     setEditingOffering(offering);
     setTitle(offering.title);
+    setTitleFr(offering.title_fr || "");
     setDescription(offering.description || "");
+    setDescriptionFr(offering.description_fr || "");
     // Use public_id if available, otherwise fall back to image_url
     setImageUrl(offering.image_public_id || offering.image_url || "");
     setShowModal(true);
@@ -65,12 +72,10 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       // Upload to Cloudinary
       const { uploadToCloudinary } = await import("@/lib/cloudinary-upload");
       const { cldUrlEnhanced } = await import("@/lib/cloudinary");
-      
-      const publicId = await uploadToCloudinary(
-        file,
-        "fanaha/offerings",
-        { alwaysCompress: true }
-      );
+
+      const publicId = await uploadToCloudinary(file, "fanaha/offerings", {
+        alwaysCompress: true,
+      });
 
       // Generate optimized URL for backward compatibility
       const imageUrl = cldUrlEnhanced({
@@ -102,9 +107,13 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       // Generate URL for backward compatibility if we have a public_id
       const { cldUrlEnhanced } = await import("@/lib/cloudinary");
       let finalImageUrl = imageUrl;
-      
+
       // If imageUrl is a public_id (not a full URL), generate the URL
-      if (imageUrl && !imageUrl.includes("http") && !imageUrl.includes("supabase.co")) {
+      if (
+        imageUrl &&
+        !imageUrl.includes("http") &&
+        !imageUrl.includes("supabase.co")
+      ) {
         finalImageUrl = cldUrlEnhanced({
           publicId: imageUrl,
           width: 800,
@@ -120,8 +129,11 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
           .from("fanaha_offerings")
           .update({
             title,
+            title_fr: coerceFrenchText(titleFr),
             description,
-            image_public_id: imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
+            description_fr: coerceFrenchText(descriptionFr),
+            image_public_id:
+              imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
             image_url: finalImageUrl || null, // Store URL for backward compatibility
             updated_at: new Date().toISOString(),
           })
@@ -151,8 +163,11 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
           .insert([
             {
               title,
+              title_fr: coerceFrenchText(titleFr),
               description,
-              image_public_id: imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
+              description_fr: coerceFrenchText(descriptionFr),
+              image_public_id:
+                imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
               image_url: finalImageUrl || null, // Store URL for backward compatibility
               display_order: currentMax + 1,
             },
@@ -285,7 +300,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       );
 
       const results = await Promise.all(updates);
-      
+
       // Check for errors
       const hasError = results.some((result) => result.error);
       if (hasError) {
@@ -338,7 +353,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
       );
 
       const results = await Promise.all(updates);
-      
+
       // Check for errors
       const hasError = results.some((result) => result.error);
       if (hasError) {
@@ -432,11 +447,13 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                           <ChevronUp className="w-4 h-4" />
                         </button>
                         <span className="text-xs font-semibold text-zinc-500 min-w-[1.5rem] text-center">
-                          {(offering.display_order || index + 1)}
+                          {offering.display_order || index + 1}
                         </span>
                         <button
                           onClick={() => moveItem(index, 1)}
-                          disabled={index === offerings.length - 1 || reordering}
+                          disabled={
+                            index === offerings.length - 1 || reordering
+                          }
                           className="p-0.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           title="Move down"
                           aria-label="Move down"
@@ -465,7 +482,9 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                     {(offering.image_public_id || offering.image_url) && (
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden">
                         <OptimizedImage
-                          publicId={offering.image_public_id || offering.image_url}
+                          publicId={
+                            offering.image_public_id || offering.image_url
+                          }
                           alt={offering.title}
                           width={128}
                           height={128}
@@ -545,7 +564,7 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
               {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Title *
+                  Title (EN) *
                 </label>
                 <input
                   type="text"
@@ -556,10 +575,23 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Title (FR)
+                </label>
+                <input
+                  type="text"
+                  value={titleFr}
+                  onChange={(e) => setTitleFr(e.target.value)}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Description
+                  Description (EN)
                 </label>
                 <textarea
                   value={description}
@@ -567,6 +599,19 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                   rows={6}
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="Description of the offering..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Description (FR)
+                </label>
+                <textarea
+                  value={descriptionFr}
+                  onChange={(e) => setDescriptionFr(e.target.value)}
+                  rows={6}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 

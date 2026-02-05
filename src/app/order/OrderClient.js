@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function OrderClient() {
+  const t = useTranslations();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -81,12 +83,10 @@ export default function OrderClient() {
           className="text-center mb-12"
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl mb-6 tracking-wider">
-            Commission Your Art
+            {t("order.commissionYourArt")}
           </h1>
           <p className="text-base sm:text-lg text-zinc-700 max-w-xl mx-auto px-4 leading-loose tracking-wide">
-            Transform your sacred space with a custom alchemical art piece. Each
-            creation is crafted with intention, infused with symbolism, and
-            designed to resonate with your unique journey.
+            {t("order.transformSacredSpace")}
           </p>
         </motion.div>
 
@@ -178,9 +178,10 @@ export default function OrderClient() {
             {/* Message and Submit Button */}
             <div className="space-y-4">
               <p className="text-base sm:text-lg text-zinc-600 text-center leading-relaxed tracking-wide italic">
-                I welcome your request and delight in the opportunity to channel your unique universe onto canvas.
+                I welcome your request and delight in the opportunity to channel
+                your unique universe onto canvas.
               </p>
-              
+
               <button
                 type="submit"
                 disabled={isSubmitting}

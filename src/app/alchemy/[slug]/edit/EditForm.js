@@ -1,37 +1,40 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { Minus, Plus } from "lucide-react";
 import { supabase } from "../../../../util/supabase/supabaseClient";
 import ImageCropper from "../../create/ImageCropper";
 import { getCroppedImg } from "../../create/cropImage";
-import ColorThief from "color-thief-browser";
 import {
   uploadToCloudinary,
   uploadMultipleToCloudinary,
 } from "@/lib/cloudinary-upload";
 import { cldUrlEnhanced, isCloudinaryId } from "@/lib/cloudinary";
+import { coerceFrenchText } from "@/lib/db-i18n";
 
 export default function EditForm({ piece }) {
+  const makeId = () =>
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
   const [form, setForm] = useState({
     title: piece.name || "",
+    titleFr: piece.name_fr || "",
     slug: piece.slug || "",
     description: piece.description || "",
+    descriptionFr: piece.description_fr || "",
     dimension: piece.dimensions || "",
     price: piece.price ? piece.price.toString() : "",
+    priceEur: piece.price_eur ? piece.price_eur.toString() : "",
     year: piece.year
       ? piece.year.toString()
       : new Date().getFullYear().toString(),
     status: piece.status || "available",
     videoUrl: piece.video_url || "",
     mainImage: null,
-    // Use public_ids if available, otherwise fall back to images URLs
-    images: piece.images_public_ids
-      ? piece.images_public_ids.slice(1)
-      : piece.images
-      ? piece.images.slice(1)
-      : [], // exclude main image
   });
   const [mainImagePreview, setMainImagePreview] = useState(
     // Use public_id to generate URL if available, otherwise use existing URL
@@ -46,21 +49,27 @@ export default function EditForm({ piece }) {
         })
       : piece.main_image || (piece.images && piece.images[0]) || null
   );
-  const [galleryPreviews, setGalleryPreviews] = useState(() => {
-    // Generate preview URLs from public_ids if available
-    if (piece.images_public_ids && piece.images_public_ids.length > 1) {
-      return piece.images_public_ids.slice(1).map((publicId) =>
-        cldUrlEnhanced({
-          publicId,
-          width: 200,
-          height: 200,
-          quality: "auto:good",
-          crop: "fill",
-        })
-      );
-    }
-    // Fall back to existing images URLs
-    return piece.images ? piece.images.slice(1) : [];
+  const [galleryItems, setGalleryItems] = useState(() => {
+    // Prefer Cloudinary public_ids for stable saving; otherwise use legacy URLs
+    const sources =
+      piece.images_public_ids && piece.images_public_ids.length > 1
+        ? piece.images_public_ids.slice(1)
+        : piece.images
+        ? piece.images.slice(1)
+        : [];
+
+    return sources.map((src) => {
+      const previewUrl = isCloudinaryId(src)
+        ? cldUrlEnhanced({
+            publicId: src,
+            width: 200,
+            height: 200,
+            quality: "auto:good",
+            crop: "fill",
+          })
+        : src;
+      return { id: makeId(), value: src, previewUrl };
+    });
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -70,6 +79,8 @@ export default function EditForm({ piece }) {
   const [tempImageSrc, setTempImageSrc] = useState(null);
   const [tempFileName, setTempFileName] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams?.get("returnTo");
   const galleryInputRef = useRef();
 
   function handleChange(e) {
@@ -84,16 +95,19 @@ export default function EditForm({ piece }) {
         }
       } else if (name === "images") {
         const newFiles = Array.from(files);
-        setForm((f) => ({ ...f, images: [...f.images, ...newFiles] }));
-        setGalleryPreviews((prev) => [
+        setGalleryItems((prev) => [
           ...prev,
-          ...newFiles.map((file) => URL.createObjectURL(file)),
+          ...newFiles.map((file) => ({
+            id: makeId(),
+            value: file,
+            previewUrl: URL.createObjectURL(file),
+          })),
         ]);
       }
-    } else if (name === "price") {
+    } else if (name === "price" || name === "priceEur") {
       // Only allow numbers and decimal points
       const cleanValue = value.replace(/[^0-9.]/g, "");
-      setForm((f) => ({ ...f, price: cleanValue }));
+      setForm((f) => ({ ...f, [name]: cleanValue }));
     } else {
       setForm((f) => ({ ...f, [name]: value }));
     }
@@ -127,6 +141,7 @@ export default function EditForm({ piece }) {
   }
 
   async function extractPalette(file) {
+    const { default: ColorThief } = await import("color-thief-browser");
     return new Promise((resolve, reject) => {
       const img = new window.Image();
       img.crossOrigin = "anonymous";
@@ -152,11 +167,28 @@ export default function EditForm({ piece }) {
   }
 
   function removeGalleryImage(idx) {
-    setForm((f) => ({
-      ...f,
-      images: f.images.filter((_, i) => i !== idx),
-    }));
-    setGalleryPreviews((prev) => prev.filter((_, i) => i !== idx));
+    setGalleryItems((prev) => {
+      const next = [...prev];
+      const removed = next[idx];
+      if (removed?.previewUrl?.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(removed.previewUrl);
+        } catch {}
+      }
+      next.splice(idx, 1);
+      return next;
+    });
+  }
+
+  function moveGalleryItemByDelta(idx, delta) {
+    const nextIdx = idx + delta;
+    if (nextIdx < 0 || nextIdx >= galleryItems.length) return;
+    setGalleryItems((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(idx, 1);
+      next.splice(nextIdx, 0, moved);
+      return next;
+    });
   }
 
   async function uploadImage(file, path) {
@@ -208,63 +240,96 @@ export default function EditForm({ piece }) {
       }
 
       // Handle gallery images
-      const newGalleryFiles = form.images.filter((img) => img instanceof File);
-      const existingImageIds = form.images.filter(
-        (img) => typeof img === "string"
+      // Preserve the exact order from the UI (form.images), even when mixing existing + new files
+      const orderedGallery = galleryItems.map((i) => i.value);
+      const newGalleryFiles = orderedGallery.filter(
+        (img) => img instanceof File
       );
-
-      // Upload new gallery images in parallel
-      if (newGalleryFiles.length > 0) {
-        const newPublicIds = await uploadMultipleToCloudinary(
-          newGalleryFiles,
-          `fanaha/alchemy/${form.slug}/gallery`,
-          null,
-          { alwaysCompress: true }
+      const newPublicIds =
+        newGalleryFiles.length > 0
+          ? await uploadMultipleToCloudinary(
+              newGalleryFiles,
+              `fanaha/alchemy/${form.slug}/gallery`,
+              null,
+              { alwaysCompress: true }
+            )
+          : [];
+      if (
+        newGalleryFiles.length > 0 &&
+        newPublicIds.length !== newGalleryFiles.length
+      ) {
+        throw new Error(
+          "Some gallery images failed to upload. Please try again."
         );
-
-        // Combine existing public_ids with new ones
-        imagesPublicIds = [...existingImageIds, ...newPublicIds];
-
-        // Generate URLs for all images (existing + new)
-        imageUrls = imagesPublicIds.map((publicId) =>
-          cldUrlEnhanced({
-            publicId,
-            width: 800,
-            height: 800,
-            quality: "auto:good",
-            crop: "fill",
-          })
-        );
-      } else {
-        // No new images, but ensure existing ones are converted to URLs if they're public_ids
-        imagesPublicIds = existingImageIds;
-        imageUrls = existingImageIds.map((imgId) => {
-          // If it's already a URL (contains http), use it; otherwise generate URL from public_id
-          if (imgId.includes("http") || imgId.includes("supabase.co")) {
-            return imgId;
-          }
-          return cldUrlEnhanced({
-            publicId: imgId,
-            width: 800,
-            height: 800,
-            quality: "auto:good",
-            crop: "fill",
-          });
-        });
       }
+
+      let fileCursor = 0;
+      let allGalleryHavePublicIds = true;
+      const galleryPublicIdsOrdered = [];
+      const galleryUrlsOrdered = [];
+
+      for (const entry of orderedGallery) {
+        if (entry instanceof File) {
+          const publicId = newPublicIds[fileCursor++];
+          if (!publicId) {
+            throw new Error(
+              "A gallery image failed to upload. Please try again."
+            );
+          }
+          galleryPublicIdsOrdered.push(publicId);
+          galleryUrlsOrdered.push(
+            cldUrlEnhanced({
+              publicId,
+              width: 800,
+              height: 800,
+              quality: "auto:good",
+              crop: "fill",
+            })
+          );
+        } else if (typeof entry === "string") {
+          if (isCloudinaryId(entry)) {
+            galleryPublicIdsOrdered.push(entry);
+            galleryUrlsOrdered.push(
+              cldUrlEnhanced({
+                publicId: entry,
+                width: 800,
+                height: 800,
+                quality: "auto:good",
+                crop: "fill",
+              })
+            );
+          } else {
+            // Legacy URL we can't convert to a public_id
+            allGalleryHavePublicIds = false;
+            galleryUrlsOrdered.push(entry);
+          }
+        }
+      }
+
+      // Only store images_public_ids if we have Cloudinary public_ids for *all* gallery images
+      imagesPublicIds =
+        mainImagePublicId && allGalleryHavePublicIds
+          ? [mainImagePublicId, ...galleryPublicIdsOrdered]
+          : null;
+
+      // Always store full URLs (backward compatible)
+      imageUrls = galleryUrlsOrdered;
 
       // Update DB with both public_ids (new) and URLs (backward compatibility)
       const updateData = {
         name: form.title,
+        name_fr: coerceFrenchText(form.titleFr),
         description: form.description,
+        description_fr: coerceFrenchText(form.descriptionFr),
         dimensions: form.dimension,
         price: form.price ? parseFloat(form.price) : null,
+        price_eur: form.priceEur ? parseFloat(form.priceEur) : null,
         year: form.year ? parseInt(form.year) : null,
         status: form.status,
         video_url: form.videoUrl || null,
         // New: Store Cloudinary public_ids
         main_image_public_id: mainImagePublicId,
-        images_public_ids: imagesPublicIds.length > 0 ? imagesPublicIds : null,
+        images_public_ids: imagesPublicIds,
         // Backward compatibility: Also store full URLs
         main_image: mainImageUrl,
         images: [mainImageUrl, ...imageUrls],
@@ -278,7 +343,7 @@ export default function EditForm({ piece }) {
       if (dbError) throw dbError;
       setSuccess(true);
       setLoading(false);
-      router.push(`/manage`);
+      router.push(returnTo || "/manage/alchemical-art-pieces");
     } catch (err) {
       setError(err.message || "An error occurred");
       setLoading(false);
@@ -352,7 +417,7 @@ export default function EditForm({ piece }) {
               className="text-lg font-semibold text-zinc-700"
               htmlFor="title"
             >
-              Title
+              Title (EN)
             </label>
             <input
               id="title"
@@ -362,6 +427,23 @@ export default function EditForm({ piece }) {
               onChange={handleChange}
               className="w-full text-center rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-xl font-normal shadow-sm"
               required
+              disabled={loading}
+            />
+
+            <label
+              className="text-lg font-semibold text-zinc-700"
+              htmlFor="titleFr"
+            >
+              Title (FR)
+            </label>
+            <input
+              id="titleFr"
+              type="text"
+              name="titleFr"
+              value={form.titleFr}
+              onChange={handleChange}
+              placeholder="[NEEDS_TRANSLATION]"
+              className="w-full text-center rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-xl font-normal shadow-sm"
               disabled={loading}
             />
           </div>
@@ -377,6 +459,19 @@ export default function EditForm({ piece }) {
               className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-left shadow-sm resize-y"
               rows={5}
               placeholder="Enter description... (Press Enter for new lines)"
+              disabled={loading}
+            />
+
+            <label className="text-lg font-semibold text-zinc-700">
+              Description (FR)
+            </label>
+            <textarea
+              name="descriptionFr"
+              value={form.descriptionFr}
+              onChange={handleChange}
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-left shadow-sm resize-y"
+              rows={5}
+              placeholder="[NEEDS_TRANSLATION]"
               disabled={loading}
             />
           </div>
@@ -405,6 +500,19 @@ export default function EditForm({ piece }) {
               value={form.price}
               onChange={handleChange}
               placeholder="0"
+              className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
+              disabled={loading}
+            />
+
+            <label className="text-lg font-semibold text-zinc-700">
+              Price (EUR)
+            </label>
+            <input
+              type="text"
+              name="priceEur"
+              value={form.priceEur}
+              onChange={handleChange}
+              placeholder="0.00"
               className="w-full rounded-xl px-4 py-3 bg-zinc-100 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-base text-center shadow-sm font-normal"
               disabled={loading}
             />
@@ -466,37 +574,97 @@ export default function EditForm({ piece }) {
             <label className="text-lg font-semibold text-zinc-700">
               Gallery Images
             </label>
-            <input
-              ref={galleryInputRef}
-              type="file"
-              name="images"
-              accept="image/*"
-              multiple
-              onChange={handleChange}
-              className="w-full text-zinc-700"
-              disabled={loading}
-            />
-            {galleryPreviews.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-4 mt-2">
-                {galleryPreviews.map((src, idx) => (
-                  <div key={src} className="relative group">
-                    <Image
-                      src={src}
-                      alt={`Gallery Preview ${idx + 1}`}
-                      width={96}
-                      height={96}
-                      className="w-24 h-24 object-cover rounded-xl border-2 border-zinc-200 shadow-md bg-zinc-50"
-                      unoptimized
-                    />
-                    <button
-                      type="button"
-                      className="absolute -top-2 -right-2 bg-white/80 text-zinc-700 hover:bg-red-500 hover:text-white rounded-full p-1 shadow-md opacity-80 group-hover:opacity-100"
-                      onClick={() => removeGalleryImage(idx)}
-                      tabIndex={0}
-                      aria-label={`Remove gallery image ${idx + 1}`}
-                    >
-                      ✕
-                    </button>
+            <div className="w-full flex flex-col items-center gap-3">
+              <input
+                id="alchemy-edit-gallery-images"
+                ref={galleryInputRef}
+                type="file"
+                name="images"
+                accept="image/*"
+                multiple
+                onChange={handleChange}
+                className="hidden"
+                disabled={loading}
+              />
+              <label
+                htmlFor="alchemy-edit-gallery-images"
+                className={`pointer-events-auto inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-medium tracking-wide border shadow-sm transition-all ${
+                  loading
+                    ? "opacity-60 cursor-not-allowed bg-white/70 border-zinc-200 text-zinc-400"
+                    : "cursor-pointer bg-white/85 border-zinc-300 text-zinc-700 hover:bg-white hover:border-purple-300 hover:shadow-md"
+                }`}
+              >
+                Add gallery images
+              </label>
+              <p className="text-xs text-zinc-500">
+                {galleryItems.length > 0
+                  ? `${galleryItems.length} image${
+                      galleryItems.length === 1 ? "" : "s"
+                    } selected`
+                  : "PNG, JPG, WEBP"}
+              </p>
+            </div>
+            {galleryItems.length > 1 && (
+              <p className="text-sm text-zinc-500 text-center">
+                Use the arrows under each image to reorder.
+              </p>
+            )}
+            {galleryItems.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-2 justify-items-center">
+                {galleryItems.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    className="group flex flex-col items-center"
+                    aria-label={`Gallery image ${idx + 1}`}
+                  >
+                    <div className="relative">
+                      <Image
+                        src={item.previewUrl}
+                        alt={`Gallery Preview ${idx + 1}`}
+                        width={96}
+                        height={96}
+                        className="w-24 h-24 object-cover rounded-xl border-2 border-zinc-200 shadow-md bg-zinc-50"
+                        unoptimized
+                      />
+                      <button
+                        type="button"
+                        className="absolute -top-2 -right-2 bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white rounded-full p-1.5 shadow-md opacity-90 group-hover:opacity-100"
+                        onClick={() => removeGalleryImage(idx)}
+                        tabIndex={0}
+                        aria-label={`Remove gallery image ${idx + 1}`}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Reorder controls (below image, mobile-friendly) */}
+                    <div className="mt-2 w-24">
+                      <div className="w-full h-10 rounded-full bg-white/90 border border-zinc-200 shadow-sm overflow-hidden flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => moveGalleryItemByDelta(idx, -1)}
+                          disabled={loading || idx === 0}
+                          className="w-10 h-10 flex items-center justify-center text-zinc-900 hover:bg-zinc-100 active:bg-zinc-200 transition disabled:opacity-30 disabled:hover:bg-transparent"
+                          aria-label={`Move image ${idx + 1} earlier`}
+                          title="Move earlier"
+                        >
+                          <Minus className="w-5 h-5" strokeWidth={2.5} />
+                        </button>
+                        <div className="flex-1 h-10 flex items-center justify-center text-sm font-semibold tracking-wide text-zinc-500 select-none">
+                          {idx + 1}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => moveGalleryItemByDelta(idx, +1)}
+                          disabled={loading || idx === galleryItems.length - 1}
+                          className="w-10 h-10 flex items-center justify-center text-zinc-900 hover:bg-zinc-100 active:bg-zinc-200 transition disabled:opacity-30 disabled:hover:bg-transparent"
+                          aria-label={`Move image ${idx + 1} later`}
+                          title="Move later"
+                        >
+                          <Plus className="w-5 h-5" strokeWidth={2.5} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

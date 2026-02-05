@@ -1,8 +1,32 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import { useLocale } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import enMessages from "@/messages/en.json";
+import frMessages from "@/messages/fr.json";
 
-export default function Menu({ menuOpen, onMenuToggle }) {
+const MESSAGES = { en: enMessages, fr: frMessages };
+
+function getMsg(locale, key) {
+  const dict = MESSAGES[locale] || MESSAGES.en;
+  const value = key.split(".").reduce((acc, part) => acc?.[part], dict);
+  return typeof value === "string" ? value : key;
+}
+
+export default function Menu({
+  menuOpen,
+  onMenuToggle,
+  visualLocale,
+  onNavigateStart,
+}) {
+  const currentLocale = useLocale();
+  const activeLocale = visualLocale || currentLocale || "en";
+
+  const handleNavStart = () => {
+    if (typeof onNavigateStart === "function") onNavigateStart();
+    onMenuToggle(false);
+  };
+
   return (
     <AnimatePresence>
       {menuOpen && (
@@ -37,18 +61,42 @@ export default function Menu({ menuOpen, onMenuToggle }) {
                 style={{ height: "100%" }}
               >
                 {[
-                  { label: "Alchemical Art Pieces", href: "/alchemy" },
-                  { label: "Altar Artwork", href: "/altar" },
-                  { label: "Big Scale", href: "/murals" },
-                  { label: "Exhibitions", href: "/exhibitions" },
-                  { label: "Oracles & Projects", href: "/oracles-projects" },
-                  { label: "What I Offer", href: "/what-i-offer" },
-                  { label: "Testimonials", href: "/reviews" },
-                  { label: "About", href: "/about" },
-                  { label: "Contact", href: "/contact" },
+                  {
+                    label: getMsg(activeLocale, "nav.alchemicalArtPieces"),
+                    href: "/alchemy",
+                  },
+                  {
+                    label: getMsg(activeLocale, "nav.altarArtwork"),
+                    href: "/altar",
+                  },
+                  {
+                    label: getMsg(activeLocale, "nav.bigScale"),
+                    href: "/murals",
+                  },
+                  {
+                    label: getMsg(activeLocale, "nav.exhibitions"),
+                    href: "/exhibitions",
+                  },
+                  {
+                    label: getMsg(activeLocale, "nav.oraclesProjects"),
+                    href: "/oracles-projects",
+                  },
+                  {
+                    label: getMsg(activeLocale, "nav.whatIOffer"),
+                    href: "/what-i-offer",
+                  },
+                  {
+                    label: getMsg(activeLocale, "nav.testimonials"),
+                    href: "/reviews",
+                  },
+                  { label: getMsg(activeLocale, "nav.about"), href: "/about" },
+                  {
+                    label: getMsg(activeLocale, "nav.contact"),
+                    href: "/contact",
+                  },
                 ].map((item, index) => (
                   <motion.li
-                    key={item.label}
+                    key={item.href}
                     className="m-0 w-full flex justify-center items-center"
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -59,7 +107,12 @@ export default function Menu({ menuOpen, onMenuToggle }) {
                       delay: 0.35 + index * 0.13,
                     }}
                   >
-                    <Link href={item.href} className="w-full">
+                    <Link
+                      href={item.href}
+                      locale={activeLocale}
+                      className="w-full"
+                      onClick={handleNavStart}
+                    >
                       <motion.h2
                         className="text-white no-underline text-[clamp(18px,2.5vw,28px)] font-normal tracking-wide inline-block py-[clamp(8px,1vw,14px)] rounded-xl w-full outline-none touch-manipulation whitespace-nowrap overflow-hidden text-ellipsis text-center cursor-pointer relative z-[1] focus-visible:ring-2 focus-visible:ring-violet-300 transition-colors duration-200 ease-out hover:text-purple-100 hover:drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] focus:text-amber-100 focus:drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]"
                         tabIndex={0}
@@ -80,7 +133,7 @@ export default function Menu({ menuOpen, onMenuToggle }) {
                             damping: 15,
                           },
                         }}
-                        onClick={() => onMenuToggle(false)}
+                        onClick={handleNavStart}
                       >
                         {item.label}
                       </motion.h2>

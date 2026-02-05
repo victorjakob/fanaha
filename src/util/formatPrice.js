@@ -33,3 +33,23 @@ export function formatISKNumber(price) {
   // Use explicit formatting to avoid hydration issues
   return numPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
+
+/**
+ * Formats a price value to EUR with a stable (non-locale) format.
+ * @param {number|string} price - The price value
+ * @returns {string} Formatted price string (e.g., "€1,250.00")
+ */
+export function formatEUR(price) {
+  if (!price && price !== 0) return "";
+
+  const numPrice = typeof price === "string" ? parseFloat(price) : price;
+  if (isNaN(numPrice)) return "";
+
+  const fixed = Number.isInteger(numPrice)
+    ? numPrice.toString()
+    : numPrice.toFixed(2);
+  const [intPart, decPart] = fixed.split(".");
+  const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  return decPart ? `€${formattedInt}.${decPart}` : `€${formattedInt}`;
+}

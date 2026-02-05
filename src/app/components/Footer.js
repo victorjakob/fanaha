@@ -1,19 +1,23 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { FaInstagram, FaFacebookF, FaEnvelope } from "react-icons/fa";
 
 export default function Footer({ footerContent }) {
   const pathname = usePathname();
-  const showCta = pathname !== "/order";
+  const showCta =
+    pathname !== "/order" &&
+    pathname !== "/en/order" &&
+    pathname !== "/fr/order";
+  const t = useTranslations();
 
   // Default content if not provided
-  const title = footerContent?.title || "Commission Your Art";
+  const title = footerContent?.title || t("order.commissionYourArt");
   const description =
-    footerContent?.description ||
-    "Transform your sacred space with a custom alchemical art piece. Each creation is crafted with intention, infused with symbolism, and designed to resonate with your unique journey.";
+    footerContent?.description || t("order.transformSacredSpace");
 
   return (
     <footer className="relative w-full bg-gradient-to-b from-transparent via-zinc-50 to-zinc-100 border-t border-black/10 mt-20">
@@ -38,7 +42,7 @@ export default function Footer({ footerContent }) {
                 href="/order"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-bold tracking-widest transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <span className="font-extrabold">GET YOURS</span>
+                <span className="font-extrabold">{t("actions.getYours")}</span>
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -71,10 +75,10 @@ export default function Footer({ footerContent }) {
             className="text-center md:text-left"
           >
             <h3 className="text-2xl font-bold tracking-widest mb-3 text-black/90">
-              FANAHA
+              {t("brand.name")}
             </h3>
             <p className="text-sm sm:text-[15px] text-black/75 leading-relaxed tracking-wide">
-              Where art meets alchemy, and intention becomes form.
+              {t("brand.tagline")}
             </p>
           </motion.div>
 
@@ -87,32 +91,32 @@ export default function Footer({ footerContent }) {
             className="text-center"
           >
             <h4 className="text-sm font-semibold tracking-widest uppercase text-black/85 mb-4">
-              Explore
+              {t("nav.explore")}
             </h4>
             <nav className="flex flex-col gap-2">
               <Link
                 href="/alchemy"
                 className="text-sm sm:text-[15px] text-black/70 hover:text-black/90 transition-colors tracking-wide"
               >
-                Alchemical Art
+                {t("nav.alchemicalArt")}
               </Link>
               <Link
                 href="/altar"
                 className="text-sm sm:text-[15px] text-black/70 hover:text-black/90 transition-colors tracking-wide"
               >
-                Altar Artwork
+                {t("nav.altarArtwork")}
               </Link>
               <Link
                 href="/about"
                 className="text-sm sm:text-[15px] text-black/70 hover:text-black/90 transition-colors tracking-wide"
               >
-                About
+                {t("nav.about")}
               </Link>
               <Link
                 href="/contact"
                 className="text-sm sm:text-[15px] text-black/70 hover:text-black/90 transition-colors tracking-wide"
               >
-                Contact
+                {t("nav.contact")}
               </Link>
             </nav>
           </motion.div>
@@ -126,7 +130,7 @@ export default function Footer({ footerContent }) {
             className="text-center md:text-right"
           >
             <h4 className="text-sm font-semibold tracking-widest uppercase text-black/85 mb-4">
-              Connect
+              {t("nav.connect")}
             </h4>
             <div className="flex justify-center md:justify-end gap-4">
               <a
@@ -134,7 +138,7 @@ export default function Footer({ footerContent }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white border border-black/20 flex items-center justify-center text-black/70 hover:border-purple-400/70 hover:text-purple-700 transition-all duration-300 hover:scale-110"
-                aria-label="Instagram"
+                aria-label={t("nav.instagram")}
               >
                 <FaInstagram className="w-5 h-5" />
               </a>
@@ -143,14 +147,14 @@ export default function Footer({ footerContent }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white border border-black/20 flex items-center justify-center text-black/70 hover:border-purple-400/70 hover:text-purple-700 transition-all duration-300 hover:scale-110"
-                aria-label="Facebook"
+                aria-label={t("nav.facebook")}
               >
                 <FaFacebookF className="w-5 h-5" />
               </a>
               <Link
                 href="/contact"
                 className="w-10 h-10 rounded-full bg-white border border-black/20 flex items-center justify-center text-black/70 hover:border-purple-400/70 hover:text-purple-700 transition-all duration-300 hover:scale-110"
-                aria-label="Email"
+                aria-label={t("contact.email")}
               >
                 <FaEnvelope className="w-5 h-5" />
               </Link>
@@ -165,15 +169,14 @@ export default function Footer({ footerContent }) {
         <div className="pt-8 border-t border-black/10">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs sm:text-sm text-black/55">
             <p className="tracking-wide">
-              © {new Date().getFullYear()} Fanaha. All rights reserved.
+              {t("copyright.rightsReserved", {
+                year: new Date().getFullYear(),
+              })}
             </p>
-            <p className="tracking-wide">
-              © Photos by Guðmann Þór Bjargmundsson
-            </p>
+            <p className="tracking-wide">{t("copyright.photosBy")}</p>
           </div>
           <p className="mt-3 text-center md:text-left text-xs sm:text-sm text-black/50 tracking-wide max-w-4xl mx-auto">
-            All artwork is protected by copyright. No reproduction or commercial
-            use without written permission.
+            {t("copyright.allArtworkProtected")}
           </p>
         </div>
 

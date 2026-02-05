@@ -1,0 +1,116 @@
+{
+  "actions": {
+    "getYours": "GET YOURS"
+  },
+  "brand": {
+    "name": "FANAHA",
+    "tagline": "Where art meets alchemy, and intention becomes form."
+  },
+  "contact": {
+    "connectWithMe": "Connect With Me",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "getInTouch": "Get in Touch",
+    "haveAQuestion": "Have a question about my work, interested in a commission, or just want to connect? I'd love to hear from you.",
+    "message": "Message",
+    "messagePlaceholder": "Tell me about your inquiry...",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "sendMessage": "Send Message",
+    "subject": "Subject",
+    "subjectPlaceholder": "What's this about?"
+  },
+  "copyright": {
+    "allArtworkProtected": "All artwork is protected by copyright. No reproduction or commercial use without written permission.",
+    "photosBy": "© Photos by Guðmann Þór Bjargmundsson",
+    "rightsReserved": "© {year} Fanaha. All rights reserved."
+  },
+  "nav": {
+    "about": "About",
+    "alchemicalArt": "Alchemical Art",
+    "alchemicalArtPieces": "Alchemical Art Pieces",
+    "altarArtwork": "Altar Artwork",
+    "bigScale": "Big Scale",
+    "connect": "Connect",
+    "contact": "Contact",
+    "exhibitions": "Exhibitions",
+    "explore": "Explore",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "oraclesProjects": "Oracles & Projects",
+    "testimonials": "Testimonials",
+    "whatIOffer": "What I Offer"
+  },
+  "order": {
+    "commissionYourArt": "Commission Your Art",
+    "customOrder": "Custom Order",
+    "transformSpace": "Transform your space with a custom alchemical art piece. Each creation is crafted with intention, infused with symbolism, and designed to resonate with your uniqueness.",
+    "transformSacredSpace": "Transform your sacred space with a custom alchemical art piece. Each creation is crafted with intention, infused with symbolism, and designed to resonate with your unique journey."
+  },
+  "pages": {
+    "alchemy": {
+      "intro": "Explore a collection of unique, mystical alchemical artworks. Each piece is crafted with intention, blending ancient symbolism, modern technique, and a touch of the divine. Discover the story, details, and visual journey behind every creation.",
+      "title": "Alchemical Art Pieces"
+    },
+    "altarArtwork": {
+      "availableOnlyByCommission": "Available exclusively by commission, these altar pieces are created specifically for you, to elevate and hold your sacred space.",
+      "circularFormats": "Altar pieces are created in circular formats, with diameters ranging from 20 to 40 cm.",
+      "meantToBeMeditatedWith": "They are meant to be meditated with, gazed upon, or simply lived beside — allowing their presence and frequency to subtly move and support your own energetic field.",
+      "title": "Altar Artwork"
+    },
+    "bigScale": {
+      "body1": "These large-scale alchemical artworks are created on commission through a process of deep listening and intention. Each piece is shaped in resonance with the space it will inhabit, and with the person or family it is meant to accompany.",
+      "body2": "Designed to enhance harmony, support benevolent frequencies, and invite a grounded, luminous presence, these works gently transform environments while holding the unique energy of those who live within them.",
+      "title": "Big Scale"
+    },
+    "exhibitions": {
+      "description": "Gallery exhibitions showcasing artworks around the world",
+      "title": "Exhibitions"
+    },
+    "oraclesProjects": {
+      "description": "Explore oracle decks and collaborative creative projects.",
+      "title": "Oracles & Projects"
+    },
+    "testimonials": {
+      "description": "Shared words from those who experienced the work",
+      "title": "Testimonials"
+    },
+    "whatIOffer": {
+      "description": "Services and offerings available for commission.",
+      "title": "What I Offer"
+    }
+  },
+  "profile": {
+    "aboutFanaha": "About Fanaha",
+    "aLivingPrayer": "A Living Prayer",
+    "becoming": "Becoming",
+    "earthAsMuse": "Earth as muse, breath as metronome. Every offering is a dialogue with wind, stone, tide, and fire.",
+    "feminineWisdom": "Feminine Wisdom",
+    "galacticAncestralMemory": "Galactic Ancestral Memory",
+    "livePerformances": "Live performances, visual works, intimate circles where art becomes a shared ceremony.",
+    "now": "Now",
+    "portalsForRemembrance": "Fanaha opens portals for remembrance—inviting you to breathe, feel, and belong to your own living myth.",
+    "offerings": "Offerings",
+    "origins": "Origins",
+    "pathAndBecoming": "Path & Becoming",
+    "pathIntro": "A journey from hush to hymn. These waypoints sketch a map, but the real terrain is felt— in breath, in body, in the shared field.",
+    "pillarsOfPractice": "Pillars of Practice",
+    "quote": "Art is how to remember what the heart always knew— that love is a frequency, and presence is the doorway.",
+    "songsAndSymbols": "Songs and symbols that honor the ones before us, weaving lineage into modern ritual.",
+    "studyPilgrimageExperiment": "Study, pilgrimage, experiment. Learning to trust the space between notes and the silence beneath movement.",
+    "theFirstSpark": "The first spark: childlike dances in kitchens, humming to rivers, sketching constellations in notebooks.",
+    "transformation": "Transformation",
+    "transformationBody": "Creation as alchemy—meeting shadow with devotion, turning experience into medicine and beauty.",
+    "visionaryArtist": "Visionary artist and weaver of soul-story. Her work lives where Earth meets Ether— a devotion to beauty, breath, and belonging.",
+    "withVoiceAndBreath": "She works with voice and breath, with symbol and silence, with the body as altar and the everyday as sacred ground.",
+    "ratherThanPerform": "Rather than perform for an audience, she invites a circle—an ecology of presence—where art becomes a ceremony we enter together. In these threshold spaces, grief softens, joy ripens, and belonging returns.",
+    "fanahaIsAConduit": "Fanaha is a conduit for subtle realms, composing experiences where sound, movement, image, and story braid into ritual. Rooted in nature and guided by the feminine, her creations invite you to remember what you already are: wild, tender, whole.",
+    "nature": "Nature",
+    "artAsSanctuary": "Art as sanctuary for the body to remember: softness is strength; sensitivity is intelligence; presence is power.",
+    "originsLabel": "Origins",
+    "becomingLabel": "Becoming",
+    "offeringsLabel": "Offerings",
+    "nowLabel": "Now"
+  }
+}
+

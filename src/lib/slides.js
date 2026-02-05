@@ -1,11 +1,12 @@
 import { createServerSupabase } from "@/util/supabase/server";
+import { pickLocalizedText } from "@/lib/db-i18n";
 
-export async function getSlides() {
+export async function getSlides(locale = "en") {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
     .from("fanaha_homepage_slides")
-    .select("public_id, alt, target, sort, active")
+    .select("*")
     .eq("active", true)
     .order("sort", { ascending: true });
 
@@ -16,8 +17,13 @@ export async function getSlides() {
     };
   }
 
+  const localized = data.map((d) => ({
+    ...d,
+    alt: pickLocalizedText(d, "alt", locale),
+  }));
+
   return {
-    desktop: data.filter((d) => d.target === "desktop"),
-    mobile: data.filter((d) => d.target === "mobile"),
+    desktop: localized.filter((d) => d.target === "desktop"),
+    mobile: localized.filter((d) => d.target === "mobile"),
   };
 }

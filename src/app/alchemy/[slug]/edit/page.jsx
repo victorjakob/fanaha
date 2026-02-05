@@ -2,6 +2,13 @@ import { notFound } from "next/navigation";
 import { createServerSupabase } from "../../../../util/supabase/server";
 import EditForm from "./EditForm";
 
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function EditAlchemyArtPiecePage({ params }) {
   const { slug } = await params;
   const supabase = createServerSupabase();

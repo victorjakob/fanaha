@@ -3,9 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
-import { Plus, Trash2, Upload, X, Edit2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Upload,
+  X,
+  Edit2,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
+import { coerceFrenchText } from "@/lib/db-i18n";
 
 export default function OraclesProjectsManageClient({ initialItems, section }) {
   const router = useRouter();
@@ -19,9 +28,12 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
 
   // Form state
   const [name, setName] = useState("");
+  const [nameFr, setNameFr] = useState("");
   const [date, setDate] = useState("");
   const [publisher, setPublisher] = useState("");
+  const [publisherFr, setPublisherFr] = useState("");
   const [about, setAbout] = useState("");
+  const [aboutFr, setAboutFr] = useState("");
   const [orderUrl, setOrderUrl] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
 
@@ -31,9 +43,12 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
 
   const resetForm = () => {
     setName("");
+    setNameFr("");
     setDate("");
     setPublisher("");
+    setPublisherFr("");
     setAbout("");
+    setAboutFr("");
     setOrderUrl("");
     setUploadedImages([]);
     setEditingItem(null);
@@ -47,9 +62,12 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
   const handleEdit = (item) => {
     setEditingItem(item);
     setName(item.name);
+    setNameFr(item.name_fr || "");
     setDate(item.date);
     setPublisher(item.publisher || "");
+    setPublisherFr(item.publisher_fr || "");
     setAbout(item.about || "");
+    setAboutFr(item.about_fr || "");
     setOrderUrl(item.order_url || "");
     // Use public_ids if available, otherwise fall back to images (URLs)
     setUploadedImages(item.images_public_ids || item.images || []);
@@ -63,8 +81,10 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
     setUploading(true);
     try {
       // Upload to Cloudinary in parallel
-      const { uploadMultipleToCloudinary } = await import("@/lib/cloudinary-upload");
-      
+      const { uploadMultipleToCloudinary } = await import(
+        "@/lib/cloudinary-upload"
+      );
+
       const publicIds = await uploadMultipleToCloudinary(
         files,
         "fanaha/oracles-projects",
@@ -161,9 +181,12 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
           .from("fanaha_oracles_projects")
           .update({
             name,
+            name_fr: coerceFrenchText(nameFr),
             date,
             publisher,
+            publisher_fr: coerceFrenchText(publisherFr),
             about,
+            about_fr: coerceFrenchText(aboutFr),
             order_url: orderUrl || null,
             images_public_ids: uploadedImages, // Store Cloudinary public_ids
             images: imageUrls, // Store URLs for backward compatibility
@@ -195,9 +218,12 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
           .insert([
             {
               name,
+              name_fr: coerceFrenchText(nameFr),
               date,
               publisher,
+              publisher_fr: coerceFrenchText(publisherFr),
               about,
+              about_fr: coerceFrenchText(aboutFr),
               order_url: orderUrl || null,
               images_public_ids: uploadedImages, // Store Cloudinary public_ids
               images: imageUrls, // Store URLs for backward compatibility
@@ -396,7 +422,8 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {item.images.map((imageUrl, index) => {
                     // Use public_id if available, otherwise use image URL
-                    const imageSource = item.images_public_ids?.[index] || imageUrl;
+                    const imageSource =
+                      item.images_public_ids?.[index] || imageUrl;
                     return (
                       <div
                         key={index}
@@ -453,7 +480,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Name *
+                  Name (EN) *
                 </label>
                 <input
                   type="text"
@@ -461,6 +488,19 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="e.g., Oracle of the Moon"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Name (FR)
+                </label>
+                <input
+                  type="text"
+                  value={nameFr}
+                  onChange={(e) => setNameFr(e.target.value)}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 
@@ -481,7 +521,7 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
               {/* Publisher */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Publisher
+                  Publisher (EN)
                 </label>
                 <input
                   type="text"
@@ -492,10 +532,23 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Publisher (FR)
+                </label>
+                <input
+                  type="text"
+                  value={publisherFr}
+                  onChange={(e) => setPublisherFr(e.target.value)}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+
               {/* About */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  About
+                  About (EN)
                 </label>
                 <textarea
                   value={about}
@@ -503,6 +556,19 @@ export default function OraclesProjectsManageClient({ initialItems, section }) {
                   rows={4}
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="Description of the oracle or project..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  About (FR)
+                </label>
+                <textarea
+                  value={aboutFr}
+                  onChange={(e) => setAboutFr(e.target.value)}
+                  rows={4}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 

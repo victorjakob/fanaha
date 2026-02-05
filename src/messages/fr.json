@@ -1,0 +1,116 @@
+{
+  "actions": {
+    "getYours": "OBTENEZ LA VÔTRE"
+  },
+  "brand": {
+    "name": "FANAHA",
+    "tagline": "Là où l’art rencontre l’alchimie, et où l’intention prend forme."
+  },
+  "contact": {
+    "connectWithMe": "Me contacter",
+    "email": "Email",
+    "emailPlaceholder": "votre@email.com",
+    "getInTouch": "Entrer en contact",
+    "haveAQuestion": "Vous avez une question sur mon travail, vous êtes intéressé·e par une commande ou vous souhaitez simplement échanger ? Je serais ravie de vous lire.",
+    "message": "Message",
+    "messagePlaceholder": "Parlez-moi de votre demande…",
+    "name": "Nom",
+    "namePlaceholder": "Votre nom",
+    "sendMessage": "Envoyer le message",
+    "subject": "Objet",
+    "subjectPlaceholder": "De quoi s’agit-il ?"
+  },
+  "copyright": {
+    "allArtworkProtected": "Toutes les œuvres sont protégées par le droit d’auteur. Aucune reproduction ni utilisation commerciale n’est autorisée sans autorisation écrite.",
+    "photosBy": "© Photos par Guðmann Þór Bjargmundsson",
+    "rightsReserved": "© {year} Fanaha. Tous droits réservés."
+  },
+  "nav": {
+    "about": "À propos",
+    "alchemicalArt": "Art alchimique",
+    "alchemicalArtPieces": "Œuvres d’art alchimiques",
+    "altarArtwork": "Œuvres d’autel",
+    "bigScale": "Grand format",
+    "connect": "Connexion",
+    "contact": "Contact",
+    "exhibitions": "Expositions",
+    "explore": "Explorer",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "oraclesProjects": "Oracles & Projets",
+    "testimonials": "Témoignages",
+    "whatIOffer": "Ce que je propose"
+  },
+  "order": {
+    "commissionYourArt": "Commander votre œuvre",
+    "customOrder": "Commande personnalisée",
+    "transformSpace": "Transformez votre espace grâce à une œuvre d’art alchimique sur mesure. Chaque création est façonnée avec intention, imprégnée de symbolisme et conçue pour résonner avec votre singularité.",
+    "transformSacredSpace": "Transformez votre espace sacré avec une œuvre d’art alchimique sur mesure. Chaque création est façonnée avec intention, imprégnée de symbolisme et conçue pour résonner avec votre chemin unique."
+  },
+  "pages": {
+    "alchemy": {
+      "intro": "Découvrez une collection d’œuvres d’art alchimiques uniques et mystiques. Chaque pièce est créée avec intention, mêlant symbolisme ancien, techniques modernes et une touche de divin. Explorez l’histoire, les détails et le voyage visuel qui se cachent derrière chaque création.",
+      "title": "Œuvres d’art alchimiques"
+    },
+    "altarArtwork": {
+      "availableOnlyByCommission": "Disponibles exclusivement sur commande, ces œuvres d’autel sont créées spécialement pour vous afin d’élever et de soutenir votre espace sacré.",
+      "circularFormats": "Les œuvres d’autel sont réalisées dans des formats circulaires, avec des diamètres allant de 20 à 40 cm.",
+      "meantToBeMeditatedWith": "Elles sont destinées à être méditées, contemplées ou simplement vécues à vos côtés — permettant à leur présence et à leur fréquence de soutenir et d’harmoniser subtilement votre propre champ énergétique.",
+      "title": "Œuvres d’autel"
+    },
+    "bigScale": {
+      "body1": "Ces œuvres alchimiques de grand format sont créées sur commande à travers un processus d’écoute profonde et d’intention. Chaque pièce est façonnée en résonance avec l’espace qu’elle habitera, ainsi qu’avec la personne ou la famille qu’elle est destinée à accompagner.",
+      "body2": "Conçues pour renforcer l’harmonie, soutenir des fréquences bienveillantes et inviter une présence ancrée et lumineuse, ces œuvres transforment doucement les environnements tout en portant l’énergie unique de ceux qui y vivent.",
+      "title": "Grand format"
+    },
+    "exhibitions": {
+      "description": "Expositions en galerie présentant des œuvres à travers le monde",
+      "title": "Expositions"
+    },
+    "oraclesProjects": {
+      "description": "Découvrez des jeux d’oracles et des projets créatifs collaboratifs.",
+      "title": "Oracles & Projets"
+    },
+    "testimonials": {
+      "description": "Paroles partagées par celles et ceux qui ont fait l’expérience de ce travail",
+      "title": "Témoignages"
+    },
+    "whatIOffer": {
+      "description": "Services et créations disponibles sur commande.",
+      "title": "Ce que je propose"
+    }
+  },
+  "profile": {
+    "aboutFanaha": "À propos de Fanaha",
+    "aLivingPrayer": "Une prière vivante",
+    "becoming": "Devenir",
+    "earthAsMuse": "La Terre comme muse, le souffle comme métronome. Chaque création est un dialogue avec le vent, la pierre, la marée et le feu.",
+    "feminineWisdom": "Sagesse féminine",
+    "galacticAncestralMemory": "Mémoire ancestrale galactique",
+    "livePerformances": "Performances en direct, œuvres visuelles, cercles intimes où l’art devient une cérémonie partagée.",
+    "now": "Maintenant",
+    "portalsForRemembrance": "Fanaha ouvre des portails de mémoire — vous invitant à respirer, ressentir et appartenir à votre propre mythe vivant.",
+    "offerings": "Offrandes",
+    "origins": "Origines",
+    "pathAndBecoming": "Chemin & Devenir",
+    "pathIntro": "Un voyage du silence à l’hymne. Ces balises esquissent une carte, mais le véritable territoire se ressent — dans le souffle, dans le corps, dans le champ partagé.",
+    "pillarsOfPractice": "Piliers de pratique",
+    "quote": "L’art est une manière de se souvenir de ce que le cœur a toujours su — que l’amour est une fréquence, et que la présence est la porte d’entrée.",
+    "songsAndSymbols": "Des chants et des symboles qui honorent ceux qui nous ont précédés, tissant la lignée dans des rituels contemporains.",
+    "studyPilgrimageExperiment": "Étude, pèlerinage, expérimentation. Apprendre à faire confiance à l’espace entre les notes et au silence sous le mouvement.",
+    "theFirstSpark": "La première étincelle : des danses enfantines dans les cuisines, des murmures adressés aux rivières, des constellations esquissées dans des carnets.",
+    "transformation": "Transformation",
+    "transformationBody": "La création comme alchimie — rencontrer l’ombre avec dévotion, transformer l’expérience en médecine et en beauté.",
+    "visionaryArtist": "Artiste visionnaire et tisseuse d’histoires de l’âme. Son œuvre vit là où la Terre rencontre l’Éther — une dévotion à la beauté, au souffle et à l’appartenance.",
+    "withVoiceAndBreath": "Elle travaille avec la voix et le souffle, avec le symbole et le silence, avec le corps comme autel et le quotidien comme terre sacrée.",
+    "ratherThanPerform": "Plutôt que de se produire devant un public, elle invite un cercle — une écologie de présence — où l’art devient une cérémonie que nous traversons ensemble. Dans ces espaces de seuil, le chagrin s’adoucit, la joie mûrit et le sentiment d’appartenance revient.",
+    "fanahaIsAConduit": "Fanaha est un canal vers les royaumes subtils, composant des expériences où le son, le mouvement, l’image et le récit s’entrelacent en rituel. Enracinées dans la nature et guidées par le féminin, ses créations vous invitent à vous souvenir de ce que vous êtes déjà : sauvage, sensible, entier.",
+    "nature": "Nature",
+    "artAsSanctuary": "L’art comme sanctuaire où le corps se souvient : la douceur est une force ; la sensibilité est une intelligence ; la présence est un pouvoir.",
+    "originsLabel": "Origines",
+    "becomingLabel": "Devenir",
+    "offeringsLabel": "Offrandes",
+    "nowLabel": "Maintenant"
+  }
+}
+

@@ -4,8 +4,10 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaInstagram, FaFacebookF, FaEnvelope } from "react-icons/fa";
 import { Send, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function ContactClient() {
+  const t = useTranslations();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -82,11 +84,10 @@ export default function ContactClient() {
           className="text-center mb-12"
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl mb-6 tracking-wider">
-            Get in Touch
+            {t("contact.getInTouch")}
           </h1>
           <p className="text-base sm:text-lg text-zinc-700 max-w-xl mx-auto px-4 leading-loose tracking-wide">
-            Have a question about my work, interested in a commission, or just
-            want to connect? I&apos;d love to hear from you.
+            {t("contact.haveAQuestion")}
           </p>
         </motion.div>
 
@@ -106,7 +107,7 @@ export default function ContactClient() {
                 htmlFor="name"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Name
+                {t("contact.name")}
               </label>
               <input
                 type="text"
@@ -116,7 +117,7 @@ export default function ContactClient() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all"
-                placeholder="Your name"
+                placeholder={t("contact.namePlaceholder")}
               />
             </div>
 
@@ -126,7 +127,7 @@ export default function ContactClient() {
                 htmlFor="email"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Email
+                {t("contact.email")}
               </label>
               <input
                 type="email"
@@ -136,7 +137,7 @@ export default function ContactClient() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all"
-                placeholder="your@email.com"
+                placeholder={t("contact.emailPlaceholder")}
               />
             </div>
 
@@ -146,7 +147,7 @@ export default function ContactClient() {
                 htmlFor="subject"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Subject
+                {t("contact.subject")}
               </label>
               <input
                 type="text"
@@ -156,7 +157,7 @@ export default function ContactClient() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all"
-                placeholder="What's this about?"
+                placeholder={t("contact.subjectPlaceholder")}
               />
             </div>
 
@@ -166,7 +167,7 @@ export default function ContactClient() {
                 htmlFor="message"
                 className="block text-sm font-semibold text-zinc-700 mb-2"
               >
-                Message
+                {t("contact.message")}
               </label>
               <textarea
                 id="message"
@@ -176,7 +177,7 @@ export default function ContactClient() {
                 required
                 rows={6}
                 className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all resize-none"
-                placeholder="Tell me about your inquiry..."
+                placeholder={t("contact.messagePlaceholder")}
               />
             </div>
 
@@ -208,7 +209,7 @@ export default function ContactClient() {
               ) : (
                 <>
                   <Send className="w-5 h-5" />
-                  Send Message
+                  {t("contact.sendMessage")}
                 </>
               )}
             </button>
@@ -223,7 +224,7 @@ export default function ContactClient() {
           className="text-center"
         >
           <h2 className="text-2xl sm:text-3xl mb-6 tracking-wide">
-            Connect With Me
+            {t("contact.connectWithMe")}
           </h2>
           <div className="flex gap-6 justify-center">
             <a
@@ -231,7 +232,7 @@ export default function ContactClient() {
               target="_blank"
               rel="noopener noreferrer"
               className="p-4 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:bg-white"
-              aria-label="Instagram"
+              aria-label={t("nav.instagram")}
             >
               <FaInstagram className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
             </a>
@@ -240,14 +241,14 @@ export default function ContactClient() {
               target="_blank"
               rel="noopener noreferrer"
               className="p-4 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:bg-white"
-              aria-label="Facebook"
+              aria-label={t("nav.facebook")}
             >
               <FaFacebookF className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
             </a>
             <a
               href="mailto:fanahacrea@gmail.com"
               className="p-4 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:bg-white"
-              aria-label="Email"
+              aria-label={t("contact.email")}
             >
               <FaEnvelope className="w-7 h-7 sm:w-8 sm:h-8 text-zinc-700" />
             </a>

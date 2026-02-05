@@ -3,9 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
-import { Plus, Trash2, Upload, X, Edit2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Upload,
+  X,
+  Edit2,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
+import { coerceFrenchText } from "@/lib/db-i18n";
 
 export default function ExhibitionsManageClient({
   initialExhibitions,
@@ -22,18 +31,22 @@ export default function ExhibitionsManageClient({
 
   // Form state
   const [gallery, setGallery] = useState("");
+  const [galleryFr, setGalleryFr] = useState("");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
   const [about, setAbout] = useState("");
+  const [aboutFr, setAboutFr] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
 
   const resetForm = () => {
     setGallery("");
+    setGalleryFr("");
     setYear(new Date().getFullYear().toString());
     setCity("");
     setCountry("");
     setAbout("");
+    setAboutFr("");
     setUploadedImages([]);
     setEditingExhibition(null);
   };
@@ -46,10 +59,12 @@ export default function ExhibitionsManageClient({
   const handleEdit = (exhibition) => {
     setEditingExhibition(exhibition);
     setGallery(exhibition.gallery);
+    setGalleryFr(exhibition.gallery_fr || "");
     setYear(exhibition.year);
     setCity(exhibition.city);
     setCountry(exhibition.country);
     setAbout(exhibition.about || "");
+    setAboutFr(exhibition.about_fr || "");
     // Use public_ids if available, otherwise fall back to images (URLs)
     setUploadedImages(exhibition.images_public_ids || exhibition.images || []);
     setShowModal(true);
@@ -62,8 +77,10 @@ export default function ExhibitionsManageClient({
     setUploading(true);
     try {
       // Upload to Cloudinary in parallel
-      const { uploadMultipleToCloudinary } = await import("@/lib/cloudinary-upload");
-      
+      const { uploadMultipleToCloudinary } = await import(
+        "@/lib/cloudinary-upload"
+      );
+
       const publicIds = await uploadMultipleToCloudinary(
         files,
         "fanaha/exhibitions",
@@ -181,10 +198,12 @@ export default function ExhibitionsManageClient({
           .from("fanaha_exhibitions")
           .update({
             gallery,
+            gallery_fr: coerceFrenchText(galleryFr),
             year,
             city,
             country,
             about,
+            about_fr: coerceFrenchText(aboutFr),
             images_public_ids: uploadedImages, // Store Cloudinary public_ids
             images: imageUrls, // Store URLs for backward compatibility
             updated_at: new Date().toISOString(),
@@ -236,10 +255,12 @@ export default function ExhibitionsManageClient({
           .insert([
             {
               gallery,
+              gallery_fr: coerceFrenchText(galleryFr),
               year,
               city,
               country,
               about,
+              about_fr: coerceFrenchText(aboutFr),
               images_public_ids: uploadedImages, // Store Cloudinary public_ids
               images: imageUrls, // Store URLs for backward compatibility
               display_order: 1,
@@ -417,7 +438,8 @@ export default function ExhibitionsManageClient({
                       {exhibition.gallery}
                     </h3>
                     <p className="text-sm text-zinc-600 mt-1">
-                      {exhibition.year} • {exhibition.city}, {exhibition.country}
+                      {exhibition.year} • {exhibition.city},{" "}
+                      {exhibition.country}
                     </p>
                     {exhibition.about && (
                       <p className="text-sm text-zinc-700 mt-2 whitespace-pre-wrap">
@@ -447,23 +469,25 @@ export default function ExhibitionsManageClient({
 
               {/* Images Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {(exhibition.images_public_ids || exhibition.images || []).map((imageId, index) => (
-                  <div
-                    key={index}
-                    className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
-                  >
-                    <OptimizedImage
-                      publicId={imageId}
-                      alt={`${exhibition.gallery} image ${index + 1}`}
-                      width={300}
-                      height={300}
-                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                      className="object-cover w-full h-full"
-                      aspectRatio="1:1"
-                      crop="fill"
-                    />
-                  </div>
-                ))}
+                {(exhibition.images_public_ids || exhibition.images || []).map(
+                  (imageId, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
+                    >
+                      <OptimizedImage
+                        publicId={imageId}
+                        alt={`${exhibition.gallery} image ${index + 1}`}
+                        width={300}
+                        height={300}
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                        className="object-cover w-full h-full"
+                        aspectRatio="1:1"
+                        crop="fill"
+                      />
+                    </div>
+                  )
+                )}
               </div>
             </div>
           ))
@@ -502,7 +526,7 @@ export default function ExhibitionsManageClient({
               {/* Gallery */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Gallery Name *
+                  Gallery Name (EN) *
                 </label>
                 <input
                   type="text"
@@ -510,6 +534,19 @@ export default function ExhibitionsManageClient({
                   onChange={(e) => setGallery(e.target.value)}
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="e.g., The National Gallery"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Gallery Name (FR)
+                </label>
+                <input
+                  type="text"
+                  value={galleryFr}
+                  onChange={(e) => setGalleryFr(e.target.value)}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 
@@ -558,7 +595,7 @@ export default function ExhibitionsManageClient({
               {/* About */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  About
+                  About (EN)
                 </label>
                 <textarea
                   value={about}
@@ -566,6 +603,19 @@ export default function ExhibitionsManageClient({
                   rows={4}
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
                   placeholder="Description of the exhibition..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  About (FR)
+                </label>
+                <textarea
+                  value={aboutFr}
+                  onChange={(e) => setAboutFr(e.target.value)}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  rows={4}
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
                 />
               </div>
 

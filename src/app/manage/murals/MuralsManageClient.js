@@ -3,9 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase/supabaseClient";
-import { Plus, Trash2, Upload, X, Edit2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Upload,
+  X,
+  Edit2,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
+import { coerceFrenchText } from "@/lib/db-i18n";
 
 export default function MuralsManageClient({ initialMurals, section }) {
   const router = useRouter();
@@ -19,11 +28,13 @@ export default function MuralsManageClient({ initialMurals, section }) {
 
   // Form state
   const [location, setLocation] = useState("");
+  const [locationFr, setLocationFr] = useState("");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [uploadedImages, setUploadedImages] = useState([]);
 
   const resetForm = () => {
     setLocation("");
+    setLocationFr("");
     setYear(new Date().getFullYear().toString());
     setUploadedImages([]);
     setEditingMural(null);
@@ -37,6 +48,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
   const handleEdit = (mural) => {
     setEditingMural(mural);
     setLocation(mural.location);
+    setLocationFr(mural.location_fr || "");
     setYear(mural.year);
     // Use public_ids if available, otherwise fall back to images (URLs)
     setUploadedImages(mural.images_public_ids || mural.images || []);
@@ -50,9 +62,11 @@ export default function MuralsManageClient({ initialMurals, section }) {
     setUploading(true);
     try {
       // Upload to Cloudinary in parallel
-      const { uploadMultipleToCloudinary } = await import("@/lib/cloudinary-upload");
+      const { uploadMultipleToCloudinary } = await import(
+        "@/lib/cloudinary-upload"
+      );
       const { cldUrlEnhanced } = await import("@/lib/cloudinary");
-      
+
       const publicIds = await uploadMultipleToCloudinary(
         files,
         "fanaha/murals",
@@ -171,6 +185,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
           .from("fanaha_murals")
           .update({
             location,
+            location_fr: coerceFrenchText(locationFr),
             year,
             images_public_ids: uploadedImages, // Store Cloudinary public_ids
             images: imageUrls, // Store URLs for backward compatibility
@@ -202,6 +217,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
           .insert([
             {
               location,
+              location_fr: coerceFrenchText(locationFr),
               year,
               images_public_ids: uploadedImages, // Store Cloudinary public_ids
               images: imageUrls, // Store URLs for backward compatibility
@@ -391,22 +407,24 @@ export default function MuralsManageClient({ initialMurals, section }) {
 
               {/* Images Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {(mural.images_public_ids || mural.images || []).map((imageId, index) => (
-                  <div
-                    key={index}
-                    className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
-                  >
-                    <OptimizedImage
-                      publicId={mural.images_public_ids?.[index] || imageId}
-                      alt={`${mural.location} image ${index + 1}`}
-                      width={200}
-                      height={200}
-                      sizes="200px"
-                      className="object-contain w-full h-full bg-zinc-100"
-                      crop="fit"
-                    />
-                  </div>
-                ))}
+                {(mural.images_public_ids || mural.images || []).map(
+                  (imageId, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-lg overflow-hidden shadow-sm"
+                    >
+                      <OptimizedImage
+                        publicId={mural.images_public_ids?.[index] || imageId}
+                        alt={`${mural.location} image ${index + 1}`}
+                        width={200}
+                        height={200}
+                        sizes="200px"
+                        className="object-contain w-full h-full bg-zinc-100"
+                        crop="fit"
+                      />
+                    </div>
+                  )
+                )}
               </div>
             </div>
           ))
@@ -445,7 +463,7 @@ export default function MuralsManageClient({ initialMurals, section }) {
               {/* Location */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Location *
+                  Location (EN) *
                 </label>
                 <input
                   type="text"
@@ -453,6 +471,19 @@ export default function MuralsManageClient({ initialMurals, section }) {
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="e.g., Reykjavik City Center"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Location (FR)
+                </label>
+                <input
+                  type="text"
+                  value={locationFr}
+                  onChange={(e) => setLocationFr(e.target.value)}
+                  placeholder="[NEEDS_TRANSLATION]"
+                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 

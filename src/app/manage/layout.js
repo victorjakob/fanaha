@@ -2,6 +2,13 @@ import { createServerSupabase } from "@/util/supabase/server";
 import ManageNav from "./ManageNav";
 import PasswordProtection from "./PasswordProtection";
 
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function ManageLayout({ children }) {
   const supabase = createServerSupabase();
   const { data: sections } = await supabase

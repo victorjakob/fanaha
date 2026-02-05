@@ -1,5 +1,12 @@
 import CreateAlchemyArtPieceForm from "./CreateAlchemyArtPieceForm";
 
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function CreateAlchemyArtPiecePage() {
   return (
     <main className="flex flex-col items-center w-full min-h-screen pt-23 py-12 px-4 sm:px-8">

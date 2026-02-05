@@ -2,8 +2,9 @@ import AboutClient from "./AboutClient";
 import { createServerSupabase } from "@/util/supabase/server";
 
 export const metadata = {
-  title: "About - Fanaha",
-  description: "Learn more about Fanaha and the creative journey",
+  title: "About Fanaha",
+  description:
+    "Fanaha is a conduit for subtle realms—braiding sound, movement, image, and story into ritual. Rooted in nature and guided by the feminine.",
 };
 
 // Revalidate every 60 seconds to ensure fresh content
