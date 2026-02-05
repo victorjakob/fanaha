@@ -38,11 +38,23 @@ function getLocaleFromPathname(pathname) {
 export default function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
+  // Allow an unprefixed coming-soon page (no /en redirect).
+  if (pathname === "/coming-soon") {
+    return NextResponse.next();
+  }
+
+  // Allow an unprefixed unlock URL (so next-intl doesn't redirect it
+  // before the route handler can set the cookie).
+  if (pathname === "/love") {
+    return NextResponse.next();
+  }
+
   // Soft launch gate (public sees Coming Soon; you can bypass with a cookie)
   if (process.env.SOFT_LAUNCH_ENABLED === "true") {
     const isBypassed = request.cookies.get(SOFT_LAUNCH_COOKIE)?.value === "1";
     const isComingSoon = pathname.includes("/coming-soon");
-    const isUnlockPath = pathname === "/love";
+    const isUnlockPath =
+      pathname === "/love" || /^\/(en|fr)\/love$/.test(pathname);
     const isAdmin =
       pathname.startsWith("/manage") ||
       pathname.startsWith("/alchemy/create") ||
