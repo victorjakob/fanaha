@@ -4,7 +4,13 @@ import { createServerSupabase } from "@/util/supabase/server";
 export const metadata = {
   title: "Testimonials - Fanaha",
   description: "Read what clients and owners say about Fanaha's artwork",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
+
+export const dynamic = "force-dynamic";
 
 // Revalidate every 60 seconds to ensure fresh content
 export const revalidate = 60;

@@ -5,7 +5,13 @@ export const metadata = {
   title: "About Fanaha",
   description:
     "Fanaha is a conduit for subtle realms—braiding sound, movement, image, and story into ritual. Rooted in nature and guided by the feminine.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
+
+export const dynamic = "force-dynamic";
 
 // Revalidate every 60 seconds to ensure fresh content
 export const revalidate = 60;

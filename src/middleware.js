@@ -9,6 +9,7 @@ const intlMiddleware = createMiddleware({
 });
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
+const SOFT_LAUNCH_COOKIE = "soft_launch_bypass";
 
 function detectCountry(request) {
   // On Vercel/Edge, NextRequest may provide request.geo.country.
@@ -29,9 +30,38 @@ function detectCountry(request) {
   return null;
 }
 
+function getLocaleFromPathname(pathname) {
+  const seg = pathname.split("/")[1];
+  return seg === "fr" || seg === "en" ? seg : null;
+}
+
 export default function middleware(request) {
+  const pathname = request.nextUrl.pathname;
+
+  // Soft launch gate (public sees Coming Soon; you can bypass with a cookie)
+  if (process.env.SOFT_LAUNCH_ENABLED === "true") {
+    const isBypassed = request.cookies.get(SOFT_LAUNCH_COOKIE)?.value === "1";
+    const isComingSoon = pathname.includes("/coming-soon");
+    const isUnlockPath = pathname === "/love";
+    const isAdmin =
+      pathname.startsWith("/manage") ||
+      pathname.startsWith("/alchemy/create") ||
+      /^\/alchemy\/[^/]+\/edit/.test(pathname);
+
+    if (!isBypassed && !isAdmin && !isComingSoon && !isUnlockPath) {
+      const locale =
+        getLocaleFromPathname(pathname) ||
+        request.cookies.get(LOCALE_COOKIE)?.value ||
+        "en";
+
+      const url = request.nextUrl.clone();
+      url.pathname = `/${locale}/coming-soon`;
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Geo-based default only on the first visit to `/` (no locale cookie yet).
-  if (request.nextUrl.pathname === "/") {
+  if (pathname === "/") {
     const existingLocale = request.cookies.get(LOCALE_COOKIE)?.value;
     if (!existingLocale) {
       const country = detectCountry(request);

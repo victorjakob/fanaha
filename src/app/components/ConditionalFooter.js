@@ -38,6 +38,7 @@ export default function ConditionalFooter() {
     pathname === "/" ||
     pathname === "/en" ||
     pathname === "/fr" ||
+    pathname.includes("/coming-soon") ||
     pathname.startsWith("/manage")
   ) {
     return null;

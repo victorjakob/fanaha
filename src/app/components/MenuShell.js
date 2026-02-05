@@ -27,6 +27,7 @@ export default function MenuShell() {
   const locale = useLocale();
   const [pendingLocale, setPendingLocale] = useState(locale);
   const isHome = pathname === "/" || pathname === "/en" || pathname === "/fr";
+  const isComingSoon = pathname?.includes("/coming-soon");
 
   // Keep pending locale aligned after real navigation
   useEffect(() => {
@@ -64,6 +65,9 @@ export default function MenuShell() {
       }, 260);
     }
   }, [menuOpen, pendingLocale, locale, pathname, router]);
+
+  // Keep the coming soon page completely clean (no nav).
+  if (isComingSoon) return null;
 
   return (
     <>

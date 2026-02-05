@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { isCloudinaryId } from "@/lib/cloudinary";
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -32,14 +33,14 @@ export default function ExhibitionsGallery({ exhibitions }) {
 
   const paginate = useCallback(
     (newDirection) => {
-    let newIndex = currentIndex + newDirection;
-    if (newIndex < 0) {
-      newIndex = lightboxImages.length - 1;
-    } else if (newIndex >= lightboxImages.length) {
-      newIndex = 0;
-    }
-    setCurrentIndex(newIndex);
-    setPage([newIndex, newDirection]);
+      let newIndex = currentIndex + newDirection;
+      if (newIndex < 0) {
+        newIndex = lightboxImages.length - 1;
+      } else if (newIndex >= lightboxImages.length) {
+        newIndex = 0;
+      }
+      setCurrentIndex(newIndex);
+      setPage([newIndex, newDirection]);
     },
     [currentIndex, lightboxImages.length]
   );
@@ -50,7 +51,8 @@ export default function ExhibitionsGallery({ exhibitions }) {
   // Preload adjacent images (same URL as display for cache hit)
   useEffect(() => {
     if (!lightboxOpen || !lightboxImages || lightboxImages.length === 0) return;
-    if (typeof window === "undefined" || typeof document === "undefined") return;
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
 
     const getImageUrl = (source) => {
       if (!source) return null;
@@ -84,7 +86,8 @@ export default function ExhibitionsGallery({ exhibitions }) {
       img.src = imageUrl;
     };
 
-    if (lightboxImages[currentIndex]) preloadImage(lightboxImages[currentIndex]);
+    if (lightboxImages[currentIndex])
+      preloadImage(lightboxImages[currentIndex]);
     const nextIdx = (currentIndex + 1) % lightboxImages.length;
     if (lightboxImages[nextIdx] && nextIdx !== currentIndex)
       preloadImage(lightboxImages[nextIdx]);
@@ -126,12 +129,9 @@ export default function ExhibitionsGallery({ exhibitions }) {
     lightboxOpen && lightboxImages.length > 0
       ? lightboxImages.map((raw) => {
           const src =
-            typeof raw === "string"
-              ? raw
-              : raw?.public_id ?? raw?.url ?? null;
+            typeof raw === "string" ? raw : raw?.public_id ?? raw?.url ?? null;
           if (!src) return null;
-          const cloudName =
-            process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+          const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
           return isCloudinaryId(src) && cloudName
             ? `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto/${src}`
             : src;
@@ -172,35 +172,42 @@ export default function ExhibitionsGallery({ exhibitions }) {
 
           {/* Images Masonry Grid */}
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6">
-            {(exhibition.images_public_ids || exhibition.images || []).map((imageId, imageIndex) => {
-              // Use public_ids if available, otherwise fall back to images (URLs)
-              const imageSource = exhibition.images_public_ids?.[imageIndex] || exhibition.images?.[imageIndex];
-              const allImages = exhibition.images_public_ids || exhibition.images || [];
-              
-              return (
-                <motion.div
-                  key={imageIndex}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: imageIndex * 0.05 }}
-                  className="relative mb-4 sm:mb-6 break-inside-avoid rounded-lg overflow-hidden shadow-lg cursor-pointer group"
-                  onClick={() => openLightbox(allImages, imageIndex)}
-                >
-                  <OptimizedImage
-                    publicId={imageSource}
-                    alt={`${exhibition.gallery} ${exhibition.year} - Image ${imageIndex + 1}`}
-                    width={1200}
-                    height={1800}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                    crop="fit"
-                  />
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />
-                </motion.div>
-              );
-            })}
+            {(exhibition.images_public_ids || exhibition.images || []).map(
+              (imageId, imageIndex) => {
+                // Use public_ids if available, otherwise fall back to images (URLs)
+                const imageSource =
+                  exhibition.images_public_ids?.[imageIndex] ||
+                  exhibition.images?.[imageIndex];
+                const allImages =
+                  exhibition.images_public_ids || exhibition.images || [];
+
+                return (
+                  <motion.div
+                    key={imageIndex}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: imageIndex * 0.05 }}
+                    className="relative mb-4 sm:mb-6 break-inside-avoid rounded-lg overflow-hidden shadow-lg cursor-pointer group"
+                    onClick={() => openLightbox(allImages, imageIndex)}
+                  >
+                    <OptimizedImage
+                      publicId={imageSource}
+                      alt={`${exhibition.gallery} ${exhibition.year} - Image ${
+                        imageIndex + 1
+                      }`}
+                      width={1200}
+                      height={1800}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                      crop="fit"
+                    />
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />
+                  </motion.div>
+                );
+              }
+            )}
           </div>
 
           {/* Divider between exhibitions */}
@@ -313,12 +320,17 @@ export default function ExhibitionsGallery({ exhibitions }) {
                       onClick={(e) => e.stopPropagation()}
                     >
                       {lightboxImageUrls[currentIndex] ? (
-                        <img
-                          src={lightboxImageUrls[currentIndex]}
-                          alt={`Image ${currentIndex + 1}`}
-                          className="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                          draggable={false}
-                        />
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={lightboxImageUrls[currentIndex]}
+                            alt={`Image ${currentIndex + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 95vw, 1200px"
+                            className="object-contain select-none"
+                            draggable={false}
+                            priority
+                          />
+                        </div>
                       ) : null}
                     </motion.div>
                   </AnimatePresence>

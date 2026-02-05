@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { isCloudinaryId } from "@/lib/cloudinary";
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -32,14 +33,14 @@ export default function MuralsGallery({ murals }) {
 
   const paginate = useCallback(
     (newDirection) => {
-    let newIndex = currentIndex + newDirection;
-    if (newIndex < 0) {
-      newIndex = lightboxImages.length - 1;
-    } else if (newIndex >= lightboxImages.length) {
-      newIndex = 0;
-    }
-    setCurrentIndex(newIndex);
-    setPage([newIndex, newDirection]);
+      let newIndex = currentIndex + newDirection;
+      if (newIndex < 0) {
+        newIndex = lightboxImages.length - 1;
+      } else if (newIndex >= lightboxImages.length) {
+        newIndex = 0;
+      }
+      setCurrentIndex(newIndex);
+      setPage([newIndex, newDirection]);
     },
     [currentIndex, lightboxImages.length]
   );
@@ -50,7 +51,8 @@ export default function MuralsGallery({ murals }) {
   // Preload adjacent images (same URL as display for cache hit)
   useEffect(() => {
     if (!lightboxOpen || !lightboxImages || lightboxImages.length === 0) return;
-    if (typeof window === "undefined" || typeof document === "undefined") return;
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
 
     const getImageUrl = (source) => {
       if (!source) return null;
@@ -65,7 +67,9 @@ export default function MuralsGallery({ murals }) {
     const preloadImage = (source) => {
       const imageUrl = getImageUrl(source);
       if (!imageUrl) return;
-      const existing = document.querySelector(`link[href="${imageUrl}"][data-preload="lightbox"]`);
+      const existing = document.querySelector(
+        `link[href="${imageUrl}"][data-preload="lightbox"]`
+      );
       if (existing) return;
       const link = document.createElement("link");
       link.rel = "preload";
@@ -77,15 +81,24 @@ export default function MuralsGallery({ murals }) {
       img.src = imageUrl;
     };
 
-    if (lightboxImages[currentIndex]) preloadImage(lightboxImages[currentIndex]);
+    if (lightboxImages[currentIndex])
+      preloadImage(lightboxImages[currentIndex]);
     const nextIdx = (currentIndex + 1) % lightboxImages.length;
-    if (lightboxImages[nextIdx] && nextIdx !== currentIndex) preloadImage(lightboxImages[nextIdx]);
+    if (lightboxImages[nextIdx] && nextIdx !== currentIndex)
+      preloadImage(lightboxImages[nextIdx]);
     const nextNextIdx = (currentIndex + 2) % lightboxImages.length;
-    if (lightboxImages.length > 2 && lightboxImages[nextNextIdx] && nextNextIdx !== currentIndex && nextNextIdx !== nextIdx) {
+    if (
+      lightboxImages.length > 2 &&
+      lightboxImages[nextNextIdx] &&
+      nextNextIdx !== currentIndex &&
+      nextNextIdx !== nextIdx
+    ) {
       preloadImage(lightboxImages[nextNextIdx]);
     }
-    const prevIdx = currentIndex === 0 ? lightboxImages.length - 1 : currentIndex - 1;
-    if (lightboxImages[prevIdx] && prevIdx !== currentIndex) preloadImage(lightboxImages[prevIdx]);
+    const prevIdx =
+      currentIndex === 0 ? lightboxImages.length - 1 : currentIndex - 1;
+    if (lightboxImages[prevIdx] && prevIdx !== currentIndex)
+      preloadImage(lightboxImages[prevIdx]);
   }, [lightboxOpen, currentIndex, lightboxImages]);
 
   // Keyboard navigation
@@ -111,12 +124,9 @@ export default function MuralsGallery({ murals }) {
     lightboxOpen && lightboxImages.length > 0
       ? lightboxImages.map((raw) => {
           const src =
-            typeof raw === "string"
-              ? raw
-              : raw?.public_id ?? raw?.url ?? null;
+            typeof raw === "string" ? raw : raw?.public_id ?? raw?.url ?? null;
           if (!src) return null;
-          const cloudName =
-            process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+          const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
           return isCloudinaryId(src) && cloudName
             ? `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto/${src}`
             : src;
@@ -207,107 +217,118 @@ export default function MuralsGallery({ murals }) {
                 className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[100] flex items-center justify-center"
                 onClick={closeLightbox}
               >
-            {/* Close button */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10 transition-colors"
-              aria-label="Close carousel"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            {/* Image counter */}
-            <div className="absolute top-6 left-6 bg-zinc-900/80 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
-              {currentIndex + 1} / {lightboxImages.length}
-            </div>
-
-            {/* Navigation arrows */}
-            {lightboxImages.length > 1 && (
-              <>
+                {/* Close button */}
                 <button
-                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
-                  aria-label="Previous image"
+                  onClick={closeLightbox}
+                  className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10 transition-colors"
+                  aria-label="Close carousel"
                 >
-                  <ChevronLeft className="w-6 h-6" />
+                  <X className="w-6 h-6" />
                 </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
-                  aria-label="Next image"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </>
-            )}
 
-            {/* Image with slide animation and swipe - URL from parent (lightboxImageUrls) so image shows in portal */}
-            <div className="relative w-full h-full flex items-center justify-center p-8">
-              <AnimatePresence initial={false} custom={direction}>
-                <motion.div
-                  key={currentIndex}
-                  custom={direction}
-                  variants={{
-                    enter: (d) => ({
-                      x: d === 0 ? 0 : d > 0 ? 1000 : -1000,
-                      opacity: d === 0 ? 1 : 0,
-                      scale: d === 0 ? 1 : 0.8,
-                    }),
-                    center: {
-                      zIndex: 1,
-                      x: 0,
-                      opacity: 1,
-                      scale: 1,
-                    },
-                    exit: (d) => ({
-                      zIndex: 0,
-                      x: d < 0 ? 1000 : -1000,
-                      opacity: 0,
-                      scale: 0.8,
-                    }),
-                  }}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{
-                    x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 },
-                    scale: { duration: 0.2 },
-                  }}
-                  drag={lightboxImages.length > 1 ? "x" : false}
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={1}
-                  onDragEnd={(e, { offset, velocity }) => {
-                    const swipe = Math.abs(offset.x) * velocity.x;
-                    if (swipe > 10000) paginate(-1);
-                    else if (swipe < -10000) paginate(1);
-                  }}
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                  style={{
-                    width: "min(95vw, 1200px)",
-                    height: "min(90vh, 900px)",
-                    willChange: "transform",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {lightboxImageUrls[currentIndex] ? (
-                    <img
-                      src={lightboxImageUrls[currentIndex]}
-                      alt={`Image ${currentIndex + 1}`}
-                      className="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                      draggable={false}
-                    />
-                  ) : null}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                {/* Image counter */}
+                <div className="absolute top-6 left-6 bg-zinc-900/80 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
+                  {currentIndex + 1} / {lightboxImages.length}
+                </div>
 
-            {/* Swipe indicator (mobile only) */}
-            {lightboxImages.length > 1 && (
-              <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-                Swipe to navigate
-              </div>
-            )}
+                {/* Navigation arrows */}
+                {lightboxImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
+
+                {/* Image with slide animation and swipe - URL from parent (lightboxImageUrls) so image shows in portal */}
+                <div className="relative w-full h-full flex items-center justify-center p-8">
+                  <AnimatePresence initial={false} custom={direction}>
+                    <motion.div
+                      key={currentIndex}
+                      custom={direction}
+                      variants={{
+                        enter: (d) => ({
+                          x: d === 0 ? 0 : d > 0 ? 1000 : -1000,
+                          opacity: d === 0 ? 1 : 0,
+                          scale: d === 0 ? 1 : 0.8,
+                        }),
+                        center: {
+                          zIndex: 1,
+                          x: 0,
+                          opacity: 1,
+                          scale: 1,
+                        },
+                        exit: (d) => ({
+                          zIndex: 0,
+                          x: d < 0 ? 1000 : -1000,
+                          opacity: 0,
+                          scale: 0.8,
+                        }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{
+                        x: { type: "spring", stiffness: 300, damping: 30 },
+                        opacity: { duration: 0.2 },
+                        scale: { duration: 0.2 },
+                      }}
+                      drag={lightboxImages.length > 1 ? "x" : false}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={1}
+                      onDragEnd={(e, { offset, velocity }) => {
+                        const swipe = Math.abs(offset.x) * velocity.x;
+                        if (swipe > 10000) paginate(-1);
+                        else if (swipe < -10000) paginate(1);
+                      }}
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                      style={{
+                        width: "min(95vw, 1200px)",
+                        height: "min(90vh, 900px)",
+                        willChange: "transform",
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {lightboxImageUrls[currentIndex] ? (
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={lightboxImageUrls[currentIndex]}
+                            alt={`Image ${currentIndex + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 95vw, 1200px"
+                            className="object-contain select-none"
+                            draggable={false}
+                            priority
+                          />
+                        </div>
+                      ) : null}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Swipe indicator (mobile only) */}
+                {lightboxImages.length > 1 && (
+                  <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
+                    Swipe to navigate
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>,
