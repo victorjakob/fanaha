@@ -39,7 +39,7 @@ export default function HamburgerMenu({
 
   return (
     <motion.div
-      className="fixed top-4 left-4 right-4 sm:top-6 sm:left-6 sm:right-6 z-[120] flex items-start sm:items-center justify-between sm:justify-end gap-3 pointer-events-none"
+      className="fixed top-4 left-4 right-4 sm:top-6 sm:left-6 sm:right-6 z-[110] flex items-start sm:items-center justify-between sm:justify-end gap-3 pointer-events-none"
       initial={false}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.32, ease: "easeOut" }}

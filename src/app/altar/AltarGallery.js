@@ -112,7 +112,12 @@ export default function AltarGallery({ artworks }) {
 
     // Preload next+1 for double-tap next
     const nextNextIdx = (currentIndex + 2) % artworks.length;
-    if (artworks.length > 2 && imageSources[nextNextIdx] && nextNextIdx !== currentIndex && nextNextIdx !== nextIdx) {
+    if (
+      artworks.length > 2 &&
+      imageSources[nextNextIdx] &&
+      nextNextIdx !== currentIndex &&
+      nextNextIdx !== nextIdx
+    ) {
       preloadImage(imageSources[nextNextIdx]);
     }
 
@@ -206,147 +211,147 @@ export default function AltarGallery({ artworks }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[100] flex items-center justify-center"
+                className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[200] flex items-center justify-center"
                 onClick={closeLightbox}
               >
-            {/* Close button */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10 transition-colors"
-              aria-label="Close carousel"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            {/* Image counter */}
-            <div className="absolute top-6 left-6 bg-zinc-900/80 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
-              {currentIndex + 1} / {artworks.length}
-            </div>
-
-            {/* Navigation arrows */}
-            {artworks.length > 1 && (
-              <>
+                {/* Close button */}
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevImage();
-                  }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
-                  aria-label="Previous image"
+                  onClick={closeLightbox}
+                  className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10 transition-colors"
+                  aria-label="Close carousel"
                 >
-                  <ChevronLeft className="w-6 h-6" />
+                  <X className="w-6 h-6" />
                 </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextImage();
-                  }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
-                  aria-label="Next image"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </>
-            )}
 
-            {/* Carousel image with swipe */}
-            <div className="relative w-full h-full flex items-center justify-center p-8">
-              <AnimatePresence initial={false} custom={direction}>
-                <motion.div
-                  key={currentIndex}
-                  custom={direction}
-                  variants={{
-                    enter: (direction) => ({
-                      x: direction === 0 ? 0 : direction > 0 ? 1000 : -1000,
-                      opacity: direction === 0 ? 1 : 0,
-                      scale: direction === 0 ? 1 : 0.8,
-                    }),
-                    center: {
-                      zIndex: 1,
-                      x: 0,
-                      opacity: 1,
-                      scale: 1,
-                    },
-                    exit: (direction) => ({
-                      zIndex: 0,
-                      x: direction < 0 ? 1000 : -1000,
-                      opacity: 0,
-                      scale: 0.8,
-                    }),
-                  }}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{
-                    x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 },
-                    scale: { duration: 0.2 },
-                  }}
-                  drag={artworks.length > 1 ? "x" : false}
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={1}
-                  onDragEnd={(e, { offset, velocity }) => {
-                    const swipe = Math.abs(offset.x) * velocity.x;
-                    if (swipe > 10000) {
-                      prevImage();
-                    } else if (swipe < -10000) {
-                      nextImage();
-                    }
-                  }}
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                  style={{
-                  width: "min(85vw, 85vh, 520px)",
-                  height: "min(85vw, 85vh, 520px)",
-                  aspectRatio: "1 / 1",
-                    willChange: "transform",
-                  }}
-                >
-                  {(() => {
-                    const currentArtwork = lightboxImages[currentIndex];
-                    const imageSource = currentArtwork.publicId;
+                {/* Image counter */}
+                <div className="absolute top-6 left-6 bg-zinc-900/80 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
+                  {currentIndex + 1} / {artworks.length}
+                </div>
 
-                    // Convert public_id to URL if needed - use original quality
-                    let imageUrl;
-                    if (isCloudinaryId(imageSource)) {
-                      const cloudName =
-                        process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-                      if (!cloudName) {
-                        throw new Error(
-                          "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
+                {/* Navigation arrows */}
+                {artworks.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
+
+                {/* Carousel image with swipe */}
+                <div className="relative w-full h-full flex items-center justify-center p-8">
+                  <AnimatePresence initial={false} custom={direction}>
+                    <motion.div
+                      key={currentIndex}
+                      custom={direction}
+                      variants={{
+                        enter: (direction) => ({
+                          x: direction === 0 ? 0 : direction > 0 ? 1000 : -1000,
+                          opacity: direction === 0 ? 1 : 0,
+                          scale: direction === 0 ? 1 : 0.8,
+                        }),
+                        center: {
+                          zIndex: 1,
+                          x: 0,
+                          opacity: 1,
+                          scale: 1,
+                        },
+                        exit: (direction) => ({
+                          zIndex: 0,
+                          x: direction < 0 ? 1000 : -1000,
+                          opacity: 0,
+                          scale: 0.8,
+                        }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{
+                        x: { type: "spring", stiffness: 300, damping: 30 },
+                        opacity: { duration: 0.2 },
+                        scale: { duration: 0.2 },
+                      }}
+                      drag={artworks.length > 1 ? "x" : false}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={1}
+                      onDragEnd={(e, { offset, velocity }) => {
+                        const swipe = Math.abs(offset.x) * velocity.x;
+                        if (swipe > 10000) {
+                          prevImage();
+                        } else if (swipe < -10000) {
+                          nextImage();
+                        }
+                      }}
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                      style={{
+                        width: "min(85vw, 85vh, 520px)",
+                        height: "min(85vw, 85vh, 520px)",
+                        aspectRatio: "1 / 1",
+                        willChange: "transform",
+                      }}
+                    >
+                      {(() => {
+                        const currentArtwork = lightboxImages[currentIndex];
+                        const imageSource = currentArtwork.publicId;
+
+                        // Convert public_id to URL if needed - use original quality
+                        let imageUrl;
+                        if (isCloudinaryId(imageSource)) {
+                          const cloudName =
+                            process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+                          if (!cloudName) {
+                            throw new Error(
+                              "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Please set it in your environment variables."
+                            );
+                          }
+                          // Use original image with best quality, no size constraints
+                          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto/${imageSource}`;
+                        } else {
+                          imageUrl = imageSource;
+                        }
+
+                        return (
+                          <div
+                            className="relative w-full h-full rounded-full overflow-hidden shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Image
+                              src={imageUrl}
+                              alt={currentArtwork.alt}
+                              fill
+                              sizes="(max-width: 768px) 90vw, 600px"
+                              className="object-cover select-none"
+                              draggable={false}
+                            />
+                          </div>
                         );
-                      }
-                      // Use original image with best quality, no size constraints
-                      imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto:best,f_auto/${imageSource}`;
-                    } else {
-                      imageUrl = imageSource;
-                    }
+                      })()}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
-                    return (
-                      <div
-                        className="relative w-full h-full rounded-full overflow-hidden shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Image
-                          src={imageUrl}
-                          alt={currentArtwork.alt}
-                          fill
-                          sizes="(max-width: 768px) 90vw, 600px"
-                          className="object-cover select-none"
-                          draggable={false}
-                        />
-                      </div>
-                    );
-                  })()}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Swipe indicator (mobile only) */}
-            {artworks.length > 1 && (
-              <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-                Swipe to navigate
-              </div>
-            )}
+                {/* Swipe indicator (mobile only) */}
+                {artworks.length > 1 && (
+                  <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
+                    Swipe to navigate
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>,

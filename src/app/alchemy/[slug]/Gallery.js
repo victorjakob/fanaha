@@ -33,17 +33,17 @@ export default function AlchemyArtPieceGallery({ images, name }) {
 
   const paginate = useCallback(
     (newDirection) => {
-    const newIndex = lightboxIdx + newDirection;
-    if (newIndex < 0) {
-      setLightboxIdx(galleryImages.length - 1);
-      setPage([galleryImages.length - 1, newDirection]);
-    } else if (newIndex >= galleryImages.length) {
-      setLightboxIdx(0);
-      setPage([0, newDirection]);
-    } else {
-      setLightboxIdx(newIndex);
-      setPage([newIndex, newDirection]);
-    }
+      const newIndex = lightboxIdx + newDirection;
+      if (newIndex < 0) {
+        setLightboxIdx(galleryImages.length - 1);
+        setPage([galleryImages.length - 1, newDirection]);
+      } else if (newIndex >= galleryImages.length) {
+        setLightboxIdx(0);
+        setPage([0, newDirection]);
+      } else {
+        setLightboxIdx(newIndex);
+        setPage([newIndex, newDirection]);
+      }
     },
     [galleryImages.length, lightboxIdx]
   );
@@ -181,43 +181,17 @@ export default function AlchemyArtPieceGallery({ images, name }) {
           <AnimatePresence>
             {lightboxIdx !== null && (
               <motion.div
-                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm"
+                className="fixed inset-0 z-[200] flex items-center justify-center bg-black/75 backdrop-blur-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={closeLightbox}
               >
-            {/* Close button */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10 transition-colors"
-              aria-label="Close carousel"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-
-            {/* Navigation arrows */}
-            {galleryImages.length > 1 && (
-              <>
+                {/* Close button */}
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevImage();
-                  }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
-                  aria-label="Previous image"
+                  onClick={closeLightbox}
+                  className="absolute top-4 right-4 bg-zinc-900/80 text-white hover:bg-red-600 rounded-full p-3 shadow-lg z-10 transition-colors"
+                  aria-label="Close carousel"
                 >
                   <svg
                     className="w-6 h-6"
@@ -229,112 +203,138 @@ export default function AlchemyArtPieceGallery({ images, name }) {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
+                      d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
                 </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextImage();
-                  }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
-                  aria-label="Next image"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </>
-            )}
 
-            {/* Carousel image with swipe */}
-            <div className="relative w-full h-full flex items-center justify-center p-8">
-              <AnimatePresence initial={false} custom={direction}>
-                <motion.div
-                  key={lightboxIdx}
-                  custom={direction}
-                  variants={{
-                    enter: (direction) => ({
-                      x: direction > 0 ? 1000 : -1000,
-                      opacity: 0,
-                      scale: 0.8,
-                    }),
-                    center: {
-                      zIndex: 1,
-                      x: 0,
-                      opacity: 1,
-                      scale: 1,
-                    },
-                    exit: (direction) => ({
-                      zIndex: 0,
-                      x: direction < 0 ? 1000 : -1000,
-                      opacity: 0,
-                      scale: 0.8,
-                    }),
-                  }}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{
-                    x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 },
-                    scale: { duration: 0.2 },
-                  }}
-                  drag={galleryImages.length > 1 ? "x" : false}
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={1}
-                  onDragEnd={(e, { offset, velocity }) => {
-                    const swipe = Math.abs(offset.x) * velocity.x;
-                    if (swipe > 10000) {
-                      prevImage();
-                    } else if (swipe < -10000) {
-                      nextImage();
-                    }
-                  }}
-                  className="absolute flex items-center justify-center"
-                  style={{
-                    maxWidth: "min(90vw, 600px)",
-                    maxHeight: "min(90vh, 600px)",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <OptimizedImage
-                    publicId={galleryImages[lightboxIdx]}
-                    alt={`${name} detail ${lightboxIdx + 1}`}
-                    width={1600}
-                    height={1600}
-                    sizes="90vw"
-                    className="rounded-xl shadow-2xl"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      backgroundColor: "transparent",
-                    }}
-                    quality="auto:best"
-                    crop="fill"
-                  />
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                {/* Navigation arrows */}
+                {galleryImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                      aria-label="Previous image"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-900/70 text-white hover:bg-zinc-800 rounded-full p-3 shadow-lg z-10 transition-colors hidden sm:flex items-center justify-center"
+                      aria-label="Next image"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                )}
 
-            {/* Swipe indicator (mobile only) */}
-            {galleryImages.length > 1 && (
-              <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-                Swipe to navigate
-              </div>
-            )}
+                {/* Carousel image with swipe */}
+                <div className="relative w-full h-full flex items-center justify-center p-8">
+                  <AnimatePresence initial={false} custom={direction}>
+                    <motion.div
+                      key={lightboxIdx}
+                      custom={direction}
+                      variants={{
+                        enter: (direction) => ({
+                          x: direction > 0 ? 1000 : -1000,
+                          opacity: 0,
+                          scale: 0.8,
+                        }),
+                        center: {
+                          zIndex: 1,
+                          x: 0,
+                          opacity: 1,
+                          scale: 1,
+                        },
+                        exit: (direction) => ({
+                          zIndex: 0,
+                          x: direction < 0 ? 1000 : -1000,
+                          opacity: 0,
+                          scale: 0.8,
+                        }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{
+                        x: { type: "spring", stiffness: 300, damping: 30 },
+                        opacity: { duration: 0.2 },
+                        scale: { duration: 0.2 },
+                      }}
+                      drag={galleryImages.length > 1 ? "x" : false}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={1}
+                      onDragEnd={(e, { offset, velocity }) => {
+                        const swipe = Math.abs(offset.x) * velocity.x;
+                        if (swipe > 10000) {
+                          prevImage();
+                        } else if (swipe < -10000) {
+                          nextImage();
+                        }
+                      }}
+                      className="absolute flex items-center justify-center"
+                      style={{
+                        maxWidth: "min(90vw, 600px)",
+                        maxHeight: "min(90vh, 600px)",
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <OptimizedImage
+                        publicId={galleryImages[lightboxIdx]}
+                        alt={`${name} detail ${lightboxIdx + 1}`}
+                        width={1600}
+                        height={1600}
+                        sizes="90vw"
+                        className="rounded-xl shadow-2xl"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          backgroundColor: "transparent",
+                        }}
+                        quality="auto:best"
+                        crop="fill"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Swipe indicator (mobile only) */}
+                {galleryImages.length > 1 && (
+                  <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
+                    Swipe to navigate
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>,
