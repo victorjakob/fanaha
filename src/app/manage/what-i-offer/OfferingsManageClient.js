@@ -18,6 +18,7 @@ import {
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";
 import { coerceFrenchText } from "@/lib/db-i18n";
+import { getDefaultLinks } from "@/lib/offering-links";
 
 export default function OfferingsManageClient({ initialOfferings, section }) {
   const router = useRouter();
@@ -37,6 +38,10 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
   const [description, setDescription] = useState("");
   const [descriptionFr, setDescriptionFr] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [showSeeMore, setShowSeeMore] = useState(true);
+  const [showGetYours, setShowGetYours] = useState(true);
+  const [ctaSeeMoreUrl, setCtaSeeMoreUrl] = useState("");
+  const [ctaGetYoursUrl, setCtaGetYoursUrl] = useState("");
 
   const resetForm = () => {
     setTitle("");
@@ -44,6 +49,10 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
     setDescription("");
     setDescriptionFr("");
     setImageUrl("");
+    setShowSeeMore(true);
+    setShowGetYours(true);
+    setCtaSeeMoreUrl("");
+    setCtaGetYoursUrl("");
     setEditingOffering(null);
   };
 
@@ -58,8 +67,12 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
     setTitleFr(offering.title_fr || "");
     setDescription(offering.description || "");
     setDescriptionFr(offering.description_fr || "");
-    // Use public_id if available, otherwise fall back to image_url
     setImageUrl(offering.image_public_id || offering.image_url || "");
+    setShowSeeMore(offering.show_see_more !== false);
+    setShowGetYours(offering.show_get_yours !== false);
+    const defaults = getDefaultLinks(offering.title);
+    setCtaSeeMoreUrl(offering.cta_see_more_url || defaults.seeMore || "");
+    setCtaGetYoursUrl(offering.cta_get_yours_url || defaults.getYours || "");
     setShowModal(true);
   };
 
@@ -123,6 +136,10 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
         });
       }
 
+      const defaults = getDefaultLinks(title);
+      const finalSeeMoreUrl = ctaSeeMoreUrl.trim() || defaults.seeMore || null;
+      const finalGetYoursUrl = ctaGetYoursUrl.trim() || defaults.getYours || "/order";
+
       if (editingOffering) {
         // Update existing offering
         const { data, error } = await supabase
@@ -133,8 +150,12 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
             description,
             description_fr: coerceFrenchText(descriptionFr),
             image_public_id:
-              imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
-            image_url: finalImageUrl || null, // Store URL for backward compatibility
+              imageUrl && !imageUrl.includes("http") ? imageUrl : null,
+            image_url: finalImageUrl || null,
+            show_see_more: showSeeMore,
+            show_get_yours: showGetYours,
+            cta_see_more_url: finalSeeMoreUrl,
+            cta_get_yours_url: finalGetYoursUrl,
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingOffering.id)
@@ -167,8 +188,12 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
               description,
               description_fr: coerceFrenchText(descriptionFr),
               image_public_id:
-                imageUrl && !imageUrl.includes("http") ? imageUrl : null, // Store public_id if it's a Cloudinary ID
-              image_url: finalImageUrl || null, // Store URL for backward compatibility
+                imageUrl && !imageUrl.includes("http") ? imageUrl : null,
+              image_url: finalImageUrl || null,
+              show_see_more: showSeeMore,
+              show_get_yours: showGetYours,
+              cta_see_more_url: finalSeeMoreUrl,
+              cta_get_yours_url: finalGetYoursUrl,
               display_order: currentMax + 1,
             },
           ])
@@ -613,6 +638,54 @@ export default function OfferingsManageClient({ initialOfferings, section }) {
                   placeholder="[NEEDS_TRANSLATION]"
                   className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="border-t border-zinc-200 pt-4 mt-4">
+                <label className="block text-sm font-semibold text-zinc-700 mb-3">
+                  Call-to-action buttons
+                </label>
+                <p className="text-sm text-zinc-500 mb-3">
+                  Choose which buttons appear. Type the path only (e.g. /alchemy, /order) — no domain.
+                </p>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={showSeeMore}
+                      onChange={(e) => setShowSeeMore(e.target.checked)}
+                      className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium">Show &quot;See More&quot;</span>
+                  </label>
+                  {showSeeMore && (
+                    <input
+                      type="text"
+                      value={ctaSeeMoreUrl}
+                      onChange={(e) => setCtaSeeMoreUrl(e.target.value)}
+                      placeholder="e.g. /alchemy or /altar (optional)"
+                      className="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                  )}
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={showGetYours}
+                      onChange={(e) => setShowGetYours(e.target.checked)}
+                      className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium">Show &quot;Get Yours&quot;</span>
+                  </label>
+                  {showGetYours && (
+                    <input
+                      type="text"
+                      value={ctaGetYoursUrl}
+                      onChange={(e) => setCtaGetYoursUrl(e.target.value)}
+                      placeholder="e.g. /order (optional, default: /order)"
+                      className="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Image */}

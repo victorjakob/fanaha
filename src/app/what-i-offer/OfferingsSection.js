@@ -4,33 +4,7 @@ import { motion } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Link from "next/link";
 
-// Map offering titles to their corresponding pages
-const getOfferingLinks = (title) => {
-  const titleLower = title.toLowerCase();
-
-  if (
-    titleLower.includes("alchemical art") ||
-    titleLower.includes("commission")
-  ) {
-    return { seeMore: "/alchemy", getYours: "/order" };
-  } else if (titleLower.includes("altar")) {
-    return { seeMore: "/altar", getYours: "/order" };
-  } else if (titleLower.includes("mural")) {
-    return { seeMore: "/murals", getYours: "/order" };
-  } else if (titleLower.includes("oracle") || titleLower.includes("project")) {
-    return { seeMore: "/oracles-projects", getYours: "/order" };
-  } else if (
-    titleLower.includes("grand scale") ||
-    titleLower.includes("grandscale") ||
-    titleLower.includes("personal creation")
-  ) {
-    // Grand scale personal creation - only "Get Yours" button, no "See More"
-    return { seeMore: null, getYours: "/order" };
-  }
-
-  // Default fallback
-  return { seeMore: "/contact", getYours: "/order" };
-};
+import { getDefaultLinks } from "@/lib/offering-links";
 
 export default function OfferingsSection({ offerings }) {
   if (!offerings || offerings.length === 0) {
@@ -45,7 +19,15 @@ export default function OfferingsSection({ offerings }) {
     <section className="w-full max-w-6xl mx-auto px-4 py-8 space-y-16 sm:space-y-24">
       {offerings.map((offering, index) => {
         const isEven = index % 2 === 0;
-        const links = getOfferingLinks(offering.title);
+        const defaults = getDefaultLinks(offering.title);
+        const showSeeMore = offering.show_see_more !== false;
+        const showGetYours = offering.show_get_yours !== false;
+        const seeMoreUrl = offering.cta_see_more_url?.trim() || defaults.seeMore;
+        const getYoursUrl = offering.cta_get_yours_url?.trim() || defaults.getYours;
+        const links = {
+          seeMore: showSeeMore && seeMoreUrl ? seeMoreUrl : null,
+          getYours: showGetYours ? getYoursUrl : null,
+        };
 
         return (
           <motion.div
@@ -146,6 +128,7 @@ export default function OfferingsSection({ offerings }) {
                     </svg>
                   </Link>
                 )}
+                {links.getYours && (
                 <Link
                   href={links.getYours}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-200 text-zinc-900 rounded-full font-semibold tracking-wide hover:bg-zinc-300 transition-colors"
@@ -165,6 +148,7 @@ export default function OfferingsSection({ offerings }) {
                     />
                   </svg>
                 </Link>
+                )}
               </div>
             </motion.div>
           </motion.div>

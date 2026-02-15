@@ -2,14 +2,19 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FileText, Image, Loader2 } from "lucide-react";
+import { FileText, Image, Loader2, Calendar } from "lucide-react";
 import { supabase } from "@/util/supabase/supabaseClient";
+import Toast from "./Toast";
 
 export default function ManagePage() {
   const [sections, setSections] = useState([]);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [clickedLink, setClickedLink] = useState(null);
+
+  const [orderNextOpening, setOrderNextOpening] = useState("");
+  const [orderSaving, setOrderSaving] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     async function fetchSections() {
@@ -21,6 +26,42 @@ export default function ManagePage() {
     }
     fetchSections();
   }, []);
+
+  useEffect(() => {
+    async function fetchOrderSetting() {
+      const { data } = await supabase
+        .from("fanaha_order_settings")
+        .select("value")
+        .eq("key", "next_opening")
+        .single();
+      setOrderNextOpening(data?.value ?? "");
+    }
+    fetchOrderSetting();
+  }, []);
+
+  const handleOrderSave = async () => {
+    setOrderSaving(true);
+    setToast(null);
+    try {
+      const { error } = await supabase
+        .from("fanaha_order_settings")
+        .upsert(
+          {
+            key: "next_opening",
+            value: orderNextOpening.trim() || null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "key" }
+        );
+      if (error) throw error;
+      setToast({ message: "Next opening date saved!", type: "success" });
+      router.refresh();
+    } catch {
+      setToast({ message: "Failed to save. Please try again.", type: "error" });
+    } finally {
+      setOrderSaving(false);
+    }
+  };
 
   const mainItems = [
     {
@@ -100,7 +141,42 @@ export default function ManagePage() {
             </div>
           </Link>
         ))}
+        {/* Order – inline date picker */}
+        <div className="bg-white/50 backdrop-blur-sm border border-zinc-200 rounded-xl p-4 sm:p-6 transition-all duration-300 hover:bg-white hover:border-zinc-300 hover:shadow-sm flex flex-row flex-wrap items-center gap-2 sm:gap-4">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shrink-0">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
+          </div>
+          <h3
+            className="text-base sm:text-lg font-light text-zinc-900 shrink-0"
+            style={{ fontFamily: "Nunito, sans-serif" }}
+          >
+            Order
+          </h3>
+          <input
+            type="date"
+            value={orderNextOpening}
+            onChange={(e) => setOrderNextOpening(e.target.value)}
+            className="flex-1 min-w-[120px] max-w-[140px] sm:max-w-none px-2 py-1.5 text-xs sm:text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          />
+          <button
+            type="button"
+            onClick={handleOrderSave}
+            disabled={orderSaving}
+            className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs sm:text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+          >
+            {orderSaving ? <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" /> : null}
+            {orderSaving ? "Saving..." : "Save"}
+          </button>
+        </div>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
       {/* Section items - compact list */}
       {sectionItems.length > 0 && (

@@ -87,9 +87,18 @@ export default function HamburgerMenu({
 
         <span className={`relative ${orderClicked ? "opacity-95" : ""}`}>
           <span className="sm:hidden inline-flex flex-col items-center leading-none text-center">
-            {customOrderText.split(" ")[0]}
-            <br />
-            {customOrderText.split(" ").slice(1).join(" ") || ""}
+            {(() => {
+              const words = customOrderText.split(" ");
+              const line1 = words.length >= 3 ? words.slice(0, 2).join(" ") : words[0] || "";
+              const line2 = words.length >= 3 ? words.slice(2).join(" ") : words.slice(1).join(" ") || "";
+              return (
+                <>
+                  {line1}
+                  <br />
+                  {line2}
+                </>
+              );
+            })()}
           </span>
           <span className="hidden sm:inline">{customOrderText}</span>
         </span>

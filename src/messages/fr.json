@@ -10,8 +10,8 @@
     "connectWithMe": "Me contacter",
     "email": "Email",
     "emailPlaceholder": "votre@email.com",
-    "getInTouch": "Entrer en contact",
-    "haveAQuestion": "Vous avez une question sur mon travail, vous êtes intéressé·e par une commande ou vous souhaitez simplement échanger ? Je serais ravie de vous lire.",
+    "getInTouch": "Connectons-nous",
+    "haveAQuestion": "Si vous avez une question à propos de mon travail ou si vous vous sentez appelé·e à explorer une création sur commande, je vous accueille avec plaisir. Je crée de manière intuitive, laissant chaque œuvre émerger comme une guidance et un soutien pour votre chemin.",
     "message": "Message",
     "messagePlaceholder": "Parlez-moi de votre demande…",
     "name": "Nom",
@@ -42,8 +42,13 @@
     "whatIOffer": "Ce que je propose"
   },
   "order": {
+    "availability": "Disponibilité",
+    "afterSubmitReply": "Après votre envoi, je vous répondrai avec les prochaines étapes.",
+    "nextOpening": "Prochaine disponibilité",
+    "openForApplication": "Ouvert aux demandes",
+    "timeSensitiveRequest": "Si votre demande est urgente (cadeau, cérémonie, inauguration), indiquez la date souhaitée et je vous dirai ce qui est possible.",
     "commissionYourArt": "Commander votre œuvre",
-    "customOrder": "Commande personnalisée",
+    "customOrder": "Commencer une création",
     "transformSpace": "Transformez votre espace grâce à une œuvre d’art alchimique sur mesure. Chaque création est façonnée avec intention, imprégnée de symbolisme et conçue pour résonner avec votre singularité.",
     "transformSacredSpace": "Transformez votre espace sacré avec une œuvre d’art alchimique sur mesure. Chaque création est façonnée avec intention, imprégnée de symbolisme et conçue pour résonner avec votre chemin unique."
   },

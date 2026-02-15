@@ -10,8 +10,8 @@
     "connectWithMe": "Connect With Me",
     "email": "Email",
     "emailPlaceholder": "your@email.com",
-    "getInTouch": "Get in Touch",
-    "haveAQuestion": "Have a question about my work, interested in a commission, or just want to connect? I'd love to hear from you.",
+    "getInTouch": "Let's Connect",
+    "haveAQuestion": "If you have a question about my work or feel called to explore a commissioned piece, I welcome your message. I create intuitively, allowing each artwork to emerge as guidance and support for your path.",
     "message": "Message",
     "messagePlaceholder": "Tell me about your inquiry...",
     "name": "Name",
@@ -42,8 +42,13 @@
     "whatIOffer": "What I Offer"
   },
   "order": {
+    "availability": "Availability",
+    "afterSubmitReply": "After you submit, I'll reply with next steps.",
+    "nextOpening": "Next opening",
+    "openForApplication": "Open for applications",
+    "timeSensitiveRequest": "If you have a time-sensitive request (gift, ceremony, opening), include your date and I'll let you know what's possible.",
     "commissionYourArt": "Commission Your Art",
-    "customOrder": "Custom Order",
+    "customOrder": "Begin a creation",
     "transformSpace": "Transform your space with a custom alchemical art piece. Each creation is crafted with intention, infused with symbolism, and designed to resonate with your uniqueness.",
     "transformSacredSpace": "Transform your sacred space with a custom alchemical art piece. Each creation is crafted with intention, infused with symbolism, and designed to resonate with your unique journey."
   },
