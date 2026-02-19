@@ -1,17 +1,7 @@
 import OrderClient from "./OrderClient";
-import { createServerSupabase } from "@/util/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrderPage() {
-  const supabase = createServerSupabase();
-  const { data: row } = await supabase
-    .from("fanaha_order_settings")
-    .select("value")
-    .eq("key", "next_opening")
-    .single();
-
-  const nextOpening = row?.value || null;
-
-  return <OrderClient nextOpening={nextOpening} />;
+export default function OrderPage() {
+  return <OrderClient />;
 }

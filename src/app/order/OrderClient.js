@@ -5,39 +5,8 @@ import { motion } from "framer-motion";
 import { Send, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-function formatNextOpening(value) {
-  if (!value) return null;
-  try {
-    const d = new Date(value);
-    if (isNaN(d.getTime())) return value;
-    return d.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  } catch {
-    return value;
-  }
-}
-
-function isPastDate(value) {
-  if (!value) return false;
-  try {
-    const d = new Date(value);
-    if (isNaN(d.getTime())) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    d.setHours(0, 0, 0, 0);
-    return d < today;
-  } catch {
-    return false;
-  }
-}
-
-export default function OrderClient({ nextOpening }) {
+export default function OrderClient() {
   const t = useTranslations();
-  const formattedDate = formatNextOpening(nextOpening);
-  const isPast = isPastDate(nextOpening);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -120,55 +89,6 @@ export default function OrderClient({ nextOpening }) {
             {t("order.transformSacredSpace")}
           </p>
         </motion.div>
-
-        {/* Availability */}
-        {formattedDate && (
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.08 }}
-            className="mb-6"
-          >
-            <div className="rounded-3xl border border-zinc-200 bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-22px_rgba(0,0,0,0.35)] px-6 sm:px-8 py-6">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
-                <div>
-                  <p className="text-[11px] tracking-[0.18em] uppercase text-zinc-500">
-                    {t("order.availability")}
-                  </p>
-
-                  <p className="mt-2 text-lg sm:text-xl text-zinc-900">
-                    {isPast ? (
-                      <span className="font-semibold">{t("order.openForApplication")}</span>
-                    ) : (
-                      <>
-                        {t("order.nextOpening")}: <span className="font-semibold">{formattedDate}</span>
-                      </>
-                    )}
-                  </p>
-
-                  <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
-                    {t("order.afterSubmitReply")}
-                  </p>
-
-                  {!isPast && (
-                    <p className="mt-3 text-sm text-zinc-500 leading-relaxed italic">
-                      {t("order.timeSensitiveRequest")}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap sm:flex-col gap-2 sm:items-end">
-                  <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-700">
-                    1–2 pieces / month
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-700">
-                    Timeline: 3–6 weeks
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Order Form */}
         <motion.form

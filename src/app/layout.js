@@ -1,5 +1,6 @@
 import { Playfair_Display, Nunito } from "next/font/google";
 import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 import {
   DEFAULT_DESCRIPTION,
@@ -52,6 +53,11 @@ export default async function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <Script
+          src="https://cloud.umami.is/script.js"
+          data-website-id="51714f17-8788-41ca-bd7c-5b8a7a5a18a5"
+          strategy="afterInteractive"
+        />
       </head>
       <body
         suppressHydrationWarning

@@ -50,11 +50,13 @@ export default function HamburgerMenu({
         onPointerDown={() => setOrderClicked(true)}
         onClick={() => {
           setOrderClicked(true);
+          onMenuToggle(false);
           if (typeof onNavigateStart === "function") onNavigateStart();
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             setOrderClicked(true);
+            onMenuToggle(false);
             if (typeof onNavigateStart === "function") onNavigateStart();
           }
         }}
