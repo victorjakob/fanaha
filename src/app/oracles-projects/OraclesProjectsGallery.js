@@ -12,14 +12,16 @@ export default function OraclesProjectsGallery({ items }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImages, setLightboxImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxLabel, setLightboxLabel] = useState("");
   const [[page, direction], setPage] = useState([0, 0]);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const shouldRender = items && items.length > 0;
 
-  const openLightbox = (images, index) => {
+  const openLightbox = (images, index, label = "") => {
     setLightboxImages(images);
+    setLightboxLabel(label);
     setCurrentIndex(index);
     setPage([index, 0]);
     setLightboxOpen(true);
@@ -224,7 +226,7 @@ export default function OraclesProjectsGallery({ items }) {
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: imageIndex * 0.05 }}
                       className="relative mb-4 sm:mb-6 break-inside-avoid rounded-lg overflow-hidden shadow-lg cursor-pointer group"
-                      onClick={() => openLightbox(allImages, imageIndex)}
+                      onClick={() => openLightbox(allImages, imageIndex, item.name)}
                     >
                       <OptimizedImage
                         publicId={imageSource}
@@ -357,7 +359,7 @@ export default function OraclesProjectsGallery({ items }) {
                         <div className="relative w-full h-full">
                           <Image
                             src={lightboxImageUrls[currentIndex]}
-                            alt={`Image ${currentIndex + 1}`}
+                            alt={`${lightboxLabel ? lightboxLabel + " - " : "Fanaha - "}Image ${currentIndex + 1}`}
                             fill
                             sizes="(max-width: 768px) 95vw, 1200px"
                             className="object-contain select-none"

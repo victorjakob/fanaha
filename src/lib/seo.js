@@ -190,12 +190,15 @@ function normalizePath(path = "") {
   return path.startsWith("/") ? path : `/${path}`;
 }
 
-export function buildPageMetadata({ locale, title, description, path }) {
+export function buildPageMetadata({ locale, title, description, path, image }) {
   const base = getMetadataBase();
   const normalizedPath = normalizePath(path);
   const canonical = `/${locale}${normalizedPath}`;
   const url = new URL(canonical, base).toString();
   const ogLocale = locale === "fr" ? "fr_FR" : "en_US";
+  // Shared links (Facebook, WhatsApp, iMessage…) show this title, so include the name.
+  const shareTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — ${locale === "fr" ? "Artiste visuelle" : "Visual artist"}`;
+  const images = image ? [{ url: image, alt: title || SITE_NAME }] : getOpenGraphImages();
 
   return {
     metadataBase: base,
@@ -206,22 +209,23 @@ export function buildPageMetadata({ locale, title, description, path }) {
       languages: {
         en: `/en${normalizedPath}`,
         fr: `/fr${normalizedPath}`,
+        "x-default": `/en${normalizedPath}`,
       },
     },
     openGraph: {
-      ...(title ? { title } : {}),
+      title: shareTitle,
       ...(description ? { description } : {}),
       url,
       siteName: SITE_NAME,
       locale: ogLocale,
       type: "website",
-      images: getOpenGraphImages(),
+      images,
     },
     twitter: {
       card: "summary_large_image",
-      ...(title ? { title } : {}),
+      title: shareTitle,
       ...(description ? { description } : {}),
-      images: getTwitterImages(),
+      images: image ? [image] : getTwitterImages(),
     },
   };
 }
