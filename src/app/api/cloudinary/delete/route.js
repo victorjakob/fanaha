@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import { v2 as cloudinary } from "cloudinary";
 
 // These should be in your .env.local file
@@ -22,6 +23,8 @@ if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
 }
 
 export async function POST(req) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
   // For now, we'll skip auth check (as requested by user to remove admin protection)
   // Later you can add: await assertAdmin();
 

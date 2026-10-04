@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import { createServerSupabase } from "@/util/supabase/server";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -18,6 +19,8 @@ if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
 }
 
 export async function PATCH(req, { params }) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
   // For now, we'll skip auth check
   // Later you can add: await assertAdmin();
 
@@ -46,6 +49,8 @@ export async function PATCH(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
   // For now, we'll skip auth check
   // Later you can add: await assertAdmin();
 

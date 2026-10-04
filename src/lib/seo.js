@@ -11,7 +11,12 @@ function normalizeSiteUrl(url) {
   return url.endsWith("/") ? url.slice(0, -1) : url;
 }
 
+// The live address. fanaha.art (no www) and http:// both redirect here, so search engines
+// must be given this exact form in canonicals, the sitemap and robots.txt.
+const PRODUCTION_URL = "https://www.fanaha.art";
+
 export function getSiteUrl() {
+  if (process.env.VERCEL_ENV === "production") return PRODUCTION_URL;
   return normalizeSiteUrl(
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
   );

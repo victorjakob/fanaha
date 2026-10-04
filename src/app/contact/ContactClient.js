@@ -35,7 +35,7 @@ export default function ContactClient() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, website: e.currentTarget.website?.value || "" }),
       });
 
       const data = await response.json();
@@ -214,6 +214,7 @@ export default function ContactClient() {
               )}
             </button>
           </div>
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, opacity: 0 }} />
         </motion.form>
 
         {/* Social Media Section */}

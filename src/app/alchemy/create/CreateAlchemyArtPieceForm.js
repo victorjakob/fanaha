@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Minus, Plus } from "lucide-react";
-import { supabase } from "../../../util/supabase/supabaseClient";
+import { supabase } from "../../../util/supabase/adminClient";
 import ImageCropper from "./ImageCropper";
 import { getCroppedImg } from "./cropImage";
 import {

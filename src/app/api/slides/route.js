@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import { createServerSupabase } from "@/util/supabase/server";
 
 export async function GET() {
@@ -17,6 +18,8 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
   // For now, we'll skip auth check
   // Later you can add: await assertAdmin();
   

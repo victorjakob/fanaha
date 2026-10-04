@@ -1,52 +1,40 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-
-const PASSWORD = "love";
-const COOKIE_NAME = "manage_auth";
-const COOKIE_VALUE = "authenticated";
 
 export default function PasswordProtection({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
-    // Check if cookie exists
-    const checkAuth = () => {
-      const cookies = document.cookie.split(";");
-      const authCookie = cookies.find((cookie) =>
-        cookie.trim().startsWith(`${COOKIE_NAME}=`)
-      );
-      
-      if (authCookie && authCookie.includes(COOKIE_VALUE)) {
-        setIsAuthenticated(true);
-      }
-      setIsChecking(false);
-    };
-
-    checkAuth();
+    // The session lives in an httpOnly cookie, so ask the server.
+    fetch("/api/admin/session", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => setIsAuthenticated(!!d.authenticated))
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setIsChecking(false));
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (password === PASSWORD) {
-      // Set cookie (expires in 10 years - effectively unlimited)
-      const expires = new Date();
-      expires.setFullYear(expires.getFullYear() + 10);
-      document.cookie = `${COOKIE_NAME}=${COOKIE_VALUE}; expires=${expires.toUTCString()}; path=/`;
-      setIsAuthenticated(true);
-      setPassword("");
-    } else {
-      setError("Incorrect password");
-      setPassword("");
+    try {
+      const res = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        setIsAuthenticated(true);
+      } else {
+        setError("Incorrect password");
+      }
+    } catch {
+      setError("Could not reach the server. Try again.");
     }
+    setPassword("");
   };
 
   if (isChecking) {

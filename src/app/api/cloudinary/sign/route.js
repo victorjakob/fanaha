@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import crypto from "crypto";
 
 export async function POST(req) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
   // For now, we'll skip auth check (as requested by user to remove admin protection)
   // TODO: Add rate limiting in production
   // Later you can add: await assertAdmin();

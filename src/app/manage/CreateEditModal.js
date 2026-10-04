@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, Upload, Loader2 } from "lucide-react";
-import { supabase } from "@/util/supabase/supabaseClient";
+import { supabase } from "@/util/supabase/adminClient";
 import { OptimizedImage } from "@/components/OptimizedImage";
 
 export default function CreateEditModal({ piece, onClose, onSuccess }) {

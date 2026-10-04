@@ -3,7 +3,7 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FileText, Image, Loader2, Calendar } from "lucide-react";
-import { supabase } from "@/util/supabase/supabaseClient";
+import { supabase } from "@/util/supabase/adminClient";
 import Toast from "./Toast";
 
 export default function ManagePage() {

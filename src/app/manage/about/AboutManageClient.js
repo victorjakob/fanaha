@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/util/supabase/supabaseClient";
+import { supabase } from "@/util/supabase/adminClient";
 import { Save, Plus, Trash2, X, CheckCircle2 } from "lucide-react";
 import Toast from "../Toast";
 import { coerceFrenchText, NEEDS_TRANSLATION } from "@/lib/db-i18n";

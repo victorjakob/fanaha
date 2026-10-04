@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/util/supabase/supabaseClient";
+import { supabase } from "@/util/supabase/adminClient";
 import { Plus, Trash2, X, Edit2, ChevronUp, ChevronDown, AlertTriangle, Upload, GripVertical } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import Toast from "../Toast";

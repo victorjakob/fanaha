@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/util/supabase/supabaseClient";
+import { supabase } from "@/util/supabase/adminClient";
 import {
   Plus,
   Pencil,

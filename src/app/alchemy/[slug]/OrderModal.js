@@ -27,6 +27,7 @@ export default function OrderModal({ isOpen, onClose, artPieceName }) {
         body: JSON.stringify({
           ...form,
           artPieceName,
+          website: e.currentTarget.website?.value || "",
         }),
       });
 
@@ -174,6 +175,7 @@ export default function OrderModal({ isOpen, onClose, artPieceName }) {
                   {loading ? "Sending..." : "Send Order Request"}
                 </button>
               </div>
+              <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, opacity: 0 }} />
             </form>
           </motion.div>
         </motion.div>

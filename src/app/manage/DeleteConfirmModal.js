@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, Trash2, Loader2, AlertTriangle } from "lucide-react";
-import { supabase } from "@/util/supabase/supabaseClient";
+import { supabase } from "@/util/supabase/adminClient";
 import { formatISK } from "@/util/formatPrice";
 import { OptimizedImage } from "@/components/OptimizedImage";
 

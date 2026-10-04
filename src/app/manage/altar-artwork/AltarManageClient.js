@@ -8,7 +8,7 @@ import Toast from "../Toast";
 import ImageCropper from "@/app/alchemy/create/ImageCropper";
 import { getCroppedImg } from "@/app/alchemy/create/cropImage";
 import DeleteConfirmModal from "./DeleteConfirmModal";
-import { supabase } from "@/util/supabase/supabaseClient";
+import { supabase } from "@/util/supabase/adminClient";
 
 export default function AltarManageClient({ initialArtworks, section }) {
   const router = useRouter();
