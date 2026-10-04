@@ -58,6 +58,11 @@ export default async function RootLayout({ children }) {
           data-website-id="51714f17-8788-41ca-bd7c-5b8a7a5a18a5"
           strategy="afterInteractive"
         />
+        <Script
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "e37f63c6774c429e8c208f1931b64cdf"}'
+          strategy="afterInteractive"
+        />
       </head>
       <body
         suppressHydrationWarning
